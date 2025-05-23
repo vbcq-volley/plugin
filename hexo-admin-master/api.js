@@ -204,6 +204,8 @@ db.read("result").map(
         result.date=m.awayDate
       }
     }
+    result.group=m.group
+    result.session=m.session
   }
 )
 
