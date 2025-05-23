@@ -206,7 +206,7 @@ db.read("result").map(
     }
     result.group=m.group
     result.session=m.session
-    db.update("result",result.)
+    db.update("result",result.index,result)
   }
 )
 
