@@ -200,7 +200,7 @@ db.read("result").map(
       if(result.matchType=="home"){
         result.date=m.homeDate
       }else{
-        result.date
+        result.date=m
       }
     }
   }
