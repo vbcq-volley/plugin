@@ -17,7 +17,6 @@
   "author": "wzpan <m@hahack.com> (https://github.com/wzpan)",
   "license": "MIT",
   "dependencies": {
-    "hexo-generator-search": "file:",
     "nunjucks": "^3.0.1",
     "utils-merge": "^1.0.0"
   },

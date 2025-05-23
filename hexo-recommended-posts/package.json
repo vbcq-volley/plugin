@@ -18,7 +18,6 @@
   "author": "Hui Wang",
   "license": "ISC",
   "dependencies": {
-    "hexo-fs": "^3.1.0",
-    "hexo-recommended-posts": "file:"
+    "hexo-fs": "^3.1.0"
   }
 }

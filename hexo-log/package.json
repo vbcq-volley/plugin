@@ -49,7 +49,6 @@
     "node": ">=14"
   },
   "dependencies": {
-    "hexo-log": "file:",
     "picocolors": "^1.0.0"
   }
 }

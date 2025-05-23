@@ -34,7 +34,6 @@
     "mocha": "^10.0.0"
   },
   "dependencies": {
-    "hexo-generator-category": "file:",
     "hexo-pagination": "3.0.0"
   },
   "engines": {

@@ -32,7 +32,6 @@
   "author": "Tommy Chen <tommy351@gmail.com> (https://zespia.tw)",
   "license": "MIT",
   "dependencies": {
-    "hexo-i18n": "file:",
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {

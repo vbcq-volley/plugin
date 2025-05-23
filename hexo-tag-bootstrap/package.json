@@ -18,9 +18,7 @@
   "bugs": {
     "url": "http://github.com/wzpan/hexo-tag-bootstrap/issues"
   },
-  "dependencies": {
-    "hexo-tag-bootstrap": "file:"
-  },
+  "dependencies": {},
   "readmeFilename": "README.md",
   "description": "hexo-tag-bootstrap",
   "homepage": "https://github.com/wzpan/hexo-tag-bootstrap"

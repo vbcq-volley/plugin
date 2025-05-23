@@ -33,7 +33,5 @@
   "engines": {
     "node": ">=14"
   },
-  "dependencies": {
-    "hexo-pagination": "file:"
-  }
+  "dependencies": {}
 }

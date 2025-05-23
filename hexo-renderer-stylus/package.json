@@ -28,7 +28,6 @@
   "author": "Tommy Chen <tommy351@gmail.com> (https://zespia.tw)",
   "license": "MIT",
   "dependencies": {
-    "hexo-renderer-stylus": "file:",
     "nib": "^1.2.0",
     "stylus": "^0.62.0"
   },

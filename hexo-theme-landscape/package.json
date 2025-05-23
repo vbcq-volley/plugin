@@ -9,7 +9,5 @@
     "landscape"
   ],
   "license": "MIT",
-  "dependencies": {
-    "hexo-theme-landscape": "file:"
-  }
+  "dependencies": {}
 }
