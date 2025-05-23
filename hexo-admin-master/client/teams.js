@@ -46,7 +46,7 @@ var Datas = React.createClass({
     if (e) {
       e.preventDefault()
     }
-    Router.transitionTo('data', {matchId: id})
+    Router.transitionTo('team', {matchId: id})
   },
 
   render: function () {
