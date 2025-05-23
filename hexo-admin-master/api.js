@@ -166,6 +166,20 @@ class DB {
             if (fs.existsSync(filename)) {
                 const fileData = fs.readFileSync(filename, 'utf8');
                 this.data = JSON.parse(fileData);
+                
+                // Indexer les données par type
+                Object.keys(this.data).forEach(modelName => {
+                    const model = this.data[modelName];
+                    if (model.entries) {
+                        // Créer un index par _id
+                        
+                        model.entries.forEach((entry, index) => {
+                            if (!entry.index) {
+                                entry.index = index;
+                            }
+                        });
+                    }
+                });
             }
         } catch (error) {
             console.error(`Error loading from file: ${error.message}`);
