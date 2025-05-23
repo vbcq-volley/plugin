@@ -206,11 +206,12 @@ db.read("result").map(
     }
     result.group=m.group
     result.session=m.session
-    db.update("match",result.)
+    db.update("result",result.)
   }
 )
 
 }
+updateMatchTitles()
 module.exports = function (app, hexo) {
 
   function addIsDraft(post) {
