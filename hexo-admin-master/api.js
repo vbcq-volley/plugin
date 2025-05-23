@@ -191,7 +191,14 @@ const updatedMatches = matches.map((item, index) => {
   }
   return item;
 });
-const resultat=db.
+const resultat=db.read("result").map(
+  (result)=>{
+    if(result.date){
+      
+    }
+  }
+)
+
 }
 module.exports = function (app, hexo) {
 
