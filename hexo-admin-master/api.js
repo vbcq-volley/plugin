@@ -198,8 +198,8 @@ db.read("result").map(
         return item._id===result.matchId
       })
       if(result.matchType=="home"){
-        result.date=mhomeDate
-      }
+        result.date=m.homeDate
+      }else{}
     }
   }
 )
