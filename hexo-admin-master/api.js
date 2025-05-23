@@ -199,7 +199,9 @@ db.read("result").map(
       })
       if(result.matchType=="home"){
         result.date=m.homeDate
-      }else{}
+      }else{
+        result.date
+      }
     }
   }
 )
