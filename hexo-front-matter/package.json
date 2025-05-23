@@ -24,7 +24,6 @@
   "author": "Tommy Chen <tommy351@gmail.com> (http://zespia.tw)",
   "license": "MIT",
   "dependencies": {
-    "hexo-front-matter": "file:",
     "js-yaml": "^3.6.1"
   },
   "devDependencies": {

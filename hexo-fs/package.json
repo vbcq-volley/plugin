@@ -28,8 +28,7 @@
     "bluebird": "^3.4.0",
     "chokidar": "^1.5.2",
     "escape-string-regexp": "^1.0.5",
-    "graceful-fs": "^4.1.4",
-    "hexo-fs": "file:"
+    "graceful-fs": "^4.1.4"
   },
   "devDependencies": {
     "chai": "^3.5.0",
