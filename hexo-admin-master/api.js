@@ -195,7 +195,7 @@ const resultat=db.read("result").map(
   (result)=>{
     if(!result.date){
       const m= db.read("match").find((item)=>{
-        return item._id===result
+        return item._id===result.matchId
       })
       if(result.matchType=="home"){
         
