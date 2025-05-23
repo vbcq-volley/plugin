@@ -191,7 +191,7 @@ const updatedMatches = matches.map((item, index) => {
   }
   return item;
 });
-const resultat=db.read("result").map(
+db.read("result").map(
   (result)=>{
     if(!result.date){
       const m= db.read("match").find((item)=>{
