@@ -194,7 +194,9 @@ const updatedMatches = matches.map((item, index) => {
 const resultat=db.read("result").map(
   (result)=>{
     if(!result.date){
-      const m= db.read("match").find((item)=>)
+      const m= db.read("match").find((item)=>{
+        return item.
+      })
       if(result.matchType=="home"){
         
       }
