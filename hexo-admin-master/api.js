@@ -198,7 +198,7 @@ db.read("result").map(
         return item._id===result.matchId
       })
       if(result.matchType=="home"){
-        
+        result.date=
       }
     }
   }
