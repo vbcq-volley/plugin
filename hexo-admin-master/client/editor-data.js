@@ -257,7 +257,7 @@ var Editor_data = React.createClass({
 
   handleChangeContent: function(content) {
    //this._onDataChange('text',content)
-   this._onDataChange('raw',content)
+   this._onDataChange('_content',content)
   },
 
   handlePublish: function() {
