@@ -6,7 +6,7 @@ var PT = React.PropTypes
 var api=require("./api")
 var Router = require('react-router')
 var Editor = require('./editor')
-
+var marked = require('marked')
 var Editor_data = React.createClass({
 
   // cmRef: null,
@@ -96,7 +96,7 @@ var Editor_data = React.createClass({
               const parts = entry.raw.split('---');
               const _slice = parts[0] === '' ? 2 : 1;
               const raw = parts.slice(_slice).join('---').trim();
-              
+              console.log("entry ="+JSON.stringify(entry,null,2))
               this.setState({
                 text: entry.title,
                 pageType: type,
@@ -190,13 +190,13 @@ var Editor_data = React.createClass({
     };
 
     if (pageData.type === 'post') {
-      api.post(pageData).then((page) => {
+      api.post(pageData._id,pageData).then((page) => {
         Router.transitionTo('posts');
       }, (err) => {
         console.error('Échec de la création du post', err);
       });
     } else if (pageData.type === 'page') {
-      api.page(pageData).then((page) => {
+      api.page(pageData._id,pageData).then((page) => {
         Router.transitionTo('pages');
       }, (err) => {
         console.error('Échec de la création de la page', err);
@@ -226,6 +226,7 @@ var Editor_data = React.createClass({
     this.setState({
       text: e.target.value
     });
+    this.__onDataChange("text",e.target.value)
   },
 
   _onPageTypeChange: function (e) {
@@ -239,7 +240,15 @@ var Editor_data = React.createClass({
     console.log("la data est"+JSON.stringify(this.state.data))
     const newData = { ...this.state.data };
     newData[field] = value;
+    this.setState({rendered:marked(this.state.data.raw)})
     this.setState({ data: newData });
+    if(this.state.pageType==="post"){
+      api.post(this.state.data._id,this.state.data).then((page) => {
+      console.log("post modifié"+JSON.stringify(page,null,2)) 
+      }, (err) => {
+        console.error('Échec de la création du post', err);
+      });
+    }
   },
 
   handleChangeTitle: function(title) {
@@ -247,10 +256,8 @@ var Editor_data = React.createClass({
   },
 
   handleChangeContent: function(content) {
-    this.setState({ 
-      raw: content,
-      updated: new Date()
-    });
+   //this._onDataChange('text',content)
+   this._onDataChange('raw',content)
   },
 
   handlePublish: function() {
@@ -261,9 +268,18 @@ var Editor_data = React.createClass({
     this.setState({ isDraft: true });
   },
 
+  handleChange: function(data) {
+    console.log("data ="+JSON.stringify(this.state.data,null,2))
+    let d=this.state.data
+    for (let key in data) {
+      this._onDataChange(key, data[key]);
+    }
+  
+  },
+
   renderFormFields: function() {
     const { pageType, data } = this.state;
-    
+    console.log(pageType)
     switch(pageType) {
       case 'match':
         return (
@@ -503,12 +519,11 @@ var Editor_data = React.createClass({
         );
 
       case 'post':
-      case 'page':
         return (
           <Editor
             post={this.props.post || { path: this.state.text }}
             raw={this.state.raw}
-            rendered={this.state.rendered}
+            rendered={this.props.rendered}
             onChangeTitle={this.handleChangeTitle}
             title={this.state.text}
             updated={this.state.updated}
@@ -519,6 +534,29 @@ var Editor_data = React.createClass({
             wordCount={this.state.wordCount}
             type={pageType}
             adminSettings={this.props.adminSettings}
+            tagsCategoriesAndMetadata={this.props.tagsCategoriesAndMetadata}
+            onChange={this.handleChange}
+          
+          />
+        );
+      case 'page':
+        return (
+          <Editor
+            post={this.props.post || { path: this.state.text }}
+            raw={this.state.raw}
+            rendered={this.props.rendered}
+            onChangeTitle={this.handleChangeTitle}
+            title={this.state.text}
+            updated={this.state.updated}
+            isDraft={this.state.isDraft}
+            onPublish={this.handlePublish}
+            onUnpublish={this.handleUnpublish}
+            onChangeContent={this.handleChangeContent}
+            wordCount={this.state.wordCount}
+            type={pageType}
+            adminSettings={this.props.adminSettings}
+            tagsCategoriesAndMetadata={this.props.tagsCategoriesAndMetadata}
+            onChange={this.handleChange}
           />
         );
 

@@ -13,7 +13,7 @@ var Page = React.createClass({
     return {
       page: api.page(params.pageId),
       settings: api.settings(),
-      //tagsCategoriesAndMetadata: api.tagsCategoriesAndMetadata()
+      tagsCategoriesAndMetadata: api.tagsCategoriesAndMetadata()
     }
   })],
 

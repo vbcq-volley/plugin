@@ -2,7 +2,7 @@ var path = require('path')
 var fs = require('fs')
 var yml = require('js-yaml')
 var deepAssign = require('deep-assign')
-var extend = require('extend')
+//var extend = require('extend')
 const { source } = require('superagent')
 var updateAny = require('./update')
   , updatePage = updateAny.bind(null, 'Page')
@@ -244,6 +244,8 @@ module.exports = function (app, hexo) {
     hexo.model('Tag').forEach(function (tag) {
       tags[tag._id] = tag.name
     })
+    console.log(cats)
+    console.log(tags)
     return {
       categories: cats,
       tags: tags,
@@ -369,7 +371,7 @@ module.exports = function (app, hexo) {
       try {
         fn(req, res);
       } catch (err) {
-        hexo.log.e(`API Error: ${err}`);
+        hexo.log.e(`API Error: ${err.message}\n${err.stack}`);
         res.send(500, `Internal Server Error: ${err}`);
       }
     });
@@ -624,7 +626,7 @@ return res.done(db.read(req.body.data.type))  }
     }
 
     var id = last
-    if (id === 'pages' || !id) return next()
+    //if (id === 'pages' || !id) return next()
     if (req.method === 'GET') {
       var page = hexo.model('Page').get(id)
       hexo.log.d(page)
@@ -634,7 +636,7 @@ return res.done(db.read(req.body.data.type))  }
     if (!req.body) {
       return res.send(400, 'No page body given');
     }
-
+    console.log(req.body)
     updatePage(id, req.body, function (err, page) {
       if (err) {
         return res.send(400, err);
@@ -697,7 +699,7 @@ return res.done(db.read(req.body.data.type))  }
     }
 
     var id = last
-    if (id === 'posts' || !id) return next()
+    //if (id === 'posts' || !id) return next()
     if (req.method === 'GET') {
       var post = hexo.model('Post').get(id)
       if (!post) return next()

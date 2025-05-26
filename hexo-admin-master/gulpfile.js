@@ -39,7 +39,7 @@ gulp.task('javascript', function () {
     // .on('error', gutil.log)
     // .pipe(sourcemaps.write('./'))
     .pipe(rename('bundle.js'))
-    .pipe(gulp.dest('./www/'));
+    .pipe(gulp.dest('../../dist/www'));
 });
 
 var less = require('gulp-less');
@@ -50,7 +50,7 @@ gulp.task('less', function () {
       // paths: [path.join(__dirname, 
     }))
     .pipe(rename('bundle.css'))
-    .pipe(gulp.dest('./www'))
+    .pipe(gulp.dest('../../dist/www'))
 });
 
 gulp.task('build', ['less', 'javascript']);

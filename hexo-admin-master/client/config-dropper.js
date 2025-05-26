@@ -35,6 +35,7 @@ var ConfigDropper = React.createClass({
       categories: toText(this.props.post.categories, tagCatMeta.categories),
       author: this.props.post.author,
     }
+    onChange: this.props.onChange
     addMetadata(state, tagCatMeta.metadata, this.props.post);
     return state
   },

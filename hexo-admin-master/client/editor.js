@@ -12,6 +12,32 @@ var ConfigDropper = require('./config-dropper')
 var RenameFile = require('./rename-file')
 var PopGallery = require('./pop-gallery')
 
+// Étendre la classe Date
+Date.prototype.fromNow = function() {
+  const now = new Date();
+  const diffInMilliseconds = now - this;
+
+  // Convertir la différence en secondes, minutes, heures, jours, etc.
+  const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  const diffInDays = Math.floor(diffInHours / 24);
+
+  if (diffInDays > 0) {
+      return `il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
+  } else if (diffInHours > 0) {
+      return `il y a ${diffInHours} heure${diffInHours > 1 ? 's' : ''}`;
+  } else if (diffInMinutes > 0) {
+      return `il y a ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''}`;
+  } else {
+      return `il y a ${diffInSeconds} seconde${diffInSeconds !== 1 ? 's' : ''}`;
+  }
+};
+
+// Exemple d'utilisation
+const pastDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // Il y a 2 jours
+console.log(pastDate.fromNow()); // Affiche "il y a 2 jours"
+
 var Editor = React.createClass({
 
   // cmRef: null,
@@ -29,6 +55,9 @@ var Editor = React.createClass({
     tagsCategoriesAndMetadata: PT.object,
     adminSettings: PT.object,
     type: PT.string,
+    onChange: PT.func,
+    onChangeContent: PT.func,
+    onRemove: PT.func
   },
 
   getInitialState: function() {
@@ -42,6 +71,13 @@ var Editor = React.createClass({
       checkingGrammar: false,
       openGallery: false,
       renderedType: this.props.type,
+      tagsCategoriesAndMetadata: this.props.tagsCategoriesAndMetadata,
+      onChange: this.props.onChange,
+      onChangeContent: this.props.onChangeContent,
+      onChangeTitle: this.props.onChangeTitle,
+      onPublish: this.props.onPublish,
+      onUnpublish: this.props.onUnpublish,
+      onRemove: this.props.onRemove
     }
   },
 
@@ -99,7 +135,7 @@ var Editor = React.createClass({
   },
 
   render: function () {
-    console.log(this.state)
+    console.log(this.props)
     return <div className={cx({
       "editor": true,
       "editor--draft": this.props.isDraft
@@ -155,7 +191,7 @@ var Editor = React.createClass({
             {this.props.updated &&
                 <SinceWhen className="editor_updated"
                 prefix="saved "
-                time={this.props.updated}/>}
+                time={new Date(this.props.post.updated)}/>}
             <span>Markdown&nbsp;&nbsp;
               <RenameFile post={this.props.post}
                 handlePreviewLink={this.handlePreviewLink} /></span>

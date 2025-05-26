@@ -1,11 +1,16 @@
 var path = require('path'),
   moment = require('moment'),
   hfm = require('hexo-front-matter'),
-  fs = require('hexo-fs'),
-  extend = require('extend');
+  fs = require('hexo-fs')
+ 
 //  yfm = util.yfm,
 //  escape = util.escape;
-
+const extend =(original, other)=>{
+  for(let key in other){
+    original[key]=other[key]
+  }
+  return original
+}
 
 /**
  * Updates a post.
@@ -24,7 +29,7 @@ module.exports = function (model, id, update, callback, hexo) {
   if (!post) {
     return callback('Post not found');
   }
-  console.log(post)
+  //console.log(post)
   var config = hexo.config,
     slug = post.slug = hfm.escape(post.slug || post.title, config.filename_case),
     layout = post.layout = (post.layout || config.default_layout).toLowerCase(),
@@ -33,7 +38,7 @@ module.exports = function (model, id, update, callback, hexo) {
   var split = hfm.split(post.raw),
     frontMatter = split.data
     compiled = hfm.parse([frontMatter, '---', split.content].join('\n'));
-console.log(split)
+//console.log(split)
   var preservedKeys = ['title', 'date', 'tags', 'categories', '_content', 'author'];
   Object.keys(hexo.config.metadata || {}).forEach(function (key) {
     preservedKeys.push(key);
@@ -50,8 +55,8 @@ console.log(split)
       compiled[attr] = update[attr]
     }
   });
-  console.log(compiled)
-  compiled.date = moment(compiled.date).toDate()
+  //console.log(compiled)
+  compiled.date = compiled.date
 
   delete update._content
   var raw = hfm.stringify(compiled);

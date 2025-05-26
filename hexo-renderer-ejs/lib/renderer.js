@@ -7,7 +7,7 @@ function ejsRenderer(data, locals) {
 }
 
 ejsRenderer.compile = function(data) {
-  console.log(data)
+  //console.log(data)
   return ejs.compile(data.text, {
     filename: data.path
   });
