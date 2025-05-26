@@ -1,4 +1,3 @@
-
 var path = require('path')
 var React = require('react/addons')
 var cx = React.addons.classSet
@@ -11,6 +10,7 @@ var CheckGrammar = require('./check-grammar')
 var ConfigDropper = require('./config-dropper')
 var RenameFile = require('./rename-file')
 var PopGallery = require('./pop-gallery')
+const codemirror = require('codemirror')
 
 // Étendre la classe Date
 Date.prototype.fromNow = function() {
@@ -77,7 +77,8 @@ var Editor = React.createClass({
       onChangeTitle: this.props.onChangeTitle,
       onPublish: this.props.onPublish,
       onUnpublish: this.props.onUnpublish,
-      onRemove: this.props.onRemove
+      onRemove: this.props.onRemove,
+      mdLink: null
     }
   },
 
@@ -131,6 +132,33 @@ var Editor = React.createClass({
   handleImgSelect: function (img) {
     this.setState({
       mdImg: '![image](/images/'+img+')',
+     
+    });
+  },
+
+  onAddLink: function () {
+    const linkText = '\n[lien](lien a mettre)';
+    navigator.clipboard.writeText(linkText).then(() => {
+      this.setState({
+      //  mdLink: linkText
+      });
+     const notification = document.createElement('div');
+     notification.textContent = 'Le lien a été copié dans votre presse-papier';
+     notification.style.position = 'fixed';
+     notification.style.top = '20px';
+     notification.style.right = '20px';
+     notification.style.padding = '10px';
+     notification.style.backgroundColor = '#4CAF50';
+     notification.style.color = 'white';
+     notification.style.borderRadius = '4px';
+     notification.style.zIndex = '1000';
+     document.body.appendChild(notification);
+     setTimeout(() => {
+       notification.remove();
+     }, 3000);
+     // this.props.onChangeContent(this.props.raw + linkText);
+    }).catch(err => {
+      console.error('Erreur lors de la copie dans le presse-papier:', err);
     });
   },
 
@@ -144,7 +172,7 @@ var Editor = React.createClass({
         <input
           className='editor_title'
           value={this.props.title}
-          onChange={this.handleChangeTitle}/>
+          onChange={this.props.onChangeTitle}/>
 
         {this.state.renderedType === 'post' && !this.props.isPage && <ConfigDropper
           post={this.props.post}
@@ -182,7 +210,10 @@ var Editor = React.createClass({
             <i className="fa fa-picture-o"/>
           </button>
         }
-
+      <button className="editor_addlink" title="Add Link to Post"
+      onClick={this.onAddLink}>
+      <i className="fa fa-link"/>
+      </button>
       </div>
 
       <div className="editor_main">
@@ -198,6 +229,7 @@ var Editor = React.createClass({
           </div>
           <CodeMirror
             mdImg={this.state.mdImg}
+            mdLink={this.state.mdLink}
             onFocus={this.handleEditFocus}
             forceLineNumbers={this.state.checkingGrammar}
             onScroll={this.handleScroll}

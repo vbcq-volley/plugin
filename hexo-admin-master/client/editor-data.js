@@ -226,7 +226,7 @@ var Editor_data = React.createClass({
     this.setState({
       text: e.target.value
     });
-    this.__onDataChange("text",e.target.value)
+  
   },
 
   _onPageTypeChange: function (e) {
@@ -237,6 +237,7 @@ var Editor_data = React.createClass({
   },
 
   _onDataChange: function (field, value) {
+    console.log("field ="+field)
     console.log("la data est"+JSON.stringify(this.state.data))
     const newData = { ...this.state.data };
     newData[field] = value;
@@ -248,33 +249,34 @@ var Editor_data = React.createClass({
       }, (err) => {
         console.error('Échec de la création du post', err);
       });
+    } else if(this.state.pageType==="page"){
+      api.page(this.state.data._id,this.state.data).then((page) => {
+      console.log("post modifié"+JSON.stringify(page,null,2)) 
+      }, (err) => {
+        console.error('Échec de la création du post', err);
+      });
     }
   },
 
-  handleChangeTitle: function(title) {
-    this.setState({ text: title });
+  handleChangeTitle: function (e) {
+    return this.props.onChangeTitle(e.target.value)
   },
 
-  handleChangeContent: function(content) {
-   //this._onDataChange('text',content)
-   this._onDataChange('_content',content)
-  },
+
 
   handlePublish: function() {
     this.setState({ isDraft: false });
+    return this.props.onPublish()
   },
 
   handleUnpublish: function() {
-    this.setState({ isDraft: true });
+      this.setState({ isDraft: true });
+    return this.props.onUnpublish()
   },
 
   handleChange: function(data) {
-    console.log("data ="+JSON.stringify(this.state.data,null,2))
-    let d=this.state.data
-    for (let key in data) {
-      this._onDataChange(key, data[key]);
-    }
-  
+    
+    return this.props.onChange(data)
   },
 
   renderFormFields: function() {
@@ -524,18 +526,18 @@ var Editor_data = React.createClass({
             post={this.props.post || { path: this.state.text }}
             raw={this.state.raw}
             rendered={this.props.rendered}
-            onChangeTitle={this.handleChangeTitle}
+            onChangeTitle={this.props.onChangeTitle}
             title={this.state.text}
             updated={this.state.updated}
             isDraft={this.state.isDraft}
-            onPublish={this.handlePublish}
-            onUnpublish={this.handleUnpublish}
-            onChangeContent={this.handleChangeContent}
+            onPublish={this.props.onPublish}
+            onUnpublish={this.props.onUnpublish}
+            onChangeContent={this.props.onChangeContent}
             wordCount={this.state.wordCount}
             type={pageType}
             adminSettings={this.props.adminSettings}
             tagsCategoriesAndMetadata={this.props.tagsCategoriesAndMetadata}
-            onChange={this.handleChange}
+            onChange={this.props.onChange}
           
           />
         );
@@ -545,18 +547,18 @@ var Editor_data = React.createClass({
             post={this.props.post || { path: this.state.text }}
             raw={this.state.raw}
             rendered={this.props.rendered}
-            onChangeTitle={this.handleChangeTitle}
+            onChangeTitle={this.props.onChangeTitle}
             title={this.state.text}
             updated={this.state.updated}
             isDraft={this.state.isDraft}
-            onPublish={this.handlePublish}
-            onUnpublish={this.handleUnpublish}
-            onChangeContent={this.handleChangeContent}
+            onPublish={this.props.onPublish}
+            onUnpublish={this.props.onUnpublish}
+            onChangeContent={this.props.onChangeContent}
             wordCount={this.state.wordCount}
             type={pageType}
             adminSettings={this.props.adminSettings}
             tagsCategoriesAndMetadata={this.props.tagsCategoriesAndMetadata}
-            onChange={this.handleChange}
+            onChange={this.props.onChange}
           />
         );
 

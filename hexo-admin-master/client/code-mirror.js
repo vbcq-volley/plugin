@@ -1,4 +1,3 @@
-
 var React = require('react')
 var CM = require('codemirror/lib/codemirror')
 var PT = React.PropTypes
@@ -18,28 +17,43 @@ var CodeMirror = React.createClass({
     if (prevProps.initialValue !== this.props.initialValue) {
       this.cm.setValue(this.props.initialValue)
     }
-    // on forcing line numbers, set or unset linenumbers if not set in adminSettings
     if (prevProps.forceLineNumbers !== this.props.forceLineNumbers) {
       if (!(this.props.adminSettings.editor || {}).lineNumbers) {
         this.cm.setOption('lineNumbers', this.props.forceLineNumbers);
       }
     }
     if(prevProps.cusor !== this.props.cusor) {
-      this.cm.focus(); // focus first is a must!
+      this.cm.focus();
       this.cm.setCursor(this.props.cusor);
     }
 
-    // COMPARE WITH PREVIOUS VALUE IS A MUST!
-    // OTHERWISE LOOP INFINITELY
-    // @2018/02/06
     if(prevProps.mdImg !== this.props.mdImg) {
-      this.cm.focus(); // focus first is a must!
-      var cursor = this.lastCusor; // gets the line number in the cursor position
-      var pos = { // create a new object to avoid mutation of the original selection
+      this.cm.focus();
+      var cursor = this.lastCusor;
+      var pos = {
           line: cursor.line,
-          ch: 0 // set the character position to the START of the line
+          ch: 0
       }
-      this.cm.replaceRange(this.props.mdImg+'\r\n', pos, pos); // adds a new line
+      this.cm.replaceRange(this.props.mdImg+'\r\n', pos, pos);
+    }
+
+    if(prevProps.mdLink !== this.props.mdLink) {
+      this.cm.focus();
+      var cursor = this.lastCusor;
+      var pos = {
+          line: cursor.line,
+          ch: this.cm.getLine(cursor.line).length
+      }
+      // Limiter le nombre de liens à 300
+      var currentContent = this.cm.getValue();
+      var linkCount = (currentContent.match(/\[lien\]/g) || []).length;
+      
+      if (linkCount < 3) {
+        this.cm.replaceRange(this.props.mdLink, pos, pos);
+      } else {
+        alert('Nombre maximum de liens atteint (300)');
+      }
+      this.props.mdLink = null;
     }
   },
 
@@ -55,7 +69,6 @@ var CodeMirror = React.createClass({
     for (var key in this.props.adminSettings.editor) {
       editorSettings[key] = this.props.adminSettings.editor[key]
     }
-    // getDOMNode() ?
     this.cm = CM(this.getDOMNode(), editorSettings);
     this.cm.on('change', (cm) => {
       this.props.onChange(cm.getValue());
@@ -67,7 +80,6 @@ var CodeMirror = React.createClass({
     })
     this.cm.on('focus', cm => {
       this.lastCusor = this.cm.getCursor();
-      // @2018/02/06
       if(this.props.onFocus) this.props.onFocus();
     })
     this.cm.on('blur', cm => {
@@ -80,13 +92,11 @@ var CodeMirror = React.createClass({
     this.cm.setSize(box.width, box.height - 32)
 
     window.addEventListener('resize', this._onResize)
-
     document.addEventListener('paste', this._onPaste)
   },
 
   _onResize: function () {
     var box = this.getDOMNode().parentNode.getBoundingClientRect()
-    // need to subtract header to get proper height without flexbox (see #124)
     this.cm.setSize(box.width, box.height - 32)
   },
 
@@ -125,14 +135,9 @@ var CodeMirror = React.createClass({
     reader.readAsDataURL(blob);
   },
 
-  /**
-   * get codemirror instance
-   * @return {[type]} [description]
-   */
   getCodeMirror: function getCodeMirror() {
-		return this.cm;
-	},
-
+    return this.cm;
+  },
 
   render: function () {
     return <div/>
