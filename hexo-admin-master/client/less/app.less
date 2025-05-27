@@ -1,3 +1,4 @@
+
 html,
 body {
   padding: 0;
@@ -11,7 +12,8 @@ body > div:first-of-type {
 }
 
 .app {
-  
+  display: flex;
+  flex-direction: column;
   font-family: "Open Sans";
   height: 100%;
 }
@@ -19,52 +21,36 @@ body > div:first-of-type {
 .app_header {
   background-color: @primaryVeryDark;
   height: 52px;
- 
-  align-items: center;
-  padding: 0 20px;
 
   &, a {
     color: @primaryDarkText;
   }
 }
 
-.app_header-left {
-  display: flex;
-  align-items: center;
-  margin-right: 30px;
-}
-
 .app_logo {
   width: 25px;
   vertical-align: middle;
-  margin-right: 10px;
-}
-
-.app_title {
-  font-size: 18px;
-  font-weight: bold;
+  margin: -4px 10px 0;
 }
 
 .app_nav {
   list-style: none;
-  margin: 0;
+  margin: 0 10px;
   padding: 0;
-
-  align-items: center;
- 
+  display: inline-block;
 
   li {
     color: @primaryDarkText;
     font-weight: bold;
-    margin: 0 5px;
+    display: inline-block;
+    cursor: pointer;
 
     a {
       color: @primaryDarkText;
       text-decoration: none;
-      padding: 10px 15px;
+      padding: 10px 20px 7px;
       display: inline-block;
       border-bottom: 3px solid transparent;
-      transition: all 0.3s ease;
 
       &.active,
       &:hover {
@@ -72,55 +58,12 @@ body > div:first-of-type {
         color: @accentp5;
       }
     }
+
   }
 }
 
 .app_main {
- 
-  
+  display: flex;
+  flex: 1 1 auto;
   min-height: 0;
-}
-
-.posts_header {
- 
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background-color: @primaryVeryDark;
-  color: @primaryDarkText;
-
-  h2 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: bold;
-  }
-
-  button {
-    background-color: @accentp5;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.3s ease;
-
-    i {
-      margin-right: 5px;
-    }
-
-    &:hover {
-      background-color: darken(@accentp5, 10%);
-    }
-  }
-}
-
-.new-team-form-container,
-.new-stade-form-container,
-.new-result-form-container {
-  padding: 20px;
-  background-color: @primaryLight;
-  border-bottom: 1px solid @primaryDark;
-  margin-bottom: 20px;
 }
