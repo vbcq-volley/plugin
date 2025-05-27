@@ -41,12 +41,12 @@ var Results = React.createClass({
     if (e) {
       e.preventDefault();
     }
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce résultat ?')) {
+   
       api.deleteEntry("result", id._id).then(() => {
         var results = this.state.results.filter(result => result._id !== id._id);
         this.setState({ results: results });
       });
-    }
+    
   },
 
   handleUpdate: function(id, e) {
