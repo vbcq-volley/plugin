@@ -117,7 +117,7 @@ var Results = React.createClass({
           this.state.results.map((result, i) =>
             <li key={result._id} className={cx({
                 "posts_post": true,
-                "posts_post--draft": result.isDraft,
+                "posts_post--draft": true,
                 "posts_post--selected": i === this.state.selected
               })}
               onDoubleClick={this.goTo.bind(null, result._id)}
