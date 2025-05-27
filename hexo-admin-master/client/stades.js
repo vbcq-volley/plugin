@@ -110,9 +110,7 @@ var Stades = React.createClass({
               <span className="posts_post-title">
                 {stade.stadeName}
               </span>
-              <span className="posts_post-date">
-                {stade.date}
-              </span>
+             
               
               <Link className='posts_edit-link' to="stade" matchId={stade._id}>
                 <i className='fa fa-pencil'/>
