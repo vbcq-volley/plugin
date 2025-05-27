@@ -39,7 +39,7 @@ var Results = React.createClass({
   componentDidMount: function() {
     api.getEntries("result").then((results) => {
       this.setState({results: results})
-     
+     this.render()
     })
      
   },
@@ -108,7 +108,7 @@ var Results = React.createClass({
                 {result.text}
               </span>
               <span className="posts_post-date">
-                {moment(result.date).format('MMM Do YYYY')}
+                {result.date).format('MMM Do YYYY')}
               </span>
               <a className='posts_perma-link' target="_blank" href={rootPath + '/' + result.path}>
                 <i className='fa fa-link'/>
