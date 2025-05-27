@@ -13,15 +13,14 @@ var api = require('./api');
 
 var Results = React.createClass({
   mixins: [DataFetcher((params) => {
-    return {
-      results: api.getEntries("result")
-    }
+    return {}
   })],
 
   getInitialState: function () {
     return {
       selected: 0,
       showNewForm: false,
+      results: [],
       displayKeys: ['text'],
       allKeys: ['team1', 'team1Score', 'team2Score', 'team2', 'matchType', 'isForfeit', 'isPostponed'],
       keyLabels: {
@@ -35,6 +34,12 @@ var Results = React.createClass({
         'text':'match'
       }
     }
+  },
+
+  componentDidMount: function() {
+    api.getEntries("result").then((results) => {
+      this.setState({results: results})
+    })
   },
 
   toggleNewForm: function() {
