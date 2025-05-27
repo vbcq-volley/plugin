@@ -44,6 +44,7 @@ var Results = React.createClass({
     api.getEntries("result").then((results) => {
         console.log("la data est"+JSON.stringify(results))
       this.setState({results: results})
+      
       this.componentDidUpdate()
     })
     this.componentDidUpdate()
