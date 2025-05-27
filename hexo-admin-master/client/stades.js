@@ -32,7 +32,8 @@ var Stades = React.createClass({
     api.getEntries("stade").then((stades) => {
       console.log("la data est"+JSON.stringify(stades))
       this.setState({stades: stades})
-      //this.componentDidUpdate()
+      console.log(this.state)
+      this.componentDidUpdate()
     })
     this.componentDidUpdate()
   },
@@ -75,7 +76,7 @@ var Stades = React.createClass({
     if (e) {
       e.preventDefault()
     }
-    Router.transitionTo('stade', {matchId: id})
+    Router.transitionTo('stade', {stadeId: id})
   },
 
   render: function () {
