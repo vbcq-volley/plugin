@@ -46,6 +46,7 @@ function _put(baseUrl, url, data) {
 function _delete(baseUrl, url) {
   return new Promise((resolve, reject) => {
     var req = request.delete(baseUrl + url);
+    console.log(req)
     req.end((err, res) => {
       if (err) return reject(err);
       resolve(res.body);

@@ -241,19 +241,28 @@ var Editor_data = React.createClass({
     console.log("la data est"+JSON.stringify(this.state.data))
     const newData = { ...this.state.data };
     newData[field] = value;
-    this.setState({rendered:marked(this.state.data.raw)})
+    
     this.setState({ data: newData });
     if(this.state.pageType==="post"){
+      this.setState({rendered:marked(this.state.data.raw)})
       api.post(this.state.data._id,this.state.data).then((page) => {
-      console.log("post modifié"+JSON.stringify(page,null,2)) 
+        console.log("post modifié"+JSON.stringify(page,null,2)) 
       }, (err) => {
         console.error('Échec de la création du post', err);
       });
     } else if(this.state.pageType==="page"){
+      this.setState({rendered:marked(this.state.data.raw)})
       api.page(this.state.data._id,this.state.data).then((page) => {
-      console.log("post modifié"+JSON.stringify(page,null,2)) 
+        console.log("post modifié"+JSON.stringify(page,null,2)) 
       }, (err) => {
         console.error('Échec de la création du post', err);
+      });
+    } else {
+      // Logique particulière pour les autres types d'entrées
+      api.updateEntry(this.state.pageType, this.state.data._id, this.state.data).then((entry) => {
+        console.log("Entrée modifiée: "+JSON.stringify(entry,null,2))
+      }, (err) => {
+        console.error('Échec de la modification de l\'entrée', err);
       });
     }
   },
@@ -280,7 +289,7 @@ var Editor_data = React.createClass({
   },
 
   renderFormFields: function() {
-    const { pageType, data } = this.state;
+    const { pageType, data, matches } = this.state;
     console.log(pageType)
     switch(pageType) {
       case 'match':
@@ -303,6 +312,29 @@ var Editor_data = React.createClass({
                 value={data.team2 || ''}
                 onChange={(e) => this._onDataChange('team2', e.target.value)}
               />
+            </label>
+            <label>
+              Session:
+              <input
+                type="number"
+                min="1"
+                max="20"
+                value={data.session || ''}
+                onChange={(e) => this._onDataChange('session', parseInt(e.target.value))}
+                placeholder="Entrez un numéro de session (1-20)"
+              />
+            </label>
+            <label>
+              Groupe:
+              <select 
+                value={data.group || ''} 
+                onChange={(e) => this._onDataChange('group', e.target.value)}
+              >
+                <option value="">Sélectionnez un groupe</option>
+                <option value="1">Groupe 1</option>
+                <option value="2">Groupe 2</option>
+                <option value="3">Groupe 3</option>
+              </select>
             </label>
             <label>
               Date et heure du match à domicile:
@@ -339,29 +371,190 @@ var Editor_data = React.createClass({
               />
             </label>
             <label>
-              Groupe:
-              <select 
-                value={data.group || ''} 
-                onChange={(e) => this._onDataChange('group', e.target.value)}
-              >
-                <option value="">Sélectionnez un groupe</option>
-                <option value="1">Groupe 1</option>
-                <option value="2">Groupe 2</option>
-                <option value="3">Groupe 3</option>
-              </select>
-            </label>
-            <label>
               Statut du match:
               <select 
                 value={data.matchStatus || 'scheduled'} 
                 onChange={(e) => this._onDataChange('matchStatus', e.target.value)}
               >
                 <option value="scheduled">Programmé</option>
+                <option value="in_progress">En cours</option>
+                <option value="completed">Terminé</option>
                 <option value="forfeit">Forfait</option>
                 <option value="postponed">Report demandé</option>
               </select>
             </label>
-            
+            {(data.matchStatus === 'in_progress' || data.matchStatus === 'completed') && (
+              <div className="match-scores">
+                <h3>Scores</h3>
+                <label>
+                  Score Équipe 1:
+                  <input
+                    type="number"
+                    placeholder="Score Équipe 1"
+                    value={data.team1Score || ''}
+                    onChange={(e) => this._onDataChange('team1Score', e.target.value)}
+                    disabled={data.isForfeit || data.isPostponed}
+                  />
+                </label>
+                <label>
+                  Score Équipe 2:
+                  <input
+                    type="number"
+                    placeholder="Score Équipe 2"
+                    value={data.team2Score || ''}
+                    onChange={(e) => this._onDataChange('team2Score', e.target.value)}
+                    disabled={data.isForfeit || data.isPostponed}
+                  />
+                </label>
+                {data.matchStatus === 'completed' && (
+                  <div className="result-correction">
+                    <h4>Correction du résultat</h4>
+                    <label>
+                      Nouveau score Équipe 1:
+                      <input
+                        type="number"
+                        placeholder="Nouveau score Équipe 1"
+                        value={data.correctedTeam1Score || ''}
+                        onChange={(e) => this._onDataChange('correctedTeam1Score', e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Nouveau score Équipe 2:
+                      <input
+                        type="number"
+                        placeholder="Nouveau score Équipe 2"
+                        value={data.correctedTeam2Score || ''}
+                        onChange={(e) => this._onDataChange('correctedTeam2Score', e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Motif de la correction:
+                      <textarea
+                        placeholder="Expliquez la raison de la correction"
+                        value={data.correctionReason || ''}
+                        onChange={(e) => this._onDataChange('correctionReason', e.target.value)}
+                      />
+                    </label>
+                    <button 
+                      className="correction-submit"
+                      onClick={() => {
+                        const correctionHistory = this.state.data.correctionHistory || [];
+                        const newCorrection = {
+                          previousScore: {
+                            team1: this.state.data.team1Score,
+                            team2: this.state.data.team2Score
+                          },
+                          newScore: {
+                            team1: this.state.data.correctedTeam1Score,
+                            team2: this.state.data.correctedTeam2Score
+                          },
+                          reason: this.state.data.correctionReason,
+                          date: new Date().toISOString()
+                        };
+                        correctionHistory.push(newCorrection);
+                        
+                        const newData = {
+                          ...this.state.data,
+                          team1Score: this.state.data.correctedTeam1Score,
+                          team2Score: this.state.data.correctedTeam2Score,
+                          correctionHistory: correctionHistory
+                        };
+                        this.setState({ data: newData });
+                      }}
+                    >
+                      Appliquer la correction
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+            <label>
+              Forfait:
+              <input
+                type="checkbox"
+                checked={data.isForfeit || false}
+                onChange={(e) => {
+                  const newData = { ...this.state.data };
+                  newData.isForfeit = e.target.checked;
+                  if (e.target.checked) {
+                    newData.isPostponed = false;
+                    newData.team1Score = '';
+                    newData.team2Score = '';
+                    newData.matchStatus = 'forfeit';
+                  }
+                  this.setState({ data: newData });
+                }}
+              />
+            </label>
+            {data.isForfeit && (
+              <label>
+                Équipe en forfait:
+                <select 
+                  value={data.forfeitTeam || ''} 
+                  onChange={(e) => this._onDataChange('forfeitTeam', e.target.value)}
+                >
+                  <option value="">Sélectionnez l'équipe</option>
+                  <option value="team1">{data.team1}</option>
+                  <option value="team2">{data.team2}</option>
+                </select>
+              </label>
+            )}
+            <label>
+              Reporté:
+              <input
+                type="checkbox"
+                checked={data.isPostponed || false}
+                onChange={(e) => {
+                  const newData = { ...this.state.data };
+                  newData.isPostponed = e.target.checked;
+                  if (e.target.checked) {
+                    newData.isForfeit = false;
+                    newData.team1Score = '';
+                    newData.team2Score = '';
+                    newData.matchStatus = 'postponed';
+                  }
+                  this.setState({ data: newData });
+                }}
+              />
+            </label>
+            {data.isPostponed && (
+              <label>
+                Équipe demandant le report:
+                <select 
+                  value={data.postponedTeam || ''} 
+                  onChange={(e) => this._onDataChange('postponedTeam', e.target.value)}
+                >
+                  <option value="">Sélectionnez l'équipe</option>
+                  <option value="team1">{data.team1}</option>
+                  <option value="team2">{data.team2}</option>
+                </select>
+              </label>
+            )}
+            {data.correctionHistory && data.correctionHistory.length > 0 && (
+              <div className="correction-history">
+                <h4>Historique des corrections</h4>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Ancien score</th>
+                      <th>Nouveau score</th>
+                      <th>Motif</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.correctionHistory.map((correction, index) => (
+                      <tr key={index}>
+                        <td>{new Date(correction.date).toLocaleString()}</td>
+                        <td>{correction.previousScore.team1} - {correction.previousScore.team2}</td>
+                        <td>{correction.newScore.team1} - {correction.newScore.team2}</td>
+                        <td>{correction.reason}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         );
       
@@ -520,6 +713,30 @@ var Editor_data = React.createClass({
             </div>
         );
 
+      case 'stade':
+        return (
+          <div className="visible">
+            <label>
+              Nom du stade:
+              <input
+                type="text"
+                placeholder="Nom du stade"
+                value={data.stadeName || ''}
+                onChange={(e) => this._onDataChange('stadeName', e.target.value)}
+              />
+            </label>
+            <label>
+              Adresse:
+              <input
+                type="text"
+                placeholder="Adresse du stade"
+                value={data.address || ''}
+                onChange={(e) => this._onDataChange('address', e.target.value)}
+              />
+            </label>
+          </div>
+        );
+
       case 'post':
         return (
           <Editor
@@ -600,6 +817,7 @@ var Editor_data = React.createClass({
             <option value="match">Match</option>
             <option value="result">Résultat</option>
             <option value="team">Équipe</option>
+            <option value="stade">Stade</option>
             <option value="post">Article</option>
             <option value="page">Page</option>
           </select>

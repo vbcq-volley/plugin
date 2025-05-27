@@ -20,6 +20,8 @@ var App = React.createClass({
           <li><Link to="settings">Settings</Link></li>
           <li><Link to="datas">gestion des match</Link></li>
           <li><Link to="teams">gestion des équipe</Link></li>
+          <li><Link to="stades">gestion des stades</Link></li>
+          <li><Link to="results">gestion des résultats</Link></li>
         </ul>
       </div>
       <div className="app_main">

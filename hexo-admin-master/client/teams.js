@@ -1,4 +1,3 @@
-
 var React = require('react/addons')
 var cx = React.addons.classSet
 var Link = require('react-router').Link;
@@ -34,12 +33,30 @@ var Datas = React.createClass({
   },
 
   _onNew: function (page) {
-    
     var pages = this.state.pages.slice()
     console.log(pages)
     pages.unshift(page)
     this.setState({pages: pages})
     Router.transitionTo('team', {matchId: page._id})
+  },
+
+  _onDelete: function (id, e) {
+    if (e) {
+      e.preventDefault()
+    }
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette équipe ?')) {
+      api.deleteEntry("team", id).then(() => {
+        var pages = this.state.pages.filter(page => page.index !== id)
+        this.setState({pages: pages})
+      })
+    }
+  },
+
+  _onUpdate: function (id, e) {
+    if (e) {
+      e.preventDefault()
+    }
+    Router.transitionTo('team', {matchId: id})
   },
 
   goTo: function (id, e) {
@@ -81,6 +98,9 @@ var Datas = React.createClass({
               <Link className='posts_edit-link' to="data" matchId={page._id}>
                 <i className='fa fa-pencil'/>
               </Link>
+              <a className='posts_delete-link' onClick={this._onDelete.bind(null, page.index)}>
+                <i className='fa fa-trash'/>
+              </a>
             </li>
           )
         }

@@ -1,4 +1,3 @@
-
 var App = require('./app');
 var Post = require('./post')
 var Posts = require('./posts')
@@ -12,6 +11,10 @@ var datas=require("./datas")
 var data=require("./data")
 var team=require("./team")
 var teams=require("./teams")
+var stade=require("./stade")
+var stades=require("./stades")
+var result=require("./result")
+var results=require("./results")
 var Route = require('react-router').Route
 
 module.exports = () => {
@@ -24,6 +27,10 @@ module.exports = () => {
     <Route name="data" handler={data} path="/administration/:matchId"/>
     <Route name="teams" handler={teams} path="/equipe"/>
     <Route name="team" handler={team} path="/equipe/:matchId"/>
+    <Route name="stades" handler={stades} path="/stade"/>
+    <Route name="stade" handler={stade} path="/stade/:stadeId"/>
+    <Route name="results" handler={results} path="/resultat"/>
+    <Route name="result" handler={result} path="/resultat/:resultId"/>
     <Route name="about" handler={About}/>
     <Route name="deploy" handler={Deploy}/>
     <Route name="settings" handler={Settings}/>

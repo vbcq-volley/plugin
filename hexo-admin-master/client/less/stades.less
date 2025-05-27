@@ -1,0 +1,160 @@
+.stades {
+  padding: 20px;
+
+  .stades_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      color: #333;
+    }
+
+    .new-stade-button {
+      background: #0066cc;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+
+      &:hover {
+        background: #004499;
+      }
+
+      i {
+        margin-right: 5px;
+      }
+    }
+  }
+
+  .new-stade-form-container {
+    margin-bottom: 20px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .stades_list {
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+    .stades_table {
+      width: 100%;
+      border-collapse: collapse;
+
+      th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+
+      th {
+        background: #f5f5f5;
+        font-weight: bold;
+        color: #333;
+      }
+
+      tr:hover {
+        background: #f5f5f5;
+      }
+
+      .stade_select {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background: #fff;
+        font-size: 14px;
+        
+        &:focus {
+          border-color: #666;
+          outline: none;
+        }
+      }
+
+      .stade_edit {
+        color: #0066cc;
+        text-decoration: none;
+        font-size: 14px;
+        
+        &:hover {
+          color: #004499;
+          text-decoration: underline;
+        }
+
+        i {
+          margin-right: 5px;
+        }
+      }
+    }
+  }
+}
+
+.new-stade-page {
+  padding: 20px;
+
+  h2 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+  }
+
+  .new-stade-form {
+    max-width: 600px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+    .form-group {
+      margin-bottom: 20px;
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: bold;
+        font-size: 14px;
+      }
+
+      input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        font-size: 14px;
+
+        &:focus {
+          border-color: #666;
+          outline: none;
+        }
+      }
+    }
+
+    button {
+      background: #0066cc;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+
+      &:hover {
+        background: #004499;
+      }
+
+      i {
+        margin-right: 5px;
+      }
+    }
+  }
+} 
