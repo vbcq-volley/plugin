@@ -21,7 +21,8 @@ var Datas = React.createClass({
   getInitialState: function () {
     return {
       selected: 0,
-      pages: [] // Initialisation à null pour indiquer que les données ne sont pas encore chargées
+      pages: [], // Initialisation à null pour indiquer que les données ne sont pas encore chargées
+      showNewForm: false
     }
   },
 
@@ -30,6 +31,10 @@ var Datas = React.createClass({
       this.setState({pages: data})
  
     })
+  },
+
+  toggleNewForm: function() {
+    this.setState({ showNewForm: !this.state.showNewForm });
   },
 
   _onNew: function (page) {
@@ -74,8 +79,18 @@ var Datas = React.createClass({
     var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
     var rootPath = url.slice(0, url.indexOf('admin')).join('/')
     return <div className="posts">
+      <div className="posts_header">
+        <h2>Équipes</h2>
+        <button onClick={this.toggleNewForm} className="new-team-button">
+          <i className="fa fa-plus" /> {this.state.showNewForm ? 'Annuler' : 'Nouvelle équipe'}
+        </button>
+      </div>
+      {this.state.showNewForm && (
+        <div className="new-team-form-container">
+          <Newteam onNew={this._onNew}/>
+        </div>
+      )}
       <ul className='posts_list'>
-        <Newteam onNew={this._onNew}/>
         {
           this.state.pages.map((page, i) =>
             <li key={page._id} className={cx({
