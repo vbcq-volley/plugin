@@ -144,7 +144,7 @@ var Results = React.createClass({
         'posts_display': true,
         'posts_display--draft': true
       })}>
-        {current.isDraft && <div className="posts_draft-message">Draft</div>}
+  
         <Rendered
           ref="rendered"
           className="posts_content"
