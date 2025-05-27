@@ -92,10 +92,38 @@ var Rendered = React.createClass({
     event.preventDefault();
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());
-    // Ici, vous pouvez ajouter votre logique pour envoyer les données au serveur ou les traiter localement
     require("./api").updateEntry(data.type,data.index,data) 
     console.log(data);
   },
+
+  renderStade: function() {
+    const textContent = this.parseJsonText(this.props.text);
+    return (
+      <div style={styles.container}>
+        <h2 style={styles.title}>{textContent.stadeName}</h2>
+        <div style={styles.info}>
+       
+          <p><span style={styles.label}>Adresse:</span> {textContent.address}</p>
+          <p><span style={styles.label}>Ville:</span> {textContent.city||""}</p>
+        </div>
+        {textContent && (
+          <div style={styles.form}>
+            <form onSubmit={this.handleSubmit}>
+              <label style={styles.label}>Nom du stade:</label>
+              <input style={styles.formInput} type="text" value={textContent.stadeName} />
+   
+              <label style={styles.label}>Adresse:</label>
+              <input style={styles.formInput} type="text" value={textContent.address} />
+              <label style={styles.label}>Ville:</label>
+              <input style={styles.formInput} type="text" value={textContent.city||""} />
+              <button type="submit">Enregistrer les modifications</button>
+            </form>
+          </div>
+        )}
+      </div>
+    )
+  },
+
   renderMatch: function() {
     const textContent = this.parseJsonText(this.props.text);
     return (
@@ -194,6 +222,8 @@ var Rendered = React.createClass({
         return this.renderMatch();
       case "result":
         return this.renderResult();
+      case "stade":
+        return this.renderStade()
       case "team":
         return this.renderTeam();
       case "post":

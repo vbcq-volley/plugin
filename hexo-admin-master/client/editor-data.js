@@ -134,7 +134,12 @@ var Editor_data = React.createClass({
   // recreate previewLink
  
 
-  
+  handleCheckboxChange: function(field, e) {
+    var newState = {}
+    newState[field] = e.target.checked
+    this._onDataChange(field,e.target.checked)
+    this.setState(newState)
+  },
 
 
   componentDidUpdate: function (prevProps, prevState) {
@@ -438,17 +443,17 @@ var Editor_data = React.createClass({
                     <button 
                       className="correction-submit"
                       onClick={() => {
-                        const correctionHistory = this.state.data.correctionHistory || [];
+                        const correctionHistory = data.data.correctionHistory || [];
                         const newCorrection = {
                           previousScore: {
-                            team1: this.state.data.team1Score,
-                            team2: this.state.data.team2Score
+                            team1: data.data.team1Score,
+                            team2: data.data.team2Score
                           },
                           newScore: {
-                            team1: this.state.data.correctedTeam1Score,
-                            team2: this.state.data.correctedTeam2Score
+                            team1: data.correctedTeam1Score,
+                            team2: data.correctedTeam2Score
                           },
-                          reason: this.state.data.correctionReason,
+                          reason: data.correctionReason,
                           date: new Date().toISOString()
                         };
                         correctionHistory.push(newCorrection);
@@ -561,97 +566,114 @@ var Editor_data = React.createClass({
       case 'result':
         return (
           <div className="visible">
-            <label>
-              Type de match:
-              <select 
-                value={data.matchType || 'home'} 
-                onChange={(e) => this._onDataChange('matchType', e.target.value)}
-              >
-                <option value="home">Match à domicile</option>
-                <option value="away">Match à l'extérieur</option>
-              </select>
-            </label>
-            <label>
-              Score Équipe 1:
-              <input
-                type="number"
-                placeholder="Score Équipe 1"
-                value={data.team1Score || ''}
-                onChange={(e) => this._onDataChange('team1Score', e.target.value)}
-                disabled={data.isForfeit || data.isPostponed}
-              />
-            </label>
-            <label>
-              Score Équipe 2:
-              <input
-                type="number"
-                placeholder="Score Équipe 2"
-                value={data.team2Score || ''}
-                onChange={(e) => this._onDataChange('team2Score', e.target.value)}
-                disabled={data.isForfeit || data.isPostponed}
-              />
-            </label>
-            <label>
-              Forfait:
-              <input
-                type="checkbox"
-                checked={data.isForfeit || false}
-                onChange={(e) => {
-                  const newData = { ...this.state.data };
-                  newData.isForfeit = e.target.checked;
-                  if (e.target.checked) {
-                    newData.isPostponed = false;
-                    newData.team1Score = '';
-                    newData.team2Score = '';
-                  }
-                  this.setState({ data: newData });
-                }}
-              />
-            </label>
-            {data.isForfeit && (
-              <label>
-                Équipe en forfait:
-                <select 
-                  value={data.forfeitTeam || ''} 
-                  onChange={(e) => this._onDataChange('forfeitTeam', e.target.value)}
-                >
-                  <option value="">Sélectionnez l'équipe</option>
-                  <option value="team1">{data.team1}</option>
-                  <option value="team2">{data.team2}</option>
-                </select>
-              </label>
-            )}
-            <label>
-              Reporté:
-              <input
-                type="checkbox"
-                checked={data.isPostponed || false}
-                onChange={(e) => {
-                  const newData = { ...this.state.data };
-                  newData.isPostponed = e.target.checked;
-                  if (e.target.checked) {
-                    newData.isForfeit = false;
-                    newData.team1Score = '';
-                    newData.team2Score = '';
-                  }
-                  this.setState({ data: newData });
-                }}
-              />
-            </label>
-            {data.isPostponed && (
-              <label>
-                Équipe demandant le report:
-                <select 
-                  value={data.postponedTeam || ''} 
-                  onChange={(e) => this._onDataChange('postponedTeam', e.target.value)}
-                >
-                  <option value="">Sélectionnez l'équipe</option>
-                  <option value="team1">{data.team1}</option>
-                  <option value="team2">{data.team2}</option>
-                </select>
-              </label>
-            )}
-          </div>
+            <div className="form-group">
+          <label>Type de Match</label>
+          <select 
+            value={data.matchType}
+            onChange={this.handleMatchTypeChange}
+            className="form-control"
+          >
+            <option value="home">Domicile</option>
+            <option value="away">Extérieur</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>Équipe 1</label>
+          <input 
+            type="text" 
+            value={data.team1}
+            onChange={this.handleChange.bind(this, 'team1')}
+            className="form-control"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Score Équipe 1</label>
+          <input 
+            type="number" 
+            value={data.team1Score}
+            onChange={this.handleChange.bind(this, 'team1Score')}
+            className="form-control"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Score Équipe 2</label>
+          <input 
+            type="number" 
+            value={data.team2Score}
+            onChange={this.handleChange.bind(this, 'team2Score')}
+            className="form-control"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Équipe 2</label>
+          <input 
+            type="text" 
+            value={data.team2}
+            onChange={this.handleChange.bind(this, 'team2')}
+            className="form-control"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>Date du match</label>
+          <input 
+            type="text" 
+            value={data.date}
+            onChange={this.handleChange.bind(this, 'date')}
+            className="form-control"
+            placeholder="ex: 31 mars 2025 à 20:30"
+            required
+          />
+        </div>
+        <div className="form-group">
+          <label>
+            <input 
+              type="checkbox" 
+              checked={data.team1Forfeit}
+              onChange={this.handleCheckboxChange.bind(this, 'team1Forfeit')}
+            />
+            {data.team1} - Forfait
+          </label>
+        </div>
+        <div className="form-group">
+          <label>
+            <input 
+              type="checkbox" 
+              checked={data.team2Forfeit}
+              onChange={this.handleCheckboxChange.bind(this, 'team2Forfeit')}
+            />
+            {data.team2} - Forfait
+          </label>
+        </div>
+        <div className="form-group">
+          <label>
+            <input 
+              type="checkbox" 
+              checked={data.team1Postponed}
+              onChange={this.handleCheckboxChange.bind(this, 'team1Postponed')}
+            />
+            {data.team1} - Demande de report
+          </label>
+        </div>
+        <div className="form-group">
+          <label>
+            <input 
+              type="checkbox" 
+              checked={data.team2Postponed}
+              onChange={this.handleCheckboxChange.bind(this, 'team2Postponed')}
+            />
+            {data.team2} - Demande de report
+          </label>
+        </div>
+        <button type="submit" className="btn btn-primary">
+          <i className="fa fa-save" /> Enregistrer
+        </button>
+      
+    </div>
+         
         );
 
       case 'team':
