@@ -14,15 +14,14 @@ var api = require('./api');
 var Results = React.createClass({
   mixins: [DataFetcher((params) => {
     return {
-      results: api.getEntries("result").then((results) =>
-        _.sortBy(results, ['date']).reverse()
-      )
+      results: api.getEntries("result")
     }
   })],
 
   getInitialState: function () {
     return {
       selected: 0,
+      showNewForm: false,
       displayKeys: ['text'],
       allKeys: ['team1', 'team1Score', 'team2Score', 'team2', 'matchType', 'isForfeit', 'isPostponed'],
       keyLabels: {
@@ -38,11 +37,27 @@ var Results = React.createClass({
     }
   },
 
+  toggleNewForm: function() {
+    this.setState({ showNewForm: !this.state.showNewForm });
+  },
+
   _onNew: function (result) {
     var results = this.state.results.slice()
     results.unshift(result)
     this.setState({results: results})
     Router.transitionTo('result', {matchId: result._id})
+  },
+
+  _onDelete: function (id, e) {
+    if (e) {
+      e.preventDefault()
+    }
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce résultat ?')) {
+      api.deleteEntry("result", id).then(() => {
+        var results = this.state.results.filter(result => result._id !== id)
+        this.setState({results: results})
+      })
+    }
   },
 
   goTo: function (id, e) {
@@ -60,8 +75,18 @@ var Results = React.createClass({
     var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
     var rootPath = url.slice(0, url.indexOf('admin')).join('/')
     return <div className="posts">
+      <div className="posts_header">
+        <h2>Résultats</h2>
+        <button onClick={this.toggleNewForm} className="new-result-button">
+          <i className="fa fa-plus" /> {this.state.showNewForm ? 'Annuler' : 'Nouveau résultat'}
+        </button>
+      </div>
+      {this.state.showNewForm && (
+        <div className="new-result-form-container">
+          <NewResult onNew={this._onNew}/>
+        </div>
+      )}
       <ul className='posts_list'>
-        <NewResult onNew={this._onNew}/>
         {
           this.state.results.map((result, i) =>
             <li key={result._id} className={cx({
@@ -84,6 +109,9 @@ var Results = React.createClass({
               <Link className='posts_edit-link' to="result" matchId={result._id}>
                 <i className='fa fa-pencil'/>
               </Link>
+              <a className='posts_delete-link' onClick={this._onDelete.bind(null, result._id)}>
+                <i className='fa fa-trash'/>
+              </a>
             </li>
           )
         }

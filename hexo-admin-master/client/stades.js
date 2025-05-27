@@ -14,16 +14,19 @@ var api = require('./api');
 var Stades = React.createClass({
   mixins: [DataFetcher((params) => {
     return {
-      stades: api.getEntries("stade").then((stades) =>
-        _.sortBy(stades, ['date']).reverse()
-      )
+      stades: api.getEntries("stade")
     }
   })],
 
   getInitialState: function () {
     return {
-      selected: 0
+      selected: 0,
+      showNewForm: false
     }
+  },
+
+  toggleNewForm: function() {
+    this.setState({ showNewForm: !this.state.showNewForm });
   },
 
   _onNew: function (stade) {
@@ -31,6 +34,18 @@ var Stades = React.createClass({
     stades.unshift(stade)
     this.setState({stades: stades})
     Router.transitionTo('stade', {matchId: stade._id})
+  },
+
+  _onDelete: function (id, e) {
+    if (e) {
+      e.preventDefault()
+    }
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce stade ?')) {
+      api.deleteEntry("stade", id).then(() => {
+        var stades = this.state.stades.filter(stade => stade._id !== id)
+        this.setState({stades: stades})
+      })
+    }
   },
 
   goTo: function (id, e) {
@@ -48,8 +63,18 @@ var Stades = React.createClass({
     var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
     var rootPath = url.slice(0, url.indexOf('admin')).join('/')
     return <div className="posts">
+      <div className="posts_header">
+        <h2>Stades</h2>
+        <button onClick={this.toggleNewForm} className="new-stade-button">
+          <i className="fa fa-plus" /> {this.state.showNewForm ? 'Annuler' : 'Nouveau stade'}
+        </button>
+      </div>
+      {this.state.showNewForm && (
+        <div className="new-stade-form-container">
+          <NewStade onNew={this._onNew}/>
+        </div>
+      )}
       <ul className='posts_list'>
-        <NewStade onNew={this._onNew}/>
         {
           this.state.stades.map((stade, i) =>
             <li key={stade._id} className={cx({
@@ -72,6 +97,9 @@ var Stades = React.createClass({
               <Link className='posts_edit-link' to="stade" matchId={stade._id}>
                 <i className='fa fa-pencil'/>
               </Link>
+              <a className='posts_delete-link' onClick={this._onDelete.bind(null, stade._id)}>
+                <i className='fa fa-trash'/>
+              </a>
             </li>
           )
         }
