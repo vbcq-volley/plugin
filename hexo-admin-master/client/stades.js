@@ -34,7 +34,12 @@ var Stades = React.createClass({
       this.render()
     })
   },
-
+  componentDidUpdate: function() {
+    if (this.state.pages) { // Vérification si les pages sont arrivées
+      console.log("Pages arrivées, mise à jour du rendu");
+      this.render(); // Force la mise à jour du rendu
+    }
+  }
   toggleNewForm: function() {
     this.setState({ showNewForm: !this.state.showNewForm });
   },
