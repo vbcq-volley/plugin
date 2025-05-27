@@ -101,7 +101,7 @@ var Stades = React.createClass({
           this.state.stades.map((stade, i) =>
             <li key={stade._id} className={cx({
                 "posts_post": true,
-                "posts_post--draft": stade.isDraft,
+                "posts_post--draft": false,
                 "posts_post--selected": i === this.state.selected
               })}
               onDoubleClick={this.goTo.bind(null, stade._id)}
