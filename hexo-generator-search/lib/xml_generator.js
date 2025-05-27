@@ -16,7 +16,7 @@ module.exports = function(locals){
   var config = this.config;
   var searchConfig = config.search;
 
-  var searchTmplSrc = searchConfig.template || pathFn.join(__dirname, '../templates/search.xml');
+  var searchTmplSrc = searchConfig.template || pathFn.join(__dirname, './templates/search.xml');
   var searchTmpl = nunjucks.compile(fs.readFileSync(searchTmplSrc, 'utf8'), env);
 
   var template = searchTmpl;
