@@ -29,9 +29,16 @@ var Stades = React.createClass({
   },
 
   componentDidMount: function() {
+
     api.getEntries("stade").then((stades) => {
-      console.log("la data est"+JSON.stringify(stades))
-      this.setState({stades: stades})
+      console.log(this.state)
+      console.log("la data est"+JSON.stringify(stades,null,2))
+      try {
+        this.setState({stades: stades})
+      } catch (error) {
+        console.log(error)
+      }
+      
       console.log(this.state)
       this.componentDidUpdate()
     })
@@ -80,6 +87,7 @@ var Stades = React.createClass({
   },
 
   render: function () {
+    console.log(this.state)
     if (!this.state.stades) {
       return <div className='stades'>Loading...</div>
     }
@@ -114,7 +122,7 @@ var Stades = React.createClass({
               </span>
              
               
-              <Link className='posts_edit-link' to="stade" matchId={stade._id}>
+              <Link className='posts_edit-link' to={`stade/${stade._id}`}>
                 <i className='fa fa-pencil'/>
               </Link>
               <a className='posts_delete-link' onClick={this._onDelete.bind(null, stade._id)}>
