@@ -33,7 +33,8 @@ var Results = React.createClass({
         'isForfeit': 'Forfait',
         'isPostponed': 'Reporté',
         'text':'match'
-      }
+      },
+      showNewForm: false
     }
   },
 
@@ -41,6 +42,10 @@ var Results = React.createClass({
     api.getEntries("result").then((data) => {
       this.setState({pages: data})
     })
+  },
+
+  toggleNewForm: function() {
+    this.setState({ showNewForm: !this.state.showNewForm });
   },
 
   _onNew: function (page) {
@@ -77,8 +82,18 @@ var Results = React.createClass({
     var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
     var rootPath = url.slice(0, url.indexOf('admin')).join('/')
     return <div className="posts">
+      <div className="posts_header">
+        <h2>Résultats</h2>
+        <button onClick={this.toggleNewForm} className="new-result-button">
+          <i className="fa fa-plus" /> {this.state.showNewForm ? 'Annuler' : 'Nouveau résultat'}
+        </button>
+      </div>
+      {this.state.showNewForm && (
+        <div className="new-result-form-container">
+          <NewResult onNew={this._onNew}/>
+        </div>
+      )}
       <ul className='posts_list'>
-        <NewResult onNew={this._onNew}/>
         {
           this.state.pages.map((page, i) =>
             <li key={page._id} className={cx({
