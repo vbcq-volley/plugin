@@ -90,7 +90,7 @@ var Results = React.createClass({
   },
 
   render: function () {
-    this.componentDidUpdate()
+    //this.componentDidUpdate()
     console.log(this.state.results)
     if (!this.state.results) {
       return <div className='results'>Loading...</div>
