@@ -75,6 +75,7 @@ var Results = React.createClass({
   },
 
   render: function () {
+    
     if (!this.state.results) {
       return <div className='results'>Loading...</div>
     }
@@ -108,7 +109,7 @@ var Results = React.createClass({
                 {result.text}
               </span>
               <span className="posts_post-date">
-                {result.date).format('MMM Do YYYY')}
+                {result.date}
               </span>
               <a className='posts_perma-link' target="_blank" href={rootPath + '/' + result.path}>
                 <i className='fa fa-link'/>
