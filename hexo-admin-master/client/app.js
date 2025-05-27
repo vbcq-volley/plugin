@@ -10,10 +10,7 @@ var App = React.createClass({
   render: function () {
     return <div className="app">
       <div className="app_header">
-        <div className="app_header-left">
-          <img src="logo.png" className="app_logo"/>
-          <span className="app_title">Admin Panel</span>
-        </div>
+        
         <ul className="app_nav">
           <li><Link to="posts">Posts</Link></li>
           <li><Link to="pages">Pages</Link></li>
