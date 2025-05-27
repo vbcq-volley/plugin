@@ -39,7 +39,7 @@ var Results = React.createClass({
   componentDidMount: function() {
     api.getEntries("result").then((results) => {
       this.setState({results: results})
-      this.render()
+     
     })
   },
 
