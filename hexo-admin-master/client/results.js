@@ -49,7 +49,7 @@ var Results = React.createClass({
     componentDidUpdate: function() {
     if (this.state.results) { // Vérification si les pages sont arrivées
       console.log("Pages arrivées, mise à jour du rendu");
-      
+      console.log(this.state.results)
       this.render(); // Force la mise à jour du rendu
     }
   },
