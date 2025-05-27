@@ -31,15 +31,15 @@ var Stades = React.createClass({
   componentDidMount: function() {
     api.getEntries("stade").then((stades) => {
       this.setState({stades: stades})
-      this.render()
+      this.componentDidUpdate
     })
   },
   componentDidUpdate: function() {
-    if (this.state.pages) { // Vérification si les pages sont arrivées
+    if (this.state.stades) { // Vérification si les pages sont arrivées
       console.log("Pages arrivées, mise à jour du rendu");
       this.render(); // Force la mise à jour du rendu
     }
-  }
+  },
   toggleNewForm: function() {
     this.setState({ showNewForm: !this.state.showNewForm });
   },
