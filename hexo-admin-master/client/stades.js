@@ -32,18 +32,18 @@ var Stades = React.createClass({
     api.getEntries("stade").then((stades) => {
       console.log("la data est"+JSON.stringify(stades))
       this.setState({stades: stades})
-      this.componentDidUpdate()
+      //this.componentDidUpdate()
     })
     this.componentDidUpdate()
   },
   componentDidUpdate: function() {
-    if (this.state.stades && this.state.stades.length > 0) { // Vérification si les pages sont arrivées et non vides
+    if (this.state.stades && this.state.stades.length !== 0) { // Vérification si les pages sont arrivées et non vides
       console.log("Pages arrivées, mise à jour du rendu");
       console.log(this.state.stades)
       this.state.stades.map((item)=>{
         console.log(item)
       })
-      
+      console.log(this.state)
       this.render(); // Force la mise à jour du rendu
     }
   },
