@@ -1,15 +1,27 @@
 var React = require('react/addons')
-var Router = require('react-router')
-var Link = Router.Link
-var api = require('./api')
-var AutoList = require('./auto-list')
-var NewResult = require('./new-result')
+var cx = React.addons.classSet
+var Link = require('react-router').Link;
+var Router = require('react-router');
+var _ = require('lodash')
+var moment = require('moment')
+var SinceWhen = require('./since-when')
 
+var Rendered = require('./rendered')
+var DataFetcher = require('./data-fetcher');
+var NewResult = require('./new-result')
+var api = require('./api');
+ 
 var Results = React.createClass({
-  getInitialState: function() {
+  mixins: [DataFetcher((params) => {
     return {
-      results: [],
-      showNewForm: false,
+     
+    }
+  })],
+
+  getInitialState: function () {
+    return {
+      selected: 0,
+      pages: [], // Initialisation à null pour indiquer que les données ne sont pas encore chargées
       displayKeys: ['text'],
       allKeys: ['team1', 'team1Score', 'team2Score', 'team2', 'matchType', 'isForfeit', 'isPostponed'],
       keyLabels: {
@@ -21,120 +33,94 @@ var Results = React.createClass({
         'isForfeit': 'Forfait',
         'isPostponed': 'Reporté',
         'text':'match'
-      },
-      selectedResult: null
+      }
     }
   },
 
-  componentDidMount: function() {
-    api.getEntries('result').then((results) => {
-      this.setState({ results: results });
-    });
+  componentDidMount: function () {
+    api.getEntries("result").then((data) => {
+      this.setState({pages: data})
+    })
   },
 
-  handleResultSelect: function(result) {
-    this.setState({ selectedResult: result });
+  _onNew: function (page) {
+    var pages = this.state.pages.slice()
+    pages.unshift(page)
+    this.setState({pages: pages})
+    Router.transitionTo('result', {matchId: page._id})
   },
 
-  handleDelete: function(id, e) {
-    console.log(id._id)
+  _onDelete: function (id, e) {
     if (e) {
-      e.preventDefault();
+      e.preventDefault()
     }
-   
-      api.deleteEntry("result", id._id).then(() => {
-        var results = this.state.results.filter(result => result._id !== id._id);
-        this.setState({ results: results });
-      });
-    
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce résultat ?')) {
+      api.deleteEntry("result", id).then(() => {
+        var pages = this.state.pages.filter(page => page._id !== id)
+        this.setState({pages: pages})
+      })
+    }
   },
 
-  handleUpdate: function(id, e) {
+  goTo: function (id, e) {
     if (e) {
-      e.preventDefault();
+      e.preventDefault()
     }
-    Router.transitionTo('result', {resultId: id});
+    Router.transitionTo('result', {matchId: id})
   },
 
-  toggleNewForm: function() {
-    this.setState({ showNewForm: !this.state.showNewForm });
-  },
-
-  render: function() {
-    return <div className="results">
-      <div className="results_header">
-        <h2>Résultats</h2>
-        <button onClick={this.toggleNewForm} className="new-result-button">
-          <i className="fa fa-plus" /> {this.state.showNewForm ? 'Annuler' : 'Nouveau résultat'}
-        </button>
-      </div>
-      {this.state.showNewForm && (
-        <div className="new-result-form-container">
-          <NewResult />
-        </div>
-      )}
-      <div className="results-container">
-        <div className="results_list">
-          <table className="results_table">
-            <thead>
-              <tr>
-                {this.state.displayKeys.map((key) => (
-                  <th key={key}>{this.state.keyLabels[key]}</th>
-                ))}
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.results.map((result) => (
-                <tr 
-                  key={result._id}
-                  onClick={() => this.handleResultSelect(result)}
-                  className={this.state.selectedResult && this.state.selectedResult._id === result._id ? 'selected' : ''}
-                >
-                  {this.state.displayKeys.map((key) => {
-                    let value = result[key];
-                    if (key === 'team1Score' || key === 'team2Score') {
-                      value = value || '0';
-                    }
-                    return <td key={key}>{value}</td>;
-                  })}
-                  <td>
-                    <Link to={`/resultat/${result._id}`} className="result_edit">
-                      <i className="fa fa-pencil" /> Modifier
-                    </Link>
-                    <button 
-                      onClick={(e) => this.handleDelete(result, e)}
-                      className="result_delete"
-                    >
-                      <i className="fa fa-trash" /> Supprimer
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        {this.state.selectedResult && (
-          <div className="result-details">
-            <h3>Détails du résultat</h3>
-            {this.state.allKeys.map((key) => {
-              let value = this.state.selectedResult[key];
-              if (typeof value === 'boolean') {
-                value = value ? 'Oui' : 'Non';
-              } else if (key === 'matchType') {
-                value = value === 'home' ? 'Domicile' : 'Extérieur';
-              }
-              return (
-                <div key={key} className="detail-item">
-                  <strong>{this.state.keyLabels[key]}:</strong> {value}
-                </div>
-              );
-            })}
-          </div>
-        )}
+  render: function () {
+    if (!this.state.pages) {
+      return <div className='pages'>Loading...</div>
+    }
+    var current = this.state.pages[this.state.selected] || {}
+    var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
+    var rootPath = url.slice(0, url.indexOf('admin')).join('/')
+    return <div className="posts">
+      <ul className='posts_list'>
+        <NewResult onNew={this._onNew}/>
+        {
+          this.state.pages.map((page, i) =>
+            <li key={page._id} className={cx({
+                "posts_post": false,
+                "posts_post--draft": page.isDraft,
+                "posts_post--selected": i === this.state.selected
+              })}
+              onDoubleClick={this.goTo.bind(null, page._id)}
+              onClick={this.setState.bind(this, {selected: i}, null)}
+            >
+              <span className="posts_post-title">
+                {page.text}
+              </span>
+              <span className="posts_post-date">
+                {moment(page.date).format('MMM Do YYYY')}
+              </span>
+              <a className='posts_perma-link' target="_blank" href={rootPath + '/' + page.path}>
+                <i className='fa fa-link'/>
+              </a>
+              <Link className='posts_edit-link' to="data" matchId={page._id}>
+                <i className='fa fa-pencil'/>
+              </Link>
+              <a className='posts_delete-link' onClick={this._onDelete.bind(null, page._id)}>
+                <i className='fa fa-trash'/>
+              </a>
+            </li>
+          )
+        }
+      </ul>
+      <div className={cx({
+        'posts_display': true,
+        'posts_display--draft': current.isDraft
+      })}>
+        {current.isDraft && <div className="posts_draft-message">Draft</div>}
+        <Rendered
+          ref="rendered"
+          className="posts_content"
+          text={JSON.stringify(current,null,2)}
+          type="result"/>
       </div>
     </div>
   }
-})
+});
 
-module.exports = Results
+module.exports = Results;
