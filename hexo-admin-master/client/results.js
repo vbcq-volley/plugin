@@ -42,7 +42,7 @@ var Results = React.createClass({
 
   componentDidMount: function() {
     api.getEntries("result").then((results) => {
-        console.log("la data est"+JSON.stringify(data))
+        console.log("la data est"+JSON.stringify(results))
       this.setState({results: results})
       this.componentDidUpdate()
     })
