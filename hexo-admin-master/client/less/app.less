@@ -82,9 +82,6 @@ body > div:first-of-type {
 }
 
 .app_main {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
   min-height: 0;
   position: relative;
   padding-top: 70px;
@@ -129,6 +126,20 @@ body > div:first-of-type {
   }
 }
 
+.teams-container,
+.stades-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.teams-list,
+.stades-list {
+  width: 100%;
+  margin-top: 20px;
+}
+
 .new-team-form-container,
 .new-stade-form-container,
 .new-result-form-container {
@@ -141,10 +152,5 @@ body > div:first-of-type {
 
 .posts-list {
   width: 100%;
-  padding: 0 20px;
-}
-
-.teams-container {
-  margin-top: 20px;
   padding: 0 20px;
 }
