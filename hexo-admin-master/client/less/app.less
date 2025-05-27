@@ -15,6 +15,7 @@ body > div:first-of-type {
   flex-direction: column;
   font-family: "Open Sans";
   height: 100%;
+  padding-top: 70px;
 }
 
 .app_header {
@@ -23,6 +24,11 @@ body > div:first-of-type {
   display: flex;
   align-items: center;
   padding: 10px 20px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 
   &, a {
     color: @primaryDarkText;
@@ -80,6 +86,7 @@ body > div:first-of-type {
   display: flex;
   flex: 1 1 auto;
   min-height: 0;
+  position: relative;
   margin-top: 20px;
 }
 
