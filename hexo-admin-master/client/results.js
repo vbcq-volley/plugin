@@ -57,6 +57,7 @@ var Results = React.createClass({
     }
   },
   toggleNewForm: function() {
+    this.componentDidUpdate()
     this.setState({ showNewForm: !this.state.showNewForm });
   },
 
