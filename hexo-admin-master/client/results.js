@@ -75,7 +75,7 @@ var Results = React.createClass({
   },
 
   render: function () {
-    console.log(t)
+    console.log(this.state.res)
     if (!this.state.results) {
       return <div className='results'>Loading...</div>
     }
