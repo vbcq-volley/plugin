@@ -460,7 +460,7 @@ use('db/', function(req, res) {
   if (!modelName) {
     return res.send(400, 'Model name is required');
   }
-  
+  console.log(req.)
   switch(req.method) {
     case 'POST':
       try {
