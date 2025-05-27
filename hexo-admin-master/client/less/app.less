@@ -83,10 +83,14 @@ body > div:first-of-type {
 
 .app_main {
   display: flex;
+  flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
   position: relative;
   padding-top: 70px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .posts_header {
@@ -133,16 +137,10 @@ body > div:first-of-type {
   border-bottom: 1px solid @primaryDark;
   margin-bottom: 20px;
   width: 100%;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
 }
 
 .posts-list {
   width: 100%;
-  max-width: 800px;
-  margin-left: auto;
-  margin-right: auto;
   padding: 0 20px;
 }
 
