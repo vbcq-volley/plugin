@@ -30,7 +30,7 @@ var Stades = React.createClass({
 
   componentDidMount: function() {
     api.getEntries("stade").then((stades) => {
-      
+      console.log("la data est"+JSON.stringify(stades))
       this.setState({stades: stades})
       this.componentDidUpdate()
     })
