@@ -27,6 +27,7 @@ var Stades = React.createClass({
   componentDidMount: function() {
     api.getEntries("stade").then((stades) => {
       this.setState({stades: stades})
+      this.render()
     })
   },
 
