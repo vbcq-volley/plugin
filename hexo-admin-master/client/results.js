@@ -41,6 +41,7 @@ var Results = React.createClass({
       this.setState({results: results})
      
     })
+     
   },
 
   toggleNewForm: function() {
