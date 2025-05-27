@@ -14,16 +14,19 @@ var api = require('./api');
 var Teams = React.createClass({
   mixins: [DataFetcher((params) => {
     return {
-      teams: api.getEntries("team").then((teams) =>
-        _.sortBy(teams, ['date']).reverse()
-      )
+      teams: api.getEntries("team")
     }
   })],
 
   getInitialState: function () {
     return {
-      selected: 0
+      selected: 0,
+      showNewForm: false
     }
+  },
+
+  toggleNewForm: function() {
+    this.setState({ showNewForm: !this.state.showNewForm });
   },
 
   _onNew: function (team) {
@@ -31,6 +34,18 @@ var Teams = React.createClass({
     teams.unshift(team)
     this.setState({teams: teams})
     Router.transitionTo('team', {matchId: team._id})
+  },
+
+  _onDelete: function (id, e) {
+    if (e) {
+      e.preventDefault()
+    }
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette équipe ?')) {
+      api.deleteEntry("team", id).then(() => {
+        var teams = this.state.teams.filter(team => team._id !== id)
+        this.setState({teams: teams})
+      })
+    }
   },
 
   goTo: function (id, e) {
@@ -48,8 +63,18 @@ var Teams = React.createClass({
     var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
     var rootPath = url.slice(0, url.indexOf('admin')).join('/')
     return <div className="posts">
+      <div className="posts_header">
+        <h2>Équipes</h2>
+        <button onClick={this.toggleNewForm} className="new-team-button">
+          <i className="fa fa-plus" /> {this.state.showNewForm ? 'Annuler' : 'Nouvelle équipe'}
+        </button>
+      </div>
+      {this.state.showNewForm && (
+        <div className="new-team-form-container">
+          <Newteam onNew={this._onNew}/>
+        </div>
+      )}
       <ul className='posts_list'>
-        <Newteam onNew={this._onNew}/>
         {
           this.state.teams.map((team, i) =>
             <li key={team._id} className={cx({
@@ -72,6 +97,9 @@ var Teams = React.createClass({
               <Link className='posts_edit-link' to="team" matchId={team._id}>
                 <i className='fa fa-pencil'/>
               </Link>
+              <a className='posts_delete-link' onClick={this._onDelete.bind(null, team._id)}>
+                <i className='fa fa-trash'/>
+              </a>
             </li>
           )
         }
