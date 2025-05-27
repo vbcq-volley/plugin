@@ -13,21 +13,24 @@ var api = require('./api');
 
 var Stades = React.createClass({
   mixins: [DataFetcher((params) => {
-    return {}
+    console.log(params)
+    return {
+      params: params
+    }
   })],
 
   getInitialState: function () {
     return {
       selected: 0,
       showNewForm: false,
-      stades: []
+      stades: [],
+      updated: moment()
     }
   },
 
   componentDidMount: function() {
     api.getEntries("stade").then((stades) => {
       this.setState({stades: stades})
-      this.render()
     })
   },
 
@@ -95,7 +98,7 @@ var Stades = React.createClass({
                 {stade.stadeName}
               </span>
               <span className="posts_post-date">
-                {moment(stade.date).format('MMM Do YYYY')}
+                {stade.date}
               </span>
               <a className='posts_perma-link' target="_blank" href={rootPath + '/' + stade.path}>
                 <i className='fa fa-link'/>
