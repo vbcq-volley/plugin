@@ -46,6 +46,7 @@ var Results = React.createClass({
       this.setState({results: results})
       this.componentDidUpdate()
     })
+    this.componentDidUpdate()
   },
     componentDidUpdate: function() {
     if (this.state.results && this.state.results.length > 0) { // Vérification si les pages sont arrivées et non vides
