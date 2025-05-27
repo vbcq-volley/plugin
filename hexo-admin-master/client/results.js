@@ -43,11 +43,11 @@ var Results = React.createClass({
   componentDidMount: function() {
     api.getEntries("result").then((results) => {
       this.setState({results: results})
-      this.render()
+      this.componentDidUpdate()
     })
   },
     componentDidUpdate: function() {
-    if (this.state.pages) { // Vérification si les pages sont arrivées
+    if (this.state.resu) { // Vérification si les pages sont arrivées
       console.log("Pages arrivées, mise à jour du rendu");
       this.render(); // Force la mise à jour du rendu
     }
