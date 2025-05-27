@@ -44,7 +44,7 @@ function _put(baseUrl, url, data) {
 
 // Fonction pour envoyer une requête DELETE
 function _delete(baseUrl, url) {
-  console.log(baseUrl)
+  console.log(baseUrl+url)
   return new Promise((resolve, reject) => {
     var req = request.delete(baseUrl + url);
     console.log(req)
@@ -54,7 +54,7 @@ function _delete(baseUrl, url) {
     });
   });
 }
-// upload multi files by html input element
+// upload multi files by html input element 
 // @2018/02/11
 function _multiFiles(baseUrl, url, files) {
   return new Promise((f, r) => {
