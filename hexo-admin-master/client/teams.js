@@ -13,16 +13,21 @@ var api = require('./api');
 
 var Teams = React.createClass({
   mixins: [DataFetcher((params) => {
-    return {
-      teams: api.getEntries("team")
-    }
+    return {}
   })],
 
   getInitialState: function () {
     return {
       selected: 0,
-      showNewForm: false
+      showNewForm: false,
+      teams: []
     }
+  },
+
+  componentDidMount: function() {
+    api.getEntries("team").then((teams) => {
+      this.setState({teams: teams})
+    })
   },
 
   toggleNewForm: function() {
