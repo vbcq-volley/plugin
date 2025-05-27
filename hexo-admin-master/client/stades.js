@@ -113,9 +113,7 @@ var Stades = React.createClass({
               <span className="posts_post-date">
                 {stade.date}
               </span>
-              <a className='posts_perma-link' target="_blank" href={rootPath + '/' + stade.path}>
-                <i className='fa fa-link'/>
-              </a>
+              
               <Link className='posts_edit-link' to="stade" matchId={stade._id}>
                 <i className='fa fa-pencil'/>
               </Link>
