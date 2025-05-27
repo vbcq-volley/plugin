@@ -13,21 +13,24 @@ var api = require('./api');
 
 var Teams = React.createClass({
   mixins: [DataFetcher((params) => {
-    return {}
+    console.log(params)
+    return {
+      params: params
+    }
   })],
 
   getInitialState: function () {
     return {
       selected: 0,
       showNewForm: false,
-      teams: []
+      teams: [],
+      updated: moment()
     }
   },
 
   componentDidMount: function() {
     api.getEntries("team").then((teams) => {
       this.setState({teams: teams})
-      this.render()
     })
   },
 
@@ -95,7 +98,7 @@ var Teams = React.createClass({
                 {team.teamName}
               </span>
               <span className="posts_post-date">
-                {moment(team.date).format('MMM Do YYYY')}
+                {team.date}
               </span>
               <a className='posts_perma-link' target="_blank" href={rootPath + '/' + team.path}>
                 <i className='fa fa-link'/>
