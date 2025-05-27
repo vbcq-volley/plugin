@@ -126,9 +126,9 @@ var Stades = React.createClass({
       </ul>
       <div className={cx({
         'posts_display': true,
-        'posts_display--draft': current.isDraft
+        'posts_display--draft': false
       })}>
-        {current.isDraft && <div className="posts_draft-message">Draft</div>}
+      
         <Rendered
           ref="rendered"
           className="posts_content"
