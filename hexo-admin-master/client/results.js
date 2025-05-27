@@ -50,6 +50,7 @@ var Results = React.createClass({
     if (this.state.results) { // Vérification si les pages sont arrivées
       console.log("Pages arrivées, mise à jour du rendu");
       console.log(this.state.results)
+      this.state.results.map
       this.render(); // Force la mise à jour du rendu
     }
   },
