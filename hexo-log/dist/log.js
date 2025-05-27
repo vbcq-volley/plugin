@@ -36,7 +36,7 @@ const console = new console_1.Console({
 class Logger {
     constructor({ debug = false, silent = false } = {}) {
         this._silent = silent || false;
-        this._debug = debug --false
+        this._debug = debug ||false
         this.level = INFO;
         if (silent) {
             this.level = FATAL + 10;
