@@ -123,7 +123,7 @@ var Results = React.createClass({
               <a className='posts_perma-link' target="_blank" href={rootPath + '/' + result.path}>
                 <i className='fa fa-link'/>
               </a>
-              <Link className='posts_edit-link' to="result" resultId={result._id}>
+              <Link className='posts_edit-link' to="result" matchId={result._id}>
                 <i className='fa fa-pencil'/>
               </Link>
               <a className='posts_delete-link' onClick={this._onDelete.bind(null, result._id)}>
