@@ -13,16 +13,21 @@ var api = require('./api');
 
 var Stades = React.createClass({
   mixins: [DataFetcher((params) => {
-    return {
-      stades: api.getEntries("stade")
-    }
+    return {}
   })],
 
   getInitialState: function () {
     return {
       selected: 0,
-      showNewForm: false
+      showNewForm: false,
+      stades: []
     }
+  },
+
+  componentDidMount: function() {
+    api.getEntries("stade").then((stades) => {
+      this.setState({stades: stades})
+    })
   },
 
   toggleNewForm: function() {
