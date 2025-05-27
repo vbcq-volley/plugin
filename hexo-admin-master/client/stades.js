@@ -37,8 +37,8 @@ var Stades = React.createClass({
   componentDidUpdate: function() {
     if (this.state.stades && this.state.stades.length > 0) { // Vérification si les pages sont arrivées et non vides
       console.log("Pages arrivées, mise à jour du rendu");
-      console.log(this.state.state)
-      this.state.results.map((item)=>{
+      console.log(this.state.stades)
+      this.state.stades.map((item)=>{
         console.log(item)
       })
       this.render(); // Force la mise à jour du rendu
