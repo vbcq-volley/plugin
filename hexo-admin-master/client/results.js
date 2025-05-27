@@ -77,6 +77,7 @@ var Results = React.createClass({
   },
 
   goTo: function (id, e) {
+    
     if (e) {
       e.preventDefault()
     }
