@@ -43,6 +43,7 @@ var Stades = React.createClass({
       this.state.stades.map((item)=>{
         console.log(item)
       })
+      
       this.render(); // Force la mise à jour du rendu
     }
   },
