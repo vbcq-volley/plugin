@@ -27,6 +27,7 @@ var Teams = React.createClass({
   componentDidMount: function() {
     api.getEntries("team").then((teams) => {
       this.setState({teams: teams})
+      this.render()
     })
   },
 
