@@ -233,8 +233,10 @@ module.exports = function (app, hexo) {
 
   function addIsDraft(post) {
   //  hexo.log.d(post)
+  if(post.source){
     post.isDraft = post.source.indexOf('_draft') === 0
     post.isDiscarded = post.source.indexOf('_discarded') === 0
+  }
     return post
   }
 
@@ -262,7 +264,7 @@ module.exports = function (app, hexo) {
     var path = hexo.base_dir + '_admin-config.yml'
     if (!fs.existsSync(path)) {
       hexo.log.d('admin config not found, creating one')
-      fs.writeFile(hexo.base_dir+'_admin-config.yml', '')
+      fs.writeFileSync(hexo.base_dir+'_admin-config.yml', '')
       return {}
     } else {
       var settings = yml.load(fs.readFileSync(path))
