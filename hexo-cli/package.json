@@ -15,7 +15,7 @@
   "types": "./dist/hexo.d.ts",
   "scripts": {
     "prepublishOnly": "npm install && npm run clean && npm run build",
-    "build": "tsc -b",
+    "build": "tsc -b && xcopy /s /q assets ..\\..\\dist\\assets",
     "clean": "tsc -b --clean",
     "eslint": "eslint .",
     "pretest": "npm run clean && npm run build",

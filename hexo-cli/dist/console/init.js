@@ -21,6 +21,7 @@ const command_exists_1 = require("command-exists");
 const ASSET_DIR = (0, path_1.join)(__dirname, '../../assets');
 const GIT_REPO_URL = 'https://github.com/hexojs/hexo-starter.git';
 function initConsole(args) {
+    console.log(args)
     return __awaiter(this, void 0, void 0, function* () {
         args = Object.assign({ install: true, clone: true }, args);
         const baseDir = this.base_dir;
