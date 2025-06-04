@@ -214,6 +214,8 @@ var Editor_data = React.createClass({
           Router.transitionTo('teams');
         } else if (pageData.type === 'result') {
           Router.transitionTo('results');
+        } else if (pageData.type === 'stade') {
+          Router.transitionTo('stades');
         } else {
           Router.transitionTo('datas');
         }
@@ -749,11 +751,11 @@ var Editor_data = React.createClass({
             </label>
             <label>
               Adresse:
-              <input
-                type="text"
+              <textarea
                 placeholder="Adresse du stade"
                 value={data.address || ''}
                 onChange={(e) => this._onDataChange('address', e.target.value)}
+                style={{ width: '100%', minHeight: '100px' }}
               />
             </label>
           </div>

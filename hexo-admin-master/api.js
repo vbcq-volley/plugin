@@ -357,8 +357,13 @@ module.exports = function (app, hexo) {
         }
         res.setHeader('Content-type', 'application/json');
         res.end(JSON.stringify(val, function(k, v) {
-          if (k == 'tags' || k == 'categories') {
-            return v.toArray ? v.toArray().map(function(obj) {
+console.log(k)
+console.log(v)
+          if ( k=="tags" || k == 'categories') {
+            if(v===null){
+              return 
+            }
+            return (v||[]).toArray() ? (v||[]).toArray().map(function(obj) {
               return obj.name;
             }) : v;
           }
@@ -449,8 +454,8 @@ module.exports = function (app, hexo) {
 
   use('pages/list', function (req, res) {
    var page = hexo.model('Page')
-   //.log(page)
-   res.done(page.toArray());
+   console.log(page)
+   res.done(page.map(addIsDraft));
   });
 
 
