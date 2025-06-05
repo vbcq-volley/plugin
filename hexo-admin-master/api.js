@@ -27,7 +27,10 @@ class DB {
             this.data = {};
         }
     }
-
+    findIndex(modelName,entry){
+      const model = this.model(modelName);
+      return model.entries.findIndex(item=>item._id===entry._id);
+    }
     /**
      * Create or retrieve a model
      * @param {string} name - The name of the model
@@ -475,7 +478,12 @@ use('db/', function(req, res) {
         if (!entry) {
           return res.send(400, 'Entry data is required');
         }
-        
+        const entries = db.read(modelName);
+        const index=db.findIndex(modelName,entry)
+        if(index!==-1){
+          db.update(modelName,index,entry)
+          return res.done(entry);
+        }
         const createdEntry = db.create(modelName, entry);
         hexo.log.d(`Created new entry in ${modelName}`);
         

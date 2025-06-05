@@ -14,7 +14,8 @@ var NewTeam = React.createClass({
       text: 'Untitled',
       teamName: '',
       coach: '',
-      group: ''
+      group: '',
+      link: ''
     }
   },
 
@@ -105,6 +106,12 @@ var NewTeam = React.createClass({
     });
   },
 
+  _onLinkChange: function (e) {
+    this.setState({
+      link: e.target.value
+    });
+  },
+
   render: function () {
     if (!this.state.showing) {
       return (
@@ -154,7 +161,9 @@ var NewTeam = React.createClass({
             </select>
           </label>
         </div>
-
+        <label>
+          <input type="link" value={this.state.link} onChange={this._onLinkChange} />
+        </label>
         <i className="fa fa-check-circle new-team_ok" onMouseDown={this._onSubmit}></i>
         <i className="fa fa-times-circle new-team_cancel" onMouseDown={this._onCancel}></i>
       </div>
