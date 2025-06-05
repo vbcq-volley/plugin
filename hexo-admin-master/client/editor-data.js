@@ -207,7 +207,7 @@ var Editor_data = React.createClass({
         console.error('Échec de la création de la page', err);
       });
     } else {
-      api.addEntry(pageData.type, pageData).then((page) => {
+      api.updateEntry(pageData.type, pageData).then((page) => {
         if (pageData.type === 'match') {
           Router.transitionTo('matches');
         } else if (pageData.type === 'team') {
