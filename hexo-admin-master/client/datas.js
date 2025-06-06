@@ -78,7 +78,10 @@ var Datas = React.createClass({
                 <i className='fa fa-link'/>
               </a>
               <Link className='posts_edit-link' to="data" matchId={page._id}>
-                <i className='fa fa-pencil'/>
+                <i className='fa fa-pencil-square-o'/>
+              </Link>
+              <Link className='posts_edit-link' to="resultatdata" matchId={page._id}>
+                <i className='fa fa-pencil-square-o'/>
               </Link>
             </li>
           )

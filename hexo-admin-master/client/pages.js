@@ -71,7 +71,7 @@ var Pages = React.createClass({
                 <i className='fa fa-link'/>
               </a>
               <Link className='posts_edit-link' to="page" pageId={page._id}>
-                <i className='fa fa-pencil'/>
+                <i className='fa fa-pencil-square-o'/>
               </Link>
             </li>
           )

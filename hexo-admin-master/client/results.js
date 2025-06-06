@@ -131,7 +131,7 @@ var Results = React.createClass({
               </span>
             
               <Link className='posts_edit-link' to="result" resultId={result._id}>
-                <i className='fa fa-pencil'/>
+                <i className='fa fa-pencil-square-o'/>
               </Link>
               <a className='posts_delete-link' onClick={this._onDelete.bind(null, result._id)}>
            

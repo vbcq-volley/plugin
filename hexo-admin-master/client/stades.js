@@ -123,7 +123,7 @@ var Stades = React.createClass({
              
               
               <Link className='' to={`stade`} stadeId={stade._id}>
-                <i className='fa fa-pencil'/>
+                <i className='fa fa-pencil-square-o'/>
               </Link>
               <a className='posts_delete-link' onClick={this._onDelete.bind(null, stade._id)}>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash" viewBox="0 0 16 16">
