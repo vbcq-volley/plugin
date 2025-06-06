@@ -1,96 +1,160 @@
 // 2018/02/04
-var React = require('react/addons');
-var Dropzone = require('./Dropzone')
+var Dropzone = require('./Dropzone');
 var api = require('./api');
 
-var PopGallery = React.createClass({
+class PopGallery {
+  constructor(options) {
+    this.options = options;
+    this.state = {
+      files: []
+    };
+    this.element = null;
+  }
 
-  getInitialState: function() {
-    return {
-      files: [
-        // '/images/pasted-1.png',
-        // '/images/pasted-2.png',
-        // '/images/pasted-3.png',
-        // '/images/pasted-4.png'
-      ]
-    }
-  },
+  setState(newState) {
+    this.state = { ...this.state, ...newState };
+    this.render();
+  }
 
-  componentDidMount: function () {
+  async componentDidMount() {
     console.log('get gallery....');
-    api.gallery().then(result => {
-      // console.log(result);
-      this.setState({files: result});
-    });
-  },
+    try {
+      const result = await api.gallery();
+      this.setState({ files: result });
+    } catch (error) {
+      console.error('Error fetching gallery:', error);
+    }
+  }
 
-
-  // FILE OBJECT:
-  // lastModified:1516945524000
-  // lastModifiedDate:Fri Jan 26 2018 13:45:24 GMT+0800 (CST) {}
-  // name:"新年风-祝福语-换图.png"
-  // preview:"blob:http://localhost:4000/cf7225a4-a054-4008-b49b-6359eb3cde6d"
-  // size:894080
-  // type:"image/png"
-  // webkitRelativePath:""
-  onDrop: function (files) {
-    var context = this;
-    var origFiles = context.state.files;
-    // show local previe images first
+  onDrop(files) {
+    const origFiles = [...this.state.files];
+    
+    // Afficher d'abord les aperçus locaux
     files.forEach(file => {
-      // origFiles.push({name: file.name, date: file.lastModified});
-      origFiles.splice(0, 0, {preview: file.preview});
+      origFiles.splice(0, 0, { preview: file.preview });
     });
-    context.setState({files: origFiles});
+    this.setState({ files: origFiles });
 
-    // sending....
-    api.uploadMultiFiles(files).then(result => {
-      // FIXME, lazy reload images to wait image file write to disk @2018/02/22
-      setTimeout(()=>{
-        api.gallery().then(result => {
-          // console.log(result);
-          context.setState({files: result});
+    // Envoi des fichiers
+    api.uploadMultiFiles(files)
+      .then(() => {
+        // Attendre que les fichiers soient écrits sur le disque
+        setTimeout(() => {
+          api.gallery().then(result => {
+            this.setState({ files: result });
+          });
+        }, 800);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
+
+  _onChange(name, evt) {
+    if (evt) {
+      evt.preventDefault();
+    }
+    this.options.onChange(name);
+  }
+
+  createImageGrid() {
+    if (this.state.files.length === 0) return null;
+
+    const imgGrid = document.createElement('div');
+    imgGrid.className = 'img-grid';
+
+    this.state.files.forEach(file => {
+      const imgContainer = document.createElement('div');
+      imgContainer.className = 'img-ctnr';
+      imgContainer.addEventListener('click', this._onChange.bind(this, file.name));
+
+      if (file.preview) {
+        const sendingDiv = document.createElement('div');
+        sendingDiv.className = 'sending';
+        const sendingSpan = document.createElement('span');
+        sendingSpan.textContent = 'sending...';
+        sendingDiv.appendChild(sendingSpan);
+        imgContainer.appendChild(sendingDiv);
+      }
+
+      const img = document.createElement('img');
+      img.className = 'img-cell';
+      img.src = file.preview || '/images/' + file.name;
+      imgContainer.appendChild(img);
+
+      imgGrid.appendChild(imgContainer);
+    });
+
+    return imgGrid;
+  }
+
+  render() {
+    if (this.element) {
+      // Mise à jour des éléments existants
+      const grid = this.element.querySelector('.grid');
+      if (grid) {
+        grid.innerHTML = '';
+        
+        const dropzone = new Dropzone({
+          onDrop: this.onDrop.bind(this),
+          className: 'dropzone',
+          accept: 'image/jpeg, image/png'
         });
-      }, 800);
-    }).catch(error => {
-      console.error(error);
+        grid.appendChild(dropzone.render());
+
+        const dropzoneText = document.createElement('div');
+        dropzoneText.className = 'drop-zone-txt';
+        dropzoneText.textContent = 'Try dropping some files here, or click to select files to upload.';
+        dropzone.element.appendChild(dropzoneText);
+
+        const imgGrid = this.createImageGrid();
+        if (imgGrid) {
+          grid.appendChild(imgGrid);
+        }
+      }
+      return this.element;
+    }
+
+    const container = document.createElement('div');
+    container.className = 'gallery';
+
+    const arrowUp = document.createElement('div');
+    arrowUp.className = 'arrow-up';
+    container.appendChild(arrowUp);
+
+    const header = document.createElement('div');
+    header.className = 'header';
+    header.textContent = 'Image Selector';
+    container.appendChild(header);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+
+    const dropzone = new Dropzone({
+      onDrop: this.onDrop.bind(this),
+      className: 'dropzone',
+      accept: 'image/jpeg, image/png'
     });
-  },
+    grid.appendChild(dropzone.render());
 
-  // @2018/02/23
-  _onChange: function (name, evt) {
-    if (evt) {evt.preventDefault()}
-    // console.log(name);
-    this.props.onChange(name);
-  },
+    const dropzoneText = document.createElement('div');
+    dropzoneText.className = 'drop-zone-txt';
+    dropzoneText.textContent = 'Try dropping some files here, or click to select files to upload.';
+    dropzone.element.appendChild(dropzoneText);
 
-  render: function () {
-    return (
-      <div className="gallery">
-        <div className="arrow-up"></div>
-        <div className="header">Image Selector</div>
-        <div className="grid">
-          <Dropzone onDrop={this.onDrop} className="dropzone" accept="image/jpeg, image/png">
-            <div className="drop-zone-txt">Try dropping some files here, or click to select files to upload.</div>
-          </Dropzone>
-          {this.state.files.length > 0 ? <div>
+    const imgGrid = this.createImageGrid();
+    if (imgGrid) {
+      grid.appendChild(imgGrid);
+    }
 
-            <div className="img-grid">{
-              this.state.files.map((file) => {
-                return (
-                  <div className="img-ctnr" onClick={this._onChange.bind(null, file.name)}>
-                    {file.preview?<div className="sending"><span>sending...</span></div>:null}
-                    <img src={file.preview || '/images/'+file.name} className="img-cell"/>
-                  </div>
-                );
-              })
-            }</div>
-          </div> : null}
-        </div>
+    container.appendChild(grid);
+    this.element = container;
 
-      </div>
-    );
-  },
-});
+    // Charger la galerie au montage
+    this.componentDidMount();
 
-module.exports = PopGallery
+    return this.element;
+  }
+}
+
+module.exports = PopGallery;

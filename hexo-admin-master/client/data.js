@@ -1,34 +1,37 @@
 var DataFetcher = require('./data-fetcher');
 var api = require('./api');
-var React = require('react/addons')
-var Editor_data = require('./editor-data')
-var _ = require('lodash')
-var moment = require('moment')
+var Editor_data = require('./editor-data');
+var _ = require('lodash');
+var moment = require('moment');
 
-var Data = React.createClass({
-  mixins: [DataFetcher((params) => {
-    console.log(params)
-    console.log()
-    return {
-      params:params,
-      
-      //tagsCategoriesAndMetadata: api.tagsCategoriesAndMetadata()
-    }
-  })],
-
-  getInitialState: function () {
-    return {
+class Data {
+  constructor(params) {
+    this.params = params;
+    this.state = {
       updated: moment()
-    }
-  },
-
-  componentDidMount: function () {
-    
-  },
-
-  render: function () {
-    return <Editor_data id={this.props.params.matchId} type="match" />
+    };
+    this.element = null;
+    this.dataFetcher = new DataFetcher((params) => {
+      console.log(params);
+      console.log();
+      return {
+        params: params
+      };
+    });
   }
-});
+
+  render() {
+    if (this.element) {
+      return this.element;
+    }
+
+    const editor = new Editor_data();
+    editor.id = this.params.matchId;
+    editor.type = "match";
+    
+    this.element = editor.render();
+    return this.element;
+  }
+}
 
 module.exports = Data;

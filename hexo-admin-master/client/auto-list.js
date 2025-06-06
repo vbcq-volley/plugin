@@ -1,122 +1,173 @@
-
-var React = require('react/addons')
-var cx = React.addons.classSet
-
-var AutoList = React.createClass({
-  getInitialState: function () {
-    return {
+class AutoList {
+  constructor(options) {
+    this.options = options;
+    this.state = {
       selected: null,
       text: ''
-    }
-  },
+    };
+    this.element = null;
+    this.inputRef = null;
+  }
 
-  componentDidUpdate: function (prevProps, prevState) {
-    if (prevState.selected === null &&
-        this.state.selected !== null) {
-      setTimeout(() => this.refs.input.getDOMNode().focus(), 100)
-    }
-  },
+  setState(newState) {
+    this.state = { ...this.state, ...newState };
+    this.render();
+  }
 
-  _onChange: function (e) {
-    this.setState({text: e.target.value})
-  },
+  _onChange(e) {
+    this.setState({ text: e.target.value });
+  }
 
-  _onEdit: function (i, e) {
-    if (e.button !== 0) return
-    e.preventDefault()
-    e.stopPropagation()
+  _onEdit(i, e) {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
     this.setState({
       selected: i,
-      text: this.props.values[i] || ''
-    })
-  },
+      text: this.options.values[i] || ''
+    });
+  }
 
-  _onBlur: function () {
-    var values = this.props.values.slice()
-    if (this.props.values.indexOf(this.state.text) === -1) {
+  _onBlur() {
+    const values = this.options.values.slice();
+    if (this.options.values.indexOf(this.state.text) === -1) {
       if (this.state.selected >= values.length) {
         if (this.state.text) {
-          values.push(this.state.text)
+          values.push(this.state.text);
         }
       } else {
-        values[this.state.selected] = this.state.text
+        values[this.state.selected] = this.state.text;
       }
     }
     this.setState({
       selected: null,
       text: ''
     });
-    this.props.onChange(values)
-  },
+    this.options.onChange(values);
+  }
 
-  _onRemove: function (i) {
-    var values = this.props.values.slice()
-    if (i >= values.length) return
-    values.splice(i, 1)
-    if (this.state.selected !== null &&
-        i < this.state.selected) {
-      this.setState({selected: i-1})
+  _onRemove(i) {
+    const values = this.options.values.slice();
+    if (i >= values.length) return;
+    values.splice(i, 1);
+    if (this.state.selected !== null && i < this.state.selected) {
+      this.setState({ selected: i - 1 });
     }
-    this.props.onChange(values)
-  },
+    this.options.onChange(values);
+  }
 
-  _onKeyDown: function (e) {
+  _onKeyDown(e) {
     if (e.key === 'Enter') {
-      if (!this.state.text) return
-      this.addAfter()
+      if (!this.state.text) return;
+      this.addAfter();
     }
-  },
+  }
 
-  addAfter: function () {
-    if (this.props.values.indexOf(this.state.text) !== -1) {
-      return
+  addAfter() {
+    if (this.options.values.indexOf(this.state.text) !== -1) {
+      return;
     }
-    var values = this.props.values.slice()
+    const values = this.options.values.slice();
     if (this.state.selected === values.length) {
-      values.push(this.state.text)
-      this.props.onChange(values)
+      values.push(this.state.text);
+      this.options.onChange(values);
       return this.setState({
         text: '',
         selected: values.length
-      })
+      });
     }
-    values[this.state.selected] = this.state.text
-    values.splice(this.state.selected + 1, 0, '')
-    this.props.onChange(values)
+    values[this.state.selected] = this.state.text;
+    values.splice(this.state.selected + 1, 0, '');
+    this.options.onChange(values);
     this.setState({
       selected: this.state.selected + 1,
       text: ''
-    })
-  },
-
-  render: function () {
-    var values = this.props.values.concat(['Add new'])
-    return <div className="autolist">
-      {values.map((item, i) =>
-        <div key={item} className="autolist_item">
-          {i === this.state.selected ?
-            <input
-              ref="input"
-              className="autolist_input"
-              value={this.state.text}
-              onBlur={this._onBlur}
-              onChange={this._onChange}
-              onKeyDown={this._onKeyDown}/> :
-            <div className={cx({
-                    "autolist_show": true,
-                    "autolist_show--new": i === values.length - 1,
-                  })}
-                  onMouseDown={this._onEdit.bind(null, i)}>
-              {item}
-            </div>
-          }
-          {i < values.length - 1 &&
-            <i className="autolist_del fa fa-times"
-               onClick={this._onRemove.bind(null, i)}/>}
-        </div>
-      )}
-    </div>
+    });
   }
-})
 
-module.exports = AutoList
+  render() {
+    if (this.element) {
+      // Mise à jour des éléments existants
+      this.element.innerHTML = '';
+      const values = this.options.values.concat(['Add new']);
+      
+      values.forEach((item, i) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'autolist_item';
+
+        if (i === this.state.selected) {
+          const input = document.createElement('input');
+          input.className = 'autolist_input';
+          input.value = this.state.text;
+          input.addEventListener('blur', this._onBlur.bind(this));
+          input.addEventListener('change', this._onChange.bind(this));
+          input.addEventListener('keydown', this._onKeyDown.bind(this));
+          this.inputRef = input;
+          itemDiv.appendChild(input);
+        } else {
+          const showDiv = document.createElement('div');
+          showDiv.className = `autolist_show ${i === values.length - 1 ? 'autolist_show--new' : ''}`;
+          showDiv.textContent = item;
+          showDiv.addEventListener('mousedown', this._onEdit.bind(this, i));
+          itemDiv.appendChild(showDiv);
+        }
+
+        if (i < values.length - 1) {
+          const deleteIcon = document.createElement('i');
+          deleteIcon.className = 'autolist_del fa fa-times';
+          deleteIcon.addEventListener('click', this._onRemove.bind(this, i));
+          itemDiv.appendChild(deleteIcon);
+        }
+
+        this.element.appendChild(itemDiv);
+      });
+
+      // Focus sur l'input si nécessaire
+      if (this.state.selected !== null && this.inputRef) {
+        setTimeout(() => this.inputRef.focus(), 100);
+      }
+
+      return this.element;
+    }
+
+    const container = document.createElement('div');
+    container.className = 'autolist';
+    this.element = container;
+
+    const values = this.options.values.concat(['Add new']);
+    values.forEach((item, i) => {
+      const itemDiv = document.createElement('div');
+      itemDiv.className = 'autolist_item';
+
+      if (i === this.state.selected) {
+        const input = document.createElement('input');
+        input.className = 'autolist_input';
+        input.value = this.state.text;
+        input.addEventListener('blur', this._onBlur.bind(this));
+        input.addEventListener('change', this._onChange.bind(this));
+        input.addEventListener('keydown', this._onKeyDown.bind(this));
+        this.inputRef = input;
+        itemDiv.appendChild(input);
+      } else {
+        const showDiv = document.createElement('div');
+        showDiv.className = `autolist_show ${i === values.length - 1 ? 'autolist_show--new' : ''}`;
+        showDiv.textContent = item;
+        showDiv.addEventListener('mousedown', this._onEdit.bind(this, i));
+        itemDiv.appendChild(showDiv);
+      }
+
+      if (i < values.length - 1) {
+        const deleteIcon = document.createElement('i');
+        deleteIcon.className = 'autolist_del fa fa-times';
+        deleteIcon.addEventListener('click', this._onRemove.bind(this, i));
+        itemDiv.appendChild(deleteIcon);
+      }
+
+      container.appendChild(itemDiv);
+    });
+
+    return container;
+  }
+}
+
+module.exports = AutoList;

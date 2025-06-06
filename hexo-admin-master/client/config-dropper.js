@@ -1,217 +1,256 @@
+var AutoList = require('./auto-list');
+var moment = require('moment');
+var _ = require('lodash');
 
-var React = require('react/addons')
-var AutoList = require('./auto-list')
-var moment = require('moment')
-var _ = require('lodash')
-var cx = React.addons.classSet;
-
-var dateFormat = 'MMM D YYYY HH:mm'
+const dateFormat = 'MMM D YYYY HH:mm';
 
 function toText(lst, map) {
-  return lst.map((name) => map[name] || name)
+  return lst.map((name) => map[name] || name);
 }
 
-function addMetadata(state, metadata, post){
-  for(var i=0; i<metadata.length; i++){
-    state[metadata[i]] = post[metadata[i]]
+function addMetadata(state, metadata, post) {
+  for (let i = 0; i < metadata.length; i++) {
+    state[metadata[i]] = post[metadata[i]];
   }
 }
 
-function isMetadataEqual(state, metadata, post){
-  var isEqual = true;
-  for(var i=0; i<metadata.length && isEqual; i++){
-    isEqual = isEqual && state[metadata[i]] === post[metadata[i]]
+function isMetadataEqual(state, metadata, post) {
+  let isEqual = true;
+  for (let i = 0; i < metadata.length && isEqual; i++) {
+    isEqual = isEqual && state[metadata[i]] === post[metadata[i]];
   }
-  return isEqual
+  return isEqual;
 }
 
-var ConfigDropper = React.createClass({
-  getInitialState: function () {
-    var tagCatMeta = this.props.tagsCategoriesAndMetadata
-    var state = {
+class ConfigDropper {
+  constructor(options) {
+    this.options = options;
+    const tagCatMeta = options.tagsCategoriesAndMetadata;
+    this.state = {
       open: false,
-      date: moment(this.props.post.date).format(dateFormat),
-      tags: toText(this.props.post.tags, tagCatMeta.tags),
-      categories: toText(this.props.post.categories, tagCatMeta.categories),
-      author: this.props.post.author,
-    }
-    onChange: this.props.onChange
-    addMetadata(state, tagCatMeta.metadata, this.props.post);
-    return state
-  },
+      date: moment(options.post.date).format(dateFormat),
+      tags: toText(options.post.tags, tagCatMeta.tags),
+      categories: toText(options.post.categories, tagCatMeta.categories),
+      author: options.post.author
+    };
+    addMetadata(this.state, tagCatMeta.metadata, options.post);
+    this.element = null;
+  }
 
-  componentWillReceiveProps: function (nextProps) {
-    if (nextProps.post === this.props.post) {
-      return
-    }
-    var tagCatMeta = nextProps.tagsCategoriesAndMetadata
-    var state = {
-      date: moment(nextProps.post.date).format(dateFormat),
-      tags: toText(nextProps.post.tags, tagCatMeta.tags),
-      categories: toText(nextProps.post.categories, tagCatMeta.categories),
-      author: nextProps.post.author,
-    }
-    addMetadata(state, tagCatMeta.metadata, nextProps.post);
-    this.setState(state)
-  },
+  setState(newState) {
+    this.state = { ...this.state, ...newState };
+    this.render();
+  }
 
-  componentDidUpdate: function (prevProps, prevState) {
-    if (this.state.open && !prevState.open) {
-      document.addEventListener('mousedown', this._globalMouseDown)
-    }
-    if (!this.state.open && prevState.open) {
-      document.removeEventListener('mousedown', this._globalMouseDown)
-    }
-  },
-
-  _globalMouseDown: function (e) {
-    var mine = this.getDOMNode()
-    var node = e.target
+  _globalMouseDown(e) {
+    let node = e.target;
     while (node) {
-      if (!node.parentNode) return
+      if (!node.parentNode) return;
       node = node.parentNode;
       if (node === document.body) break;
-      if (node === mine) return;
+      if (node === this.element) return;
     }
-    this._onClose()
-  },
+    this._onClose();
+  }
 
-  _toggleShow: function () {
+  _toggleShow() {
     if (this.state.open) {
-      this.save()
+      this.save();
     }
     this.setState({
       open: !this.state.open
-    })
-  },
+    });
+  }
 
-  _onClose: function () {
-    this.save()
-    this.setState({open: false})
-  },
+  _onClose() {
+    this.save();
+    this.setState({ open: false });
+  }
 
-  _onChangeDate: function (e) {
+  _onChangeDate(e) {
     this.setState({
       date: e.target.value
-    })
-  },
+    });
+  }
 
-  _onChangeAuthor: function (e) {
+  _onChangeAuthor(e) {
     this.setState({
       author: e.target.value
-    })
-  },
+    });
+  }
 
-  _onChangeMetadata: function (e) {
-    var state = {}
-    state[e.target.name] = e.target.value
-    this.setState(state)
-  },
+  _onChangeMetadata(e) {
+    const state = {};
+    state[e.target.name] = e.target.value;
+    this.setState(state);
+  }
 
-  _onChange: function (attr, value) {
-    var update = {}
-    update[attr] = value
+  _onChange(attr, value) {
+    const update = {};
+    update[attr] = value;
     this.setState(update);
-  },
+  }
 
-  save: function () {
-    var date = moment(this.state.date)
+  save() {
+    const date = moment(this.state.date);
     if (!date.isValid()) {
-      date = moment(this.props.post.date)
+      date = moment(this.options.post.date);
     }
-    var tagCatMeta = this.props.tagsCategoriesAndMetadata
-    var tags = toText(this.props.post.tags, tagCatMeta.tags)
-    var categories = toText(this.props.post.categories, tagCatMeta.categories)
-    var author = this.props.post.author
-    var textDate = date.toISOString()
-    var isSameMetadata = isMetadataEqual(this.state, tagCatMeta.metadata, this.props.post)
-    if (textDate === this.props.post.date &&
+    const tagCatMeta = this.options.tagsCategoriesAndMetadata;
+    const tags = toText(this.options.post.tags, tagCatMeta.tags);
+    const categories = toText(this.options.post.categories, tagCatMeta.categories);
+    const author = this.options.post.author;
+    const textDate = date.toISOString();
+    const isSameMetadata = isMetadataEqual(this.state, tagCatMeta.metadata, this.options.post);
+
+    if (textDate === this.options.post.date &&
         _.isEqual(this.state.categories, categories) &&
-        _.isEqual(this.state.tags, tags) && author === this.state.author &&
+        _.isEqual(this.state.tags, tags) && 
+        author === this.state.author &&
         isSameMetadata) {
-      return
+      return;
     }
-    var state = {
+
+    const state = {
       date: date.toISOString(),
       categories: this.state.categories,
       tags: this.state.tags,
-      author: this.state.author,
-    }
-    addMetadata(state, tagCatMeta.metadata, this.state)
-    this.props.onChange(state)
-  },
-
-  config: function () {
-    return <div className="config">
-      <div className="config_section">
-        <div className="config_section-title">Date</div>
-        <input
-          className="config_date"
-          value={this.state.date}
-          onChange={this._onChangeDate}/>
-      </div>
-      <div className="config_section">
-        <div className="config_section-title">Author</div>
-        <input
-            className="config_author"
-            value={this.state.author}
-            onChange={this._onChangeAuthor}/>
-      </div>
-      <div className="config_section">
-        <div className="config_section-title">Tags</div>
-        <AutoList
-          options={this.props.tagsCategoriesAndMetadata.tags}
-          values={this.state.tags}
-          onChange={this._onChange.bind(null, 'tags')}/>
-      </div>
-      <div className="config_section">
-        <div className="config_section-title">Categories</div>
-        <AutoList
-          options={this.props.tagsCategoriesAndMetadata.categories}
-          values={this.state.categories}
-          onChange={this._onChange.bind(null, 'categories')}/>
-      </div>
-      {this.configMetadata()}
-    </div>
-  },
-
-  configMetadata: function() {
-    var metadata = this.props.tagsCategoriesAndMetadata.metadata;
-    var self = this;
-    return metadata.map(function(name, index){
-      var component = (_.isArray(self.state[name]))
-      ? <AutoList
-          options={[]}
-          values={self.state[name]}
-          onChange={self._onChange.bind(null, name)} />
-      : <input
-          className="config_metadata"
-          value={self.state[name]}
-          name={name}
-          onChange={self._onChangeMetadata}/>
-
-      return (
-        <div key={index} className="config_section">
-          <div className="config_section-title">{name}</div>
-          {component}
-        </div>
-      )
-    })
-  },
-
-  render: function () {
-    return <div className={cx({
-        "config-dropper": true,
-        "config-dropper--open": this.state.open
-      })}
-           title="Settings">
-      <div className="config-dropper_handle"
-           onClick={this._toggleShow}>
-        <i className="fa fa-gear"/>
-      </div>
-      {this.state.open && this.config()}
-    </div>
+      author: this.state.author
+    };
+    addMetadata(state, tagCatMeta.metadata, this.state);
+    this.options.onChange(state);
   }
-})
 
-module.exports = ConfigDropper
+  createConfigSection() {
+    const config = document.createElement('div');
+    config.className = 'config';
+
+    // Date section
+    const dateSection = document.createElement('div');
+    dateSection.className = 'config_section';
+    const dateTitle = document.createElement('div');
+    dateTitle.className = 'config_section-title';
+    dateTitle.textContent = 'Date';
+    const dateInput = document.createElement('input');
+    dateInput.className = 'config_date';
+    dateInput.value = this.state.date;
+    dateInput.addEventListener('change', this._onChangeDate.bind(this));
+    dateSection.appendChild(dateTitle);
+    dateSection.appendChild(dateInput);
+    config.appendChild(dateSection);
+
+    // Author section
+    const authorSection = document.createElement('div');
+    authorSection.className = 'config_section';
+    const authorTitle = document.createElement('div');
+    authorTitle.className = 'config_section-title';
+    authorTitle.textContent = 'Author';
+    const authorInput = document.createElement('input');
+    authorInput.className = 'config_author';
+    authorInput.value = this.state.author;
+    authorInput.addEventListener('change', this._onChangeAuthor.bind(this));
+    authorSection.appendChild(authorTitle);
+    authorSection.appendChild(authorInput);
+    config.appendChild(authorSection);
+
+    // Tags section
+    const tagsSection = document.createElement('div');
+    tagsSection.className = 'config_section';
+    const tagsTitle = document.createElement('div');
+    tagsTitle.className = 'config_section-title';
+    tagsTitle.textContent = 'Tags';
+    const tagsList = new AutoList({
+      options: this.options.tagsCategoriesAndMetadata.tags,
+      values: this.state.tags,
+      onChange: this._onChange.bind(this, 'tags')
+    });
+    tagsSection.appendChild(tagsTitle);
+    tagsSection.appendChild(tagsList.render());
+    config.appendChild(tagsSection);
+
+    // Categories section
+    const categoriesSection = document.createElement('div');
+    categoriesSection.className = 'config_section';
+    const categoriesTitle = document.createElement('div');
+    categoriesTitle.className = 'config_section-title';
+    categoriesTitle.textContent = 'Categories';
+    const categoriesList = new AutoList({
+      options: this.options.tagsCategoriesAndMetadata.categories,
+      values: this.state.categories,
+      onChange: this._onChange.bind(this, 'categories')
+    });
+    categoriesSection.appendChild(categoriesTitle);
+    categoriesSection.appendChild(categoriesList.render());
+    config.appendChild(categoriesSection);
+
+    // Metadata sections
+    const metadata = this.options.tagsCategoriesAndMetadata.metadata;
+    metadata.forEach((name, index) => {
+      const section = document.createElement('div');
+      section.className = 'config_section';
+      const title = document.createElement('div');
+      title.className = 'config_section-title';
+      title.textContent = name;
+
+      let component;
+      if (_.isArray(this.state[name])) {
+        const list = new AutoList({
+          options: [],
+          values: this.state[name],
+          onChange: this._onChange.bind(this, name)
+        });
+        component = list.render();
+      } else {
+        const input = document.createElement('input');
+        input.className = 'config_metadata';
+        input.value = this.state[name];
+        input.name = name;
+        input.addEventListener('change', this._onChangeMetadata.bind(this));
+        component = input;
+      }
+
+      section.appendChild(title);
+      section.appendChild(component);
+      config.appendChild(section);
+    });
+
+    return config;
+  }
+
+  render() {
+    if (this.element) {
+      // Mise à jour des éléments existants
+      const config = this.element.querySelector('.config');
+      if (config) {
+        config.remove();
+      }
+      if (this.state.open) {
+        this.element.appendChild(this.createConfigSection());
+      }
+      this.element.className = `config-dropper ${this.state.open ? 'config-dropper--open' : ''}`;
+      return this.element;
+    }
+
+    const container = document.createElement('div');
+    container.className = `config-dropper ${this.state.open ? 'config-dropper--open' : ''}`;
+    container.title = 'Settings';
+
+    const handle = document.createElement('div');
+    handle.className = 'config-dropper_handle';
+    handle.addEventListener('click', this._toggleShow.bind(this));
+    
+    const icon = document.createElement('i');
+    icon.className = 'fa fa-gear';
+    handle.appendChild(icon);
+    container.appendChild(handle);
+
+    if (this.state.open) {
+      container.appendChild(this.createConfigSection());
+    }
+
+    this.element = container;
+    return this.element;
+  }
+}
+
+module.exports = ConfigDropper;

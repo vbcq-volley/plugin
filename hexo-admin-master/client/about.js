@@ -1,20 +1,51 @@
-var React = require('react')
-
-var About = React.createClass({
-  render: function () {
-    return <div className="about">
-      <h1>This is the Hexo Admin Enhanced Plugin</h1>
-      <p><strong>Goal: Provide an awesome admin experience for managing your blog.</strong></p>
-      <p>
-        Useful links:
-        <ul>
-          <li><a href="http://hexo.io">Hexo site</a></li>
-          <li><a href="https://github.com/jaredly/hexo-admin-plugin">Github page for hexo admin plugin</a></li>
-          <li><a href="https://github.com/lwz7512/hexo-admin-ehc">Github page for this plugin</a></li>
-        </ul>
-      </p>
-    </div>
+class About {
+  constructor() {
+    this.element = null;
   }
-})
 
-module.exports = About
+  render() {
+    if (this.element) {
+      return this.element;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'about';
+
+    const h1 = document.createElement('h1');
+    h1.textContent = 'This is the Hexo Admin Enhanced Plugin';
+    div.appendChild(h1);
+
+    const p1 = document.createElement('p');
+    const strong = document.createElement('strong');
+    strong.textContent = 'Goal: Provide an awesome admin experience for managing your blog.';
+    p1.appendChild(strong);
+    div.appendChild(p1);
+
+    const p2 = document.createElement('p');
+    p2.textContent = 'Useful links:';
+    div.appendChild(p2);
+
+    const ul = document.createElement('ul');
+    
+    const links = [
+      { text: 'Hexo site', href: 'http://hexo.io' },
+      { text: 'Github page for hexo admin plugin', href: 'https://github.com/jaredly/hexo-admin-plugin' },
+      { text: 'Github page for this plugin', href: 'https://github.com/lwz7512/hexo-admin-ehc' }
+    ];
+
+    links.forEach(link => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = link.href;
+      a.textContent = link.text;
+      li.appendChild(a);
+      ul.appendChild(li);
+    });
+
+    div.appendChild(ul);
+    this.element = div;
+    return this.element;
+  }
+}
+
+module.exports = About;

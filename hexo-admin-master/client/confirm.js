@@ -1,71 +1,82 @@
-var React = require('react/addons');
 var Modal = require('./modal');
 
-var Confirm = React.createClass({
-  displayName: 'Confirm',
-  getDefaultProps: function () {
-    return {
-      confirmLabel: 'OK',
-      abortLabel: 'Cancel',
-    };
-  },
+class Confirm {
+  constructor(options = {}) {
+    this.confirmLabel = options.confirmLabel || 'OK';
+    this.abortLabel = options.abortLabel || 'Cancel';
+    this.message = options.message || '';
+    this.description = options.description || '';
+    this.element = null;
+    this.promise = null;
+  }
 
-  abort: function () {
+  abort() {
     return this.promise.reject();
-  },
+  }
 
-  confirm: function () {
+  confirm() {
     return this.promise.resolve();
-  },
+  }
 
-  componentDidMount: function () {
-    this.promise = new $.Deferred();
-    return this.refs.confirm.getDOMNode().focus();
-  },
-
-  render: function () {
-    var modalBody;
-    if (this.props.description) {
-      modalBody = (
-        <div className='modal-body'>
-          {this.props.description}
-        </div>
-      );
+  render() {
+    if (this.element) {
+      return this.element;
     }
 
-    return (
-      <Modal>
-        <div className='modal-header'>
-          <h4 className='modal-title'>
-            {this.props.message}
-          </h4>
-        </div>
-        {modalBody}
-        <div className='modal-footer'>
-          <div className='text-right'>
-            <button
-              role='abort'
-              type='button'
-              className='btn btn-default'
-              onClick={this.abort}
-            >
-              {this.props.abortLabel}
-            </button>
-            {' '}
-            <button
-              role='confirm'
-              type='button'
-              className='btn btn-primary'
-              ref='confirm'
-              onClick={this.confirm}
-            >
-              {this.props.confirmLabel}
-            </button>
-          </div>
-        </div>
-      </Modal>
-    );
-  },
-});
+    this.promise = new $.Deferred();
 
-module.exports = Confirm
+    const modal = new Modal();
+    const modalElement = modal.render();
+
+    const header = document.createElement('div');
+    header.className = 'modal-header';
+
+    const title = document.createElement('h4');
+    title.className = 'modal-title';
+    title.textContent = this.message;
+    header.appendChild(title);
+
+    modalElement.appendChild(header);
+
+    if (this.description) {
+      const body = document.createElement('div');
+      body.className = 'modal-body';
+      body.textContent = this.description;
+      modalElement.appendChild(body);
+    }
+
+    const footer = document.createElement('div');
+    footer.className = 'modal-footer';
+
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'text-right';
+
+    const abortButton = document.createElement('button');
+    abortButton.setAttribute('role', 'abort');
+    abortButton.type = 'button';
+    abortButton.className = 'btn btn-default';
+    abortButton.textContent = this.abortLabel;
+    abortButton.addEventListener('click', this.abort.bind(this));
+    buttonContainer.appendChild(abortButton);
+
+    const space = document.createTextNode(' ');
+    buttonContainer.appendChild(space);
+
+    const confirmButton = document.createElement('button');
+    confirmButton.setAttribute('role', 'confirm');
+    confirmButton.type = 'button';
+    confirmButton.className = 'btn btn-primary';
+    confirmButton.textContent = this.confirmLabel;
+    confirmButton.addEventListener('click', this.confirm.bind(this));
+    buttonContainer.appendChild(confirmButton);
+
+    footer.appendChild(buttonContainer);
+    modalElement.appendChild(footer);
+
+    this.element = modalElement;
+    setTimeout(() => confirmButton.focus(), 0);
+    return this.element;
+  }
+}
+
+module.exports = Confirm;

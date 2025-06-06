@@ -13,7 +13,7 @@ gulp.task('demo', function () {
   var b = browserify({
     entries: './docs/demo/run.js',
     debug: true,
-    transform: [[reactify, {es6: true, everything: true}]]
+    transform: [[ {es6: true, everything: true}]]
   });
 
   return b.bundle()
@@ -26,8 +26,8 @@ gulp.task('demo', function () {
 gulp.task('javascript', function () {
   var b = browserify({
     entries: './client/run.js',
-    debug: true,
-    transform: [[reactify, {es6: true, everything: true}]]
+    debug: false
+   
   });
 
   return b.bundle()
