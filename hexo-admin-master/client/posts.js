@@ -1,96 +1,126 @@
+const path = require('path');
+const _ = require('lodash');
+const moment = require('moment');
+const SinceWhen = require('./since-when');
+const Rendered = require('./rendered');
+const DataFetcher = require('./data-fetcher');
+const NewPost = require('./new-post');
+const api = require('./api');
+const Router = require('./router');
 
-var path = require('path')
-var React = require('react/addons')
-var cx = React.addons.classSet
-var Link = require('react-router').Link;
-var Router = require('react-router');
-var _ = require('lodash')
-var moment = require('moment')
-var SinceWhen = require('./since-when')
-
-var Rendered = require('./rendered')
-var DataFetcher = require('./data-fetcher');
-var NewPost = require('./new-post')
-var api = require('./api');
-
-var Posts = React.createClass({
-  mixins: [DataFetcher((params) => {
-    return {
-      posts: api.posts().then((posts) =>
-        _.sortBy(_.filter(posts, function(post) { return !post.isDiscarded }), ['isDraft', 'date']).reverse()
-      )
-    }
-  })],
-
-  getInitialState: function () {
-    return {
+class Posts {
+  constructor() {
+    this.state = {
+      posts: null,
       selected: 0
-    }
-  },
-
-  _onNew: function (post) {
-    var posts = this.state.posts.slice()
-    posts.unshift(post)
-    this.setState({posts: posts})
-    Router.transitionTo('post', {postId: post._id})
-  },
-
-  goTo: function (id, e) {
-    if (e) {
-      e.preventDefault()
-    }
-    Router.transitionTo('post', {postId: id})
-  },
-
-  render: function () {
-    console.log(this.state)
-    if (!this.state.posts) {
-      return <div className='posts'>Loading...</div>
-    }
-    var current = this.state.posts[this.state.selected] || {}
-    var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
-    var rootPath = url.slice(0, url.indexOf('admin')).join('/')
-    return <div className="posts">
-      <ul className='posts_list'>
-        <NewPost onNew={this._onNew}/>
-        {
-          this.state.posts.map((post, i) =>
-            <li key={post._id} className={cx({
-                "posts_post": true,
-                "posts_post--draft": post.isDraft,
-                "posts_post--selected": i === this.state.selected
-              })}
-              onDoubleClick={this.goTo.bind(null, post._id)}
-              onClick={this.setState.bind(this, {selected: i}, null)}
-            >
-              <span className="posts_post-title">
-                {post.title}
-              </span>
-              <span className="posts_post-date">
-                {moment(post.date).format('MMM Do YYYY')}
-              </span>
-              <a className='posts_perma-link' target="_blank" href={path.join(rootPath, '/', post.path)}>
-                <i className='fa fa-link'/>
-              </a>
-              <Link className='posts_edit-link' to="post" postId={post._id}>
-                <i className='fa fa-pencil-square-o'/>
-              </Link>
-            </li>
-          )
-        }
-      </ul>
-      <div className={cx({
-        'posts_display': true,
-        'posts_display--draft': current.isDraft
-      })}>
-        {current.isDraft && <div className="posts_draft-message">Draft</div>}
-        <Rendered
-          ref="rendered"
-          className="posts_content"
-          text={current.content}/>
-      </div>
-    </div>
+    };
+    this.init();
   }
-});
+
+  async init() {
+    try {
+      const posts = await api.posts();
+      this.state.posts = _.sortBy(
+        _.filter(posts, post => !post.isDiscarded),
+        ['isDraft', 'date']
+      ).reverse();
+      this.render();
+    } catch (error) {
+      console.error('Error loading posts:', error);
+    }
+  }
+
+  onNew(post) {
+    this.state.posts.unshift(post);
+    this.render();
+    window.location.hash = `#/post/${post._id}`;
+  }
+
+  goTo(id, e) {
+    if (e) {
+      e.preventDefault();
+    }
+    window.location.hash = `#/post/${id}`;
+  }
+
+  render() {
+    if (!this.state.posts) {
+      return document.createElement('div');
+    }
+
+    const container = document.createElement('div');
+    container.className = 'posts';
+
+    const list = document.createElement('ul');
+    list.className = 'posts_list';
+
+    // Ajouter le bouton NewPost
+    const newPost = new NewPost();
+    newPost.onNew = this.onNew.bind(this);
+    list.appendChild(newPost.render());
+
+    // Rendre la liste des posts
+    this.state.posts.forEach((post, i) => {
+      const li = document.createElement('li');
+      li.className = `posts_post ${post.isDraft ? 'posts_post--draft' : ''} ${i === this.state.selected ? 'posts_post--selected' : ''}`;
+      
+      const title = document.createElement('span');
+      title.className = 'posts_post-title';
+      title.textContent = post.title;
+      
+      const date = document.createElement('span');
+      date.className = 'posts_post-date';
+      date.textContent = moment(post.date).format('MMM Do YYYY');
+      
+      const permaLink = document.createElement('a');
+      permaLink.className = 'posts_perma-link';
+      permaLink.target = '_blank';
+      const url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/');
+      const rootPath = url.slice(0, url.indexOf('admin')).join('/');
+      permaLink.href = path.join(rootPath, '/', post.path);
+      permaLink.innerHTML = '<i class="fa fa-link"></i>';
+      
+      const editLink = document.createElement('a');
+      editLink.className = 'posts_edit-link';
+      editLink.href = `#/post/${post._id}`;
+      editLink.innerHTML = '<i class="fa fa-pencil-square-o"></i>';
+      
+      li.appendChild(title);
+      li.appendChild(date);
+      li.appendChild(permaLink);
+      li.appendChild(editLink);
+      
+      li.addEventListener('dblclick', this.goTo.bind(this, post._id));
+      li.addEventListener('click', () => {
+        this.state.selected = i;
+        this.render();
+      });
+      
+      list.appendChild(li);
+    });
+
+    container.appendChild(list);
+
+    // Afficher le contenu du post sélectionné
+    const current = this.state.posts[this.state.selected] || {};
+    const display = document.createElement('div');
+    display.className = `posts_display ${current.isDraft ? 'posts_display--draft' : ''}`;
+
+    if (current.isDraft) {
+      const draftMessage = document.createElement('div');
+      draftMessage.className = 'posts_draft-message';
+      draftMessage.textContent = 'Draft';
+      display.appendChild(draftMessage);
+    }
+
+    const rendered = new Rendered();
+    rendered.className = 'posts_content';
+    rendered.text = current.content;
+    display.appendChild(rendered.render());
+
+    container.appendChild(display);
+    return container;
+  }
+}
 
 module.exports = Posts;

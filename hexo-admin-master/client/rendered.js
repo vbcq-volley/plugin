@@ -1,6 +1,4 @@
-var React = require('react')
-
-var styles = {
+const styles = {
   container: {
     fontFamily: 'Arial, sans-serif',
     maxWidth: '800px',
@@ -71,181 +69,472 @@ var styles = {
     borderRadius: '5px',
     width: '100%'
   }
-};
+}
 
-var Rendered = React.createClass({
-  propTypes: {
-    text: React.PropTypes.string,
-    type: React.PropTypes.string
-    
-  },
+class Rendered {
+  constructor() {
+    this.text = ''
+    this.type = ''
+  }
 
-  parseJsonText: function(text) {
+  init(container, props) {
+    this.container = container
+    this.text = props.text
+    this.type = props.type
+    this.render()
+  }
+
+  parseJsonText(text) {
     console.log("le texte requis est"+text)
     try {
-      return JSON.parse(text);
+      return JSON.parse(text)
     } catch (e) {
-      return text;
-    }
-  },
-  handleSubmit: function(event) {
-    event.preventDefault();
-    const formData = new FormData(event.target);
-    const data = Object.fromEntries(formData.entries());
-    require("./api").updateEntry(data.type,data.index,data) 
-    console.log(data);
-  },
-
-  renderStade: function() {
-    const textContent = this.parseJsonText(this.props.text);
-    return (
-      <div style={styles.container}>
-        <h2 style={styles.title}>{textContent.stadeName}</h2>
-        <div style={styles.info}>
-       
-          <p><span style={styles.label}>Adresse:</span> {textContent.address}</p>
-          <p><span style={styles.label}>Ville:</span> {textContent.city||""}</p>
-        </div>
-        {textContent && (
-          <div style={styles.form}>
-            <form onSubmit={this.handleSubmit}>
-              <label style={styles.label}>Nom du stade:</label>
-              <input style={styles.formInput} type="text" value={textContent.stadeName} />
-   
-              <label style={styles.label}>Adresse:</label>
-              <input style={styles.formInput} type="text" value={textContent.address} />
-              <label style={styles.label}>Ville:</label>
-              <input style={styles.formInput} type="text" value={textContent.city||""} />
-              <button type="submit">Enregistrer les modifications</button>
-            </form>
-          </div>
-        )}
-      </div>
-    )
-  },
-
-  renderMatch: function() {
-    const textContent = this.parseJsonText(this.props.text);
-    return (
-      <div style={styles.container}>
-        <h2 style={styles.title}>{textContent.team1} vs {textContent.team2}</h2>
-        <div style={styles.info}>
-          <p><span style={styles.label}>Groupe:</span> {textContent.group}</p>
-          <p><span style={styles.label}>Match à domicile:</span> {textContent.homeDate || 'Non défini'}</p>
-          <p><span style={styles.label}>Lieu domicile:</span> {textContent.homeLocation || 'Non défini'}</p>
-          <p><span style={styles.label}>Match à l'extérieur:</span> {textContent.awayDate || 'Non défini'}</p>
-          <p><span style={styles.label}>Lieu extérieur:</span> {textContent.awayLocation || 'Non défini'}</p>
-        </div>
-        {textContent && (
-          <div style={styles.form}>
-            <form onSubmit={this.handleSubmit}>
-              <label style={styles.label}>Groupe:</label>
-              <input style={styles.formInput} type="text" value={textContent.group} />
-              <label style={styles.label}>Match à domicile:</label>
-              <input style={styles.formInput} type="date" value={textContent.homeDate} />
-              <label style={styles.label}>Lieu domicile:</label>
-              <input style={styles.formInput} type="text" value={textContent.homeLocation} />
-              <label style={styles.label}>Match à l'extérieur:</label>
-              <input style={styles.formInput} type="date" value={textContent.awayDate} />
-              <label style={styles.label}>Lieu extérieur:</label>
-                <input style={styles.formInput} type="text" value={textContent.awayLocation} />
-              <button type="submit">Enregistrer les modifications</button>
-            </form>
-          </div>
-        )}
-      </div>
-    )
-  },
-  
-  renderResult: function() {
-    const textContent = this.parseJsonText(this.props.text);
-    return (
-      <div style={styles.container}>
-        <h2 style={styles.title}>{textContent.team1} vs {textContent.team2}</h2>
-        <div style={styles.info}>
-          <div style={styles.score}>  
-            <span>{textContent.team1Score}</span>
-            <span style={styles.separator}>-</span>
-            <span>{textContent.team2Score}</span>
-          </div>
-          <p><span style={styles.label}>Groupe:</span> {textContent.group}</p>
-          {textContent.isPostponed && <p style={styles.postponed}>Match reporté</p>}
-        </div>
-        {textContent && (
-          <div style={styles.form}>
-            <form onSubmit={this.handleSubmit}>
-              <label style={styles.label}>Score de l'équipe 1:</label>
-              <input style={styles.formInput} type="text" value={textContent.team1Score} />
-              <label style={styles.label}>Score de l'équipe 2:</label>
-              <input style={styles.formInput} type="text" value={textContent.team2Score} />
-              <label style={styles.label}>Groupe:</label>
-              <input style={styles.formInput} type="text" value={textContent.group} />
-              <button type="submit">Enregistrer les modifications</button>
-            </form>
-          </div>
-        )}
-      </div>
-    )
-  },
-
-  renderTeam: function() {
-    const textContent = this.parseJsonText(this.props.text);
-    return (
-      <div style={styles.container}>
-        <h2 style={styles.title}>{textContent.teamName}</h2>
-        <div style={styles.info}>
-          <p><span style={styles.label}>Entraîneur:</span> {textContent.coach}</p>
-          <p><span style={styles.label}>Groupe:</span> {textContent.group}</p>
-        </div>
-        {textContent && (
-          <div style={styles.form}>
-            <form onSubmit={this.handleSubmit}>
-              <label style={styles.label}>Nom de l'équipe:</label>
-              <input style={styles.formInput} type="text" value={textContent.teamName} />
-              <label style={styles.label}>Entraîneur:</label>
-              <input style={styles.formInput} type="text" value={textContent.coach} />
-              <label style={styles.label}>Groupe:</label>
-                <input style={styles.formInput} type="number" defaultValue={textContent.group} />
-              <button type="submit">Enregistrer les modifications</button>
-            </form>
-          </div>
-        )}
-      </div>
-    )
-  },
-
-  render: function () {
-    const textContent = this.parseJsonText(this.props.text);
-    console.log(this.props)
-    switch(this.props.type) {
-      case "match":
-        return this.renderMatch();
-      case "result":
-        return this.renderResult();
-      case "stade":
-        return this.renderStade()
-      case "team":
-        return this.renderTeam();
-      case "post":
-        return (
-          <div style={styles.container}>
-            <div style={styles.jsonContent}
-              dangerouslySetInnerHTML={{
-                __html: textContent ? 
-                  (typeof textContent === 'string' ? textContent : JSON.stringify(textContent, null, 2)) : 
-                  '<h1 class="editor_no-content">Il n\'y a pas de contenu ici</h1>'
-              }}
-            />
-          </div>
-        );
-      default:
-        return this.transferPropsTo(
-          <div className="post-content"
-            dangerouslySetInnerHTML={{
-              __html: this.props.text || '<h1 class="editor_no-content">There doesn\'t seem to be anything here</h1>'
-            }}/>)
+      return text
     }
   }
-})
 
-module.exports = Rendered;
+  handleSubmit(event) {
+    event.preventDefault()
+    const formData = new FormData(event.target)
+    const data = Object.fromEntries(formData.entries())
+    require("./api").updateEntry(data.type, data.index, data)
+    console.log(data)
+  }
+
+  renderStade() {
+    const textContent = this.parseJsonText(this.text)
+    const container = document.createElement('div')
+    Object.assign(container.style, styles.container)
+
+    const title = document.createElement('h2')
+    Object.assign(title.style, styles.title)
+    title.textContent = textContent.stadeName
+
+    const info = document.createElement('div')
+    Object.assign(info.style, styles.info)
+
+    const address = document.createElement('p')
+    const addressLabel = document.createElement('span')
+    Object.assign(addressLabel.style, styles.label)
+    addressLabel.textContent = 'Adresse:'
+    address.appendChild(addressLabel)
+    address.appendChild(document.createTextNode(` ${textContent.address}`))
+
+    const city = document.createElement('p')
+    const cityLabel = document.createElement('span')
+    Object.assign(cityLabel.style, styles.label)
+    cityLabel.textContent = 'Ville:'
+    city.appendChild(cityLabel)
+    city.appendChild(document.createTextNode(` ${textContent.city || ''}`))
+
+    info.appendChild(address)
+    info.appendChild(city)
+
+    if (textContent) {
+      const form = document.createElement('div')
+      Object.assign(form.style, styles.form)
+
+      const formElement = document.createElement('form')
+      formElement.onsubmit = (e) => this.handleSubmit(e)
+
+      const stadeNameLabel = document.createElement('label')
+      Object.assign(stadeNameLabel.style, styles.label)
+      stadeNameLabel.textContent = 'Nom du stade:'
+
+      const stadeNameInput = document.createElement('input')
+      Object.assign(stadeNameInput.style, styles.formInput)
+      stadeNameInput.type = 'text'
+      stadeNameInput.value = textContent.stadeName
+
+      const addressLabel = document.createElement('label')
+      Object.assign(addressLabel.style, styles.label)
+      addressLabel.textContent = 'Adresse:'
+
+      const addressInput = document.createElement('input')
+      Object.assign(addressInput.style, styles.formInput)
+      addressInput.type = 'text'
+      addressInput.value = textContent.address
+
+      const cityLabel = document.createElement('label')
+      Object.assign(cityLabel.style, styles.label)
+      cityLabel.textContent = 'Ville:'
+
+      const cityInput = document.createElement('input')
+      Object.assign(cityInput.style, styles.formInput)
+      cityInput.type = 'text'
+      cityInput.value = textContent.city || ''
+
+      const submitButton = document.createElement('button')
+      submitButton.type = 'submit'
+      submitButton.textContent = 'Enregistrer les modifications'
+
+      formElement.appendChild(stadeNameLabel)
+      formElement.appendChild(stadeNameInput)
+      formElement.appendChild(addressLabel)
+      formElement.appendChild(addressInput)
+      formElement.appendChild(cityLabel)
+      formElement.appendChild(cityInput)
+      formElement.appendChild(submitButton)
+
+      form.appendChild(formElement)
+    }
+
+    container.appendChild(title)
+    container.appendChild(info)
+    if (textContent) {
+      container.appendChild(form)
+    }
+
+    return container
+  }
+
+  renderMatch() {
+    const textContent = this.parseJsonText(this.text)
+    const container = document.createElement('div')
+    Object.assign(container.style, styles.container)
+
+    const title = document.createElement('h2')
+    Object.assign(title.style, styles.title)
+    title.textContent = `${textContent.team1} vs ${textContent.team2}`
+
+    const info = document.createElement('div')
+    Object.assign(info.style, styles.info)
+
+    const group = document.createElement('p')
+    const groupLabel = document.createElement('span')
+    Object.assign(groupLabel.style, styles.label)
+    groupLabel.textContent = 'Groupe:'
+    group.appendChild(groupLabel)
+    group.appendChild(document.createTextNode(` ${textContent.group}`))
+
+    const homeDate = document.createElement('p')
+    const homeDateLabel = document.createElement('span')
+    Object.assign(homeDateLabel.style, styles.label)
+    homeDateLabel.textContent = 'Match à domicile:'
+    homeDate.appendChild(homeDateLabel)
+    homeDate.appendChild(document.createTextNode(` ${textContent.homeDate || 'Non défini'}`))
+
+    const homeLocation = document.createElement('p')
+    const homeLocationLabel = document.createElement('span')
+    Object.assign(homeLocationLabel.style, styles.label)
+    homeLocationLabel.textContent = 'Lieu domicile:'
+    homeLocation.appendChild(homeLocationLabel)
+    homeLocation.appendChild(document.createTextNode(` ${textContent.homeLocation || 'Non défini'}`))
+
+    const awayDate = document.createElement('p')
+    const awayDateLabel = document.createElement('span')
+    Object.assign(awayDateLabel.style, styles.label)
+    awayDateLabel.textContent = 'Match à l\'extérieur:'
+    awayDate.appendChild(awayDateLabel)
+    awayDate.appendChild(document.createTextNode(` ${textContent.awayDate || 'Non défini'}`))
+
+    const awayLocation = document.createElement('p')
+    const awayLocationLabel = document.createElement('span')
+    Object.assign(awayLocationLabel.style, styles.label)
+    awayLocationLabel.textContent = 'Lieu extérieur:'
+    awayLocation.appendChild(awayLocationLabel)
+    awayLocation.appendChild(document.createTextNode(` ${textContent.awayLocation || 'Non défini'}`))
+
+    info.appendChild(group)
+    info.appendChild(homeDate)
+    info.appendChild(homeLocation)
+    info.appendChild(awayDate)
+    info.appendChild(awayLocation)
+
+    if (textContent) {
+      const form = document.createElement('div')
+      Object.assign(form.style, styles.form)
+
+      const formElement = document.createElement('form')
+      formElement.onsubmit = (e) => this.handleSubmit(e)
+
+      const groupLabel = document.createElement('label')
+      Object.assign(groupLabel.style, styles.label)
+      groupLabel.textContent = 'Groupe:'
+
+      const groupInput = document.createElement('input')
+      Object.assign(groupInput.style, styles.formInput)
+      groupInput.type = 'text'
+      groupInput.value = textContent.group
+
+      const homeDateLabel = document.createElement('label')
+      Object.assign(homeDateLabel.style, styles.label)
+      homeDateLabel.textContent = 'Match à domicile:'
+
+      const homeDateInput = document.createElement('input')
+      Object.assign(homeDateInput.style, styles.formInput)
+      homeDateInput.type = 'date'
+      homeDateInput.value = textContent.homeDate
+
+      const homeLocationLabel = document.createElement('label')
+      Object.assign(homeLocationLabel.style, styles.label)
+      homeLocationLabel.textContent = 'Lieu domicile:'
+
+      const homeLocationInput = document.createElement('input')
+      Object.assign(homeLocationInput.style, styles.formInput)
+      homeLocationInput.type = 'text'
+      homeLocationInput.value = textContent.homeLocation
+
+      const awayDateLabel = document.createElement('label')
+      Object.assign(awayDateLabel.style, styles.label)
+      awayDateLabel.textContent = 'Match à l\'extérieur:'
+
+      const awayDateInput = document.createElement('input')
+      Object.assign(awayDateInput.style, styles.formInput)
+      awayDateInput.type = 'date'
+      awayDateInput.value = textContent.awayDate
+
+      const awayLocationLabel = document.createElement('label')
+      Object.assign(awayLocationLabel.style, styles.label)
+      awayLocationLabel.textContent = 'Lieu extérieur:'
+
+      const awayLocationInput = document.createElement('input')
+      Object.assign(awayLocationInput.style, styles.formInput)
+      awayLocationInput.type = 'text'
+      awayLocationInput.value = textContent.awayLocation
+
+      const submitButton = document.createElement('button')
+      submitButton.type = 'submit'
+      submitButton.textContent = 'Enregistrer les modifications'
+
+      formElement.appendChild(groupLabel)
+      formElement.appendChild(groupInput)
+      formElement.appendChild(homeDateLabel)
+      formElement.appendChild(homeDateInput)
+      formElement.appendChild(homeLocationLabel)
+      formElement.appendChild(homeLocationInput)
+      formElement.appendChild(awayDateLabel)
+      formElement.appendChild(awayDateInput)
+      formElement.appendChild(awayLocationLabel)
+      formElement.appendChild(awayLocationInput)
+      formElement.appendChild(submitButton)
+
+      form.appendChild(formElement)
+    }
+
+    container.appendChild(title)
+    container.appendChild(info)
+    if (textContent) {
+      container.appendChild(form)
+    }
+
+    return container
+  }
+
+  renderResult() {
+    const textContent = this.parseJsonText(this.text)
+    const container = document.createElement('div')
+    Object.assign(container.style, styles.container)
+
+    const title = document.createElement('h2')
+    Object.assign(title.style, styles.title)
+    title.textContent = `${textContent.team1} vs ${textContent.team2}`
+
+    const info = document.createElement('div')
+    Object.assign(info.style, styles.info)
+
+    const score = document.createElement('div')
+    Object.assign(score.style, styles.score)
+
+    const team1Score = document.createElement('span')
+    team1Score.textContent = textContent.team1Score
+
+    const separator = document.createElement('span')
+    Object.assign(separator.style, styles.separator)
+    separator.textContent = '-'
+
+    const team2Score = document.createElement('span')
+    team2Score.textContent = textContent.team2Score
+
+    score.appendChild(team1Score)
+    score.appendChild(separator)
+    score.appendChild(team2Score)
+
+    const group = document.createElement('p')
+    const groupLabel = document.createElement('span')
+    Object.assign(groupLabel.style, styles.label)
+    groupLabel.textContent = 'Groupe:'
+    group.appendChild(groupLabel)
+    group.appendChild(document.createTextNode(` ${textContent.group}`))
+
+    info.appendChild(score)
+    info.appendChild(group)
+
+    if (textContent.isPostponed) {
+      const postponed = document.createElement('p')
+      Object.assign(postponed.style, styles.postponed)
+      postponed.textContent = 'Match reporté'
+      info.appendChild(postponed)
+    }
+
+    if (textContent) {
+      const form = document.createElement('div')
+      Object.assign(form.style, styles.form)
+
+      const formElement = document.createElement('form')
+      formElement.onsubmit = (e) => this.handleSubmit(e)
+
+      const team1ScoreLabel = document.createElement('label')
+      Object.assign(team1ScoreLabel.style, styles.label)
+      team1ScoreLabel.textContent = 'Score de l\'équipe 1:'
+
+      const team1ScoreInput = document.createElement('input')
+      Object.assign(team1ScoreInput.style, styles.formInput)
+      team1ScoreInput.type = 'text'
+      team1ScoreInput.value = textContent.team1Score
+
+      const team2ScoreLabel = document.createElement('label')
+      Object.assign(team2ScoreLabel.style, styles.label)
+      team2ScoreLabel.textContent = 'Score de l\'équipe 2:'
+
+      const team2ScoreInput = document.createElement('input')
+      Object.assign(team2ScoreInput.style, styles.formInput)
+      team2ScoreInput.type = 'text'
+      team2ScoreInput.value = textContent.team2Score
+
+      const groupLabel = document.createElement('label')
+      Object.assign(groupLabel.style, styles.label)
+      groupLabel.textContent = 'Groupe:'
+
+      const groupInput = document.createElement('input')
+      Object.assign(groupInput.style, styles.formInput)
+      groupInput.type = 'text'
+      groupInput.value = textContent.group
+
+      const submitButton = document.createElement('button')
+      submitButton.type = 'submit'
+      submitButton.textContent = 'Enregistrer les modifications'
+
+      formElement.appendChild(team1ScoreLabel)
+      formElement.appendChild(team1ScoreInput)
+      formElement.appendChild(team2ScoreLabel)
+      formElement.appendChild(team2ScoreInput)
+      formElement.appendChild(groupLabel)
+      formElement.appendChild(groupInput)
+      formElement.appendChild(submitButton)
+
+      form.appendChild(formElement)
+    }
+
+    container.appendChild(title)
+    container.appendChild(info)
+    if (textContent) {
+      container.appendChild(form)
+    }
+
+    return container
+  }
+
+  renderTeam() {
+    const textContent = this.parseJsonText(this.text)
+    const container = document.createElement('div')
+    Object.assign(container.style, styles.container)
+
+    const title = document.createElement('h2')
+    Object.assign(title.style, styles.title)
+    title.textContent = textContent.teamName
+
+    const info = document.createElement('div')
+    Object.assign(info.style, styles.info)
+
+    const coach = document.createElement('p')
+    const coachLabel = document.createElement('span')
+    Object.assign(coachLabel.style, styles.label)
+    coachLabel.textContent = 'Entraîneur:'
+    coach.appendChild(coachLabel)
+    coach.appendChild(document.createTextNode(` ${textContent.coach}`))
+
+    const group = document.createElement('p')
+    const groupLabel = document.createElement('span')
+    Object.assign(groupLabel.style, styles.label)
+    groupLabel.textContent = 'Groupe:'
+    group.appendChild(groupLabel)
+    group.appendChild(document.createTextNode(` ${textContent.group}`))
+
+    info.appendChild(coach)
+    info.appendChild(group)
+
+    if (textContent) {
+      const form = document.createElement('div')
+      Object.assign(form.style, styles.form)
+
+      const formElement = document.createElement('form')
+      formElement.onsubmit = (e) => this.handleSubmit(e)
+
+      const teamNameLabel = document.createElement('label')
+      Object.assign(teamNameLabel.style, styles.label)
+      teamNameLabel.textContent = 'Nom de l\'équipe:'
+
+      const teamNameInput = document.createElement('input')
+      Object.assign(teamNameInput.style, styles.formInput)
+      teamNameInput.type = 'text'
+      teamNameInput.value = textContent.teamName
+
+      const coachLabel = document.createElement('label')
+      Object.assign(coachLabel.style, styles.label)
+      coachLabel.textContent = 'Entraîneur:'
+
+      const coachInput = document.createElement('input')
+      Object.assign(coachInput.style, styles.formInput)
+      coachInput.type = 'text'
+      coachInput.value = textContent.coach
+
+      const groupLabel = document.createElement('label')
+      Object.assign(groupLabel.style, styles.label)
+      groupLabel.textContent = 'Groupe:'
+
+      const groupInput = document.createElement('input')
+      Object.assign(groupInput.style, styles.formInput)
+      groupInput.type = 'text'
+      groupInput.value = textContent.group
+
+      const submitButton = document.createElement('button')
+      submitButton.type = 'submit'
+      submitButton.textContent = 'Enregistrer les modifications'
+
+      formElement.appendChild(teamNameLabel)
+      formElement.appendChild(teamNameInput)
+      formElement.appendChild(coachLabel)
+      formElement.appendChild(coachInput)
+      formElement.appendChild(groupLabel)
+      formElement.appendChild(groupInput)
+      formElement.appendChild(submitButton)
+
+      form.appendChild(formElement)
+    }
+
+    container.appendChild(title)
+    container.appendChild(info)
+    if (textContent) {
+      container.appendChild(form)
+    }
+
+    return container
+  }
+
+  render() {
+    let content
+    switch (this.type) {
+      case 'stade':
+        content = this.renderStade()
+        break
+      case 'match':
+        content = this.renderMatch()
+        break
+      case 'result':
+        content = this.renderResult()
+        break
+      case 'team':
+        content = this.renderTeam()
+        break
+      default:
+        content = document.createElement('div')
+        content.textContent = this.text
+    }
+
+    this.container.innerHTML = ''
+    this.container.appendChild(content)
+  }
+}
+
+module.exports = Rendered

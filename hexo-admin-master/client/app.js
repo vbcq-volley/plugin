@@ -1,32 +1,59 @@
 /**
  * admin menu bar
- * @param  {[type]} 'react-router' [description]
- * @return {[type]}                [description]
  */
-var Link = require('react-router').Link
-var React = require('react')
-
-var App = React.createClass({
-  render: function () {
-    return <div className="app">
-      <div className="app_header">
-        
-        <ul className="app_nav">
-          <li><Link to="posts">Posts</Link></li>
-          <li><Link to="pages">Pages</Link></li>
-          <li><Link to="teams">Équipes</Link></li>
-          <li><Link to="stades">Stades</Link></li>
-          <li><Link to="results">Résultats</Link></li>
-          <li><Link to="datas">Matchs</Link></li>
-          <li><Link to="settings">Paramètres</Link></li>
-          <li><Link to="about">À propos</Link></li>
-        </ul>
-      </div>
-      <div className="app_main">
-        <this.props.activeRouteHandler/>
-      </div>
-    </div>;
+const router = require('./router');
+class App {
+  constructor() {
+    this.init();
   }
-})
 
-module.exports = App
+  init() {
+    const app = document.createElement('div');
+    app.className = 'app';
+    
+    const header = document.createElement('div');
+    header.className = 'app_header';
+    
+    const nav = document.createElement('ul');
+    nav.className = 'app_nav';
+    
+    const menuItems = [
+      { text: 'Posts', route: 'posts' },
+      { text: 'Pages', route: 'pages' },
+      { text: 'Équipes', route: 'teams' },
+      { text: 'Stades', route: 'stades' },
+      { text: 'Résultats', route: 'results' },
+      { text: 'Matchs', route: 'datas' },
+      { text: 'Paramètres', route: 'settings' },
+      { text: 'À propos', route: 'about' }
+    ];
+    
+    menuItems.forEach(item => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = `#/${item.route}`;
+      a.textContent = item.text;
+      li.appendChild(a);
+      nav.appendChild(li);
+    });
+    
+    header.appendChild(nav);
+    app.appendChild(header);
+    
+    const main = document.createElement('div');
+    main.className = 'app_main';
+    app.appendChild(main);
+    
+    document.body.appendChild(app);
+    
+    // Gestion du routage
+    window.addEventListener('hashchange', this.handleRoute.bind(this));
+    this.handleRoute();
+  }
+  
+  handleRoute() {
+    router.handleRoute();
+  }
+}
+
+module.exports = new App();

@@ -1,103 +1,122 @@
-var DataFetcher = require('./data-fetcher');
-var api = require('./api');
-var React = require('react/addons')
-var cx = React.addons.classSet
-var Promise = require('es6-promise').Promise
-var marked = require('marked')
-var Editor_data = require('./editor-data')
-var _ = require('lodash')
-var moment = require('moment')
+const DataFetcher = require('./data-fetcher');
+const api = require('./api');
+const Promise = require('es6-promise').Promise;
+const marked = require('marked');
+const Editor_data = require('./editor-data');
+const _ = require('lodash');
+const moment = require('moment');
+const Router = require('./router');
 
-var Page = React.createClass({
-  mixins: [DataFetcher((params) => {
-    return {
-      page: api.page(params.pageId),
-      settings: api.settings(),
-      tagsCategoriesAndMetadata: api.tagsCategoriesAndMetadata()
+class Page {
+  constructor() {
+    this.state = {
+      updated: moment(),
+      page: null,
+      settings: null,
+      tagsCategoriesAndMetadata: null,
+      title: '',
+      initialRaw: '',
+      raw: '',
+      rendered: ''
+    };
+    
+    this.init();
+  }
+
+  async init() {
+    try {
+      const params = Router.getParams();
+      const [page, settings, tagsCategoriesAndMetadata] = await Promise.all([
+        api.page(params[0]),
+        api.settings(),
+        api.tagsCategoriesAndMetadata()
+      ]);
+      
+      this.state.page = page;
+      this.state.settings = settings;
+      this.state.tagsCategoriesAndMetadata = tagsCategoriesAndMetadata;
+      
+      this._page = _.debounce((update) => {
+        const now = moment();
+        api.page(params[0], update).then(() => {
+          this.state.updated = now;
+          this.render();
+        });
+      }, 1000, {trailing: true, loading: true});
+      
+      this.dataDidLoad('page', page);
+      this.render();
+    } catch (error) {
+      console.error('Error loading page:', error);
     }
-  })],
+  }
 
-  getInitialState: function () {
-    return {
-      updated: moment()
-    }
-  },
+  handleChange(update) {
+    const now = moment();
+    api.page(this.state.page._id, update).then((data) => {
+      this.state.page = data.page;
+      this.state.updated = now;
+      this.render();
+    });
+  }
 
-  componentDidMount: function () {
-    this._page = _.debounce((update) => {
-      var now = moment()
-      api.page(this.props.params.pageId, update).then(() => {
-        this.setState({
-          updated: now
-        })
-      })
-    }, 1000, {trailing: true, loading: true})
-  },
+  handleChangeContent(text) {
+    if (text === this.state.raw) return;
+    
+    this.state.raw = text;
+    this.state.updated = null;
+    this.state.rendered = marked(text);
+    this._page({_content: text});
+    this.render();
+  }
 
-  handleChange: function (update) {
-    var now = moment()
-    api.page(this.props.params.pageId, update).then((data) => {
-      this.setState({
-        page: data.page,
-        updated: now
-      })
-    })
-  },
+  handleChangeTitle(title) {
+    if (title === this.state.title) return;
+    
+    this.state.title = title;
+    this._page(this.state);
+    this.render();
+  }
 
-  handleChangeContent: function (text) {
-    if (text === this.state.raw) {
-      return
-    }
-    this.setState({
-      raw: text,
-      updated: null,
-      rendered: marked(text)
-    })
-    this._page({_content: text})
-  },
-
-  handleChangeTitle: function (title) {
-    if (title === this.state.title) {
-      return
-    }
-    this.setState({title: title});
-    this._page(this.state)
-  },
-
-  handlePublish: function () {
-    if (!this.state.page.isDraft) return
+  handlePublish() {
+    if (!this.state.page.isDraft) return;
+    
     api.publish(this.state.page._id).then((page) => {
-      this.setState({page: page})
+      this.state.page = page;
+      this.render();
     });
-  },
+  }
 
-  handleUnpublish: function () {
-    if (this.state.page.isDraft) return
+  handleUnpublish() {
+    if (this.state.page.isDraft) return;
+    
     api.unpublish(this.state.page._id).then((page) => {
-      this.setState({page: page})
+      this.state.page = page;
+      this.render();
     });
-  },
+  }
 
-  dataDidLoad: function (name, data) {
-    if (name !== 'page') return
-    var parts = data.raw.split('---');
-    var _slice = parts[0] === '' ? 2 : 1;
-    var raw = parts.slice(_slice).join('---').trim();
-    this.setState({
-      title: data.title,
-      initialRaw: raw,
-      raw: raw,
-      rendered: data.content
-    })
-  },
+  dataDidLoad(name, data) {
+    if (name !== 'page') return;
+    
+    const parts = data.raw.split('---');
+    const _slice = parts[0] === '' ? 2 : 1;
+    const raw = parts.slice(_slice).join('---').trim();
+    
+    this.state.title = data.title;
+    this.state.initialRaw = raw;
+    this.state.raw = raw;
+    this.state.rendered = data.content;
+  }
 
-  render: function () {
-    var page = this.state.page
-    var settings = this.state.settings
+  render() {
+    const { page, settings } = this.state;
+    
     if (!page || !settings) {
-      return <span>Loading...</span>
+      return document.createElement('span');
     }
-    return Editor_data({
+
+    const editor = new Editor_data({
       isPage: true,
       post: this.state.page,
       raw: this.state.initialRaw,
@@ -106,16 +125,18 @@ var Page = React.createClass({
       updated: this.state.updated,
       title: this.state.title,
       rendered: this.state.rendered,
-      onChange: this.handleChange,
-      onChangeContent: this.handleChangeContent,
-      onChangeTitle: this.handleChangeTitle,
-      onPublish: this.handlePublish,
-      onUnpublish: this.handleUnpublish,
+      onChange: this.handleChange.bind(this),
+      onChangeContent: this.handleChangeContent.bind(this),
+      onChangeTitle: this.handleChangeTitle.bind(this),
+      onPublish: this.handlePublish.bind(this),
+      onUnpublish: this.handleUnpublish.bind(this),
       tagsCategoriesAndMetadata: this.state.tagsCategoriesAndMetadata,
       adminSettings: settings,
       type: 'page'
-    })
+    });
+
+    return editor.render();
   }
-});
+}
 
 module.exports = Page;

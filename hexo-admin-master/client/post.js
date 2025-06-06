@@ -1,148 +1,162 @@
-var DataFetcher = require('./data-fetcher');
-var api = require('./api');
-var React = require('react/addons')
-var cx = React.addons.classSet
-var Promise = require('es6-promise').Promise
-var marked = require('marked')
-var Editor_data = require('./editor-data')
-var _ = require('lodash')
-var moment = require('moment')
-var Router = require('react-router');
-var Confirm = require('./confirm');
+const DataFetcher = require('./data-fetcher');
+const api = require('./api');
+const Promise = require('es6-promise').Promise;
+const marked = require('marked');
+const Editor_data = require('./editor-data');
+const _ = require('lodash');
+const moment = require('moment');
+const Router = require('./router');
+const Confirm = require('./confirm');
 
-var confirm = function (message, options) {
-  var cleanup, component, props, wrapper;
-  if (options == null) {
-    options = {};
-  }
-
-  props = $.extend({
+const confirm = function (message, options = {}) {
+  const props = Object.assign({
     message: message
   }, options);
-  wrapper = document.body.appendChild(document.createElement('div'));
-  component = React.renderComponent(<Confirm {...props}/>, wrapper);
-  cleanup = function () {
-    React.unmountComponentAtNode(wrapper);
-    return setTimeout(function () {
-      return wrapper.remove();
-    });
+  
+  const wrapper = document.body.appendChild(document.createElement('div'));
+  const component = new Confirm(props);
+  wrapper.appendChild(component.render());
+  
+  const cleanup = function () {
+    wrapper.remove();
   };
 
-  return component.promise.always(cleanup).promise();
+  return component.promise.then(cleanup).catch(cleanup);
 };
 
-var Post = React.createClass({
-  mixins: [DataFetcher((params) => {
-    return {
-      post: api.post(params.postId),
-      tagsCategoriesAndMetadata: api.tagsCategoriesAndMetadata(),
-      settings: api.settings()
+class Post {
+  constructor() {
+    this.state = {
+      updated: moment(),
+      post: null,
+      tagsCategoriesAndMetadata: null,
+      settings: null,
+      title: '',
+      initialRaw: '',
+      raw: '',
+      rendered: ''
+    };
+    
+    this.init();
+  }
+
+  async init() {
+    try {
+      const params = Router.getParams();
+      const [post, tagsCategoriesAndMetadata, settings] = await Promise.all([
+        api.post(params[0]),
+        api.tagsCategoriesAndMetadata(),
+        api.settings()
+      ]);
+      
+      this.state.post = post;
+      this.state.tagsCategoriesAndMetadata = tagsCategoriesAndMetadata;
+      this.state.settings = settings;
+      
+      this._post = _.debounce((update) => {
+        const now = moment();
+        api.post(params[0], update).then(() => {
+          this.state.updated = now;
+          this.render();
+        });
+      }, 1000, {trailing: true, loading: true});
+      
+      this.dataDidLoad('post', post);
+      this.render();
+    } catch (error) {
+      console.error('Error loading post:', error);
     }
-  })],
+  }
 
-  getInitialState: function () {
-    return {
-      updated: moment()
-    }
-  },
-
-  componentDidMount: function () {
-    this._post = _.debounce((update) => {
-      var now = moment()
-      api.post(this.props.params.postId, update).then(() => {
-        this.setState({
-          updated: now
-        })
-      })
-    }, 1000, {trailing: true, loading: true})
-  },
-
-  handleChange: function (update) {
-    var now = moment()
-    api.post(this.props.params.postId, update).then((data) => {
-      var state = {
+  handleChange(update) {
+    const now = moment();
+    api.post(this.state.post._id, update).then((data) => {
+      const state = {
         tagsCategoriesAndMetadata: data.tagsCategoriesAndMetadata,
         post: data.post,
         updated: now,
         author: data.post.author,
+      };
+      
+      for(let i = 0; i < data.tagsCategoriesAndMetadata.metadata.length; i++) {
+        const name = data.tagsCategoriesAndMetadata.metadata[i];
+        state[name] = data.post[name];
       }
-      for(var i=0; i<data.tagsCategoriesAndMetadata.metadata.length; i++){
-        var name = data.tagsCategoriesAndMetadata.metadata[i]
-        state[name] = data.post[name]
-      }
-      this.setState(state)
-    })
-  },
+      
+      Object.assign(this.state, state);
+      this.render();
+    });
+  }
 
-  handleChangeContent: function (text) {
+  handleChangeContent(text) {
     if (text === this.state.raw) return;
 
-    this.setState({
-      raw: text,
-      updated: null,
-      rendered: marked(text)
-    })
-    this._post({_content: text})
-  },
+    this.state.raw = text;
+    this.state.updated = null;
+    this.state.rendered = marked(text);
+    this._post({_content: text});
+    this.render();
+  }
 
-  handleChangeTitle: function (title) {
-    if (title === this.state.title) {
-      return
-    }
-    this.setState({title: title});
-    this._post({title: title})
-  },
+  handleChangeTitle(title) {
+    if (title === this.state.title) return;
+    
+    this.state.title = title;
+    this._post({title: title});
+    this.render();
+  }
 
-  handlePublish: function () {
-    if (!this.state.post.isDraft) return
+  handlePublish() {
+    if (!this.state.post.isDraft) return;
+    
     api.publish(this.state.post._id).then((post) => {
-      this.setState({post: post})
+      this.state.post = post;
+      this.render();
     });
-  },
+  }
 
-  handleUnpublish: function () {
-    if (this.state.post.isDraft) return
+  handleUnpublish() {
+    if (this.state.post.isDraft) return;
+    
     api.unpublish(this.state.post._id).then((post) => {
-      this.setState({post: post})
+      this.state.post = post;
+      this.render();
     });
-  },
+  }
 
-  handleRemove: function () {
-    var self = this;
+  handleRemove() {
     return confirm('Delete this post?', {
       description: 'This operation will move current draft into source/_discarded folder.',
       confirmLabel: 'Yes',
       abortLabel: 'No'
-    }).then(function () {
-      api.remove(self.state.post._id).then(
-        Router.transitionTo('posts')
-      );
+    }).then(() => {
+      api.remove(this.state.post._id).then(() => {
+        window.location.hash = '#/posts';
+      });
     });
-  },
+  }
 
-  dataDidLoad: function (name, data) {
-    console.log(data)
-    console.log(name)
-    if (name !== 'post') return
-    var parts = data.raw.split('---');
-    var _slice = parts[0] === '' ? 2 : 1;
-    var raw = parts.slice(_slice).join('---').trim();
-    this.setState({
-      title: data.title,
-      initialRaw: raw,
-      raw: raw,
-      rendered: data.content
-    })
-  },
+  dataDidLoad(name, data) {
+    if (name !== 'post') return;
+    
+    const parts = data.raw.split('---');
+    const _slice = parts[0] === '' ? 2 : 1;
+    const raw = parts.slice(_slice).join('---').trim();
+    
+    this.state.title = data.title;
+    this.state.initialRaw = raw;
+    this.state.raw = raw;
+    this.state.rendered = data.content;
+  }
 
-  render: function () {
-    console.log(this.state)
-    var post = this.state.post
-    var settings = this.state.settings
-    if (!post || !this.state.tagsCategoriesAndMetadata || !settings) {
-      return <span>Loading...</span>
+  render() {
+    const { post, tagsCategoriesAndMetadata, settings } = this.state;
+    
+    if (!post || !tagsCategoriesAndMetadata || !settings) {
+      return document.createElement('span');
     }
-    return Editor_data({
+
+    const editor = new Editor_data({
       post: this.state.post,
       raw: this.state.initialRaw,
       updatedRaw: this.state.raw,
@@ -153,15 +167,17 @@ var Post = React.createClass({
       rendered: this.state.rendered,
       tagsCategoriesAndMetadata: this.state.tagsCategoriesAndMetadata,
       adminSettings: settings,
-      onChange: this.handleChange,
-      onChangeContent: this.handleChangeContent,
-      onChangeTitle: this.handleChangeTitle,
-      onPublish: this.handlePublish,
-      onUnpublish: this.handleUnpublish,
-      onRemove: this.handleRemove,
+      onChange: this.handleChange.bind(this),
+      onChangeContent: this.handleChangeContent.bind(this),
+      onChangeTitle: this.handleChangeTitle.bind(this),
+      onPublish: this.handlePublish.bind(this),
+      onUnpublish: this.handleUnpublish.bind(this),
+      onRemove: this.handleRemove.bind(this),
       type: 'post'
-    })
+    });
+
+    return editor.render();
   }
-});
+}
 
 module.exports = Post;

@@ -1,14 +1,16 @@
-var React = require('react/addons')
-var Router = require('react-router')
-var Editor_data = require('./editor-data')
+const Editor_data = require('./editor-data')
 
-var Result = React.createClass({
-  render: function() {
-    return <Editor_data
-      id={this.props.params.id}
-      type="result"
-    />
+class Result {
+  constructor() {
+    this.editor = new Editor_data()
   }
-})
 
-module.exports = Result 
+  init(container, params) {
+    this.editor.init(container, {
+      id: params.id,
+      type: 'result'
+    })
+  }
+}
+
+module.exports = new Result() 

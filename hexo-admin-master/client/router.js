@@ -1,39 +1,71 @@
-var App = require('./app');
-var Post = require('./post')
-var Posts = require('./posts')
-var Page = require('./page')
-var Pages = require('./pages')
-var About = require('./about')
-var Deploy = require('./deploy')
-var Settings = require('./settings')
-var AuthSetup = require('./auth-setup')
-var datas=require("./datas")
-var data=require("./data")
-var team=require("./team")
-var teams=require("./teams")
-var stade=require("./stade")
-var stades=require("./stades")
-var result=require("./result")
-var results=require("./results")
-var Route = require('react-router').Route
+const App = require('./app');
+const Post = require('./post');
+const Posts = require('./posts');
+const Page = require('./page');
+const Pages = require('./pages');
+const About = require('./about');
+const Deploy = require('./deploy');
+const Settings = require('./settings');
+const AuthSetup = require('./auth-setup');
+const datas = require("./datas");
+const data = require("./data");
+const team = require("./team");
+const teams = require("./teams");
+const stade = require("./stade");
+const stades = require("./stades");
+const result = require("./result");
+const results = require("./results");
 
-module.exports = () => {
-  return <Route handler={App}>
-    <Route name="posts" handler={Posts} path="/"/>
-    <Route name="post" handler={Post} path="/posts/:postId"/>
-    <Route name="page" handler={Page} path="/pages/:pageId"/>
-    <Route name="pages" handler={Pages} path="/pages"/>
-    <Route name="datas" handler={datas} path="/administration"/>
-    <Route name="data" handler={data} path="/administration/:matchId"/>
-    <Route name="teams" handler={teams} path="/equipe"/>
-    <Route name="team" handler={team} path="/equipe/:matchId"/>
-    <Route name="stades" handler={stades} path="/stade"/>
-    <Route name="stade" handler={stade} path="/stade/:stadeId"/>
-    <Route name="results" handler={results} path="/resultat"/>
-    <Route name="result" handler={result} path="/resultat/:resultId"/>
-    <Route name="about" handler={About}/>
-    <Route name="deploy" handler={Deploy}/>
-    <Route name="settings" handler={Settings}/>
-    <Route name="auth-setup" handler={AuthSetup}/>
-  </Route>
+class Router {
+  constructor() {
+    this.routes = {
+      'posts': Posts,
+      'post': Post,
+      'page': Page,
+      'pages': Pages,
+      'datas': datas,
+      'data': data,
+      'teams': teams,
+      'team': team,
+      'stades': stades,
+      'stade': stade,
+      'results': results,
+      'result': result,
+      'about': About,
+      'deploy': Deploy,
+      'settings': Settings,
+      'auth-setup': AuthSetup
+    };
+    
+    this.params = {};
+  }
+
+  init() {
+    window.addEventListener('hashchange', this.handleRoute.bind(this));
+    this.handleRoute();
+  }
+
+  handleRoute() {
+    const hash = window.location.hash.slice(2);
+    const [route, ...params] = hash.split('/');
+    
+    const handler = this.routes[route] || Posts;
+    this.params = params;
+    
+    const main = document.querySelector('.app_main');
+    main.innerHTML = '';
+    
+    if (typeof handler === 'function') {
+      const instance = new handler();
+      if (typeof instance.render === 'function') {
+        main.appendChild(instance.render());
+      }
+    }
+  }
+
+  getParams() {
+    return this.params;
+  }
 }
+
+module.exports = new Router();

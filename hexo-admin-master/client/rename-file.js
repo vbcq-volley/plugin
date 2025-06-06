@@ -1,55 +1,55 @@
+var api = require('./api');
 
-var path = require('path')
-var React = require('react/addons')
-var PT = React.PropTypes
-var api = require('./api')
+class RenameFile {
+  constructor(options) {
+    this.options = options;
+    this.state = {
+      value: options.defaultValue || '',
+      error: null
+    };
+  }
 
-var RenameFile = React.createClass({
-  propTypes: {
-    post: PT.object,
-    handlePreviewLink: PT.func
-  },
-
-  getInitialState: function() {
-    return {
-      filename: '',
-      editing: false,
-      editingName: ''
+  async updateValue(value) {
+    try {
+      await api.renameFile(this.options.name, value);
+      this.state.value = value;
+      this.state.error = null;
+      this.render();
+    } catch (error) {
+      console.error('Error renaming file:', error);
+      this.state.error = error.message;
+      this.render();
     }
-  },
+  }
 
-  componentDidMount: function() {
-    var filename = this.props.post.source
-    this.setState({
-      filename: filename,
-      editingName: filename
-    })
-  },
+  render() {
+    const container = document.createElement('div');
+    container.className = 'rename-file';
 
-  toggleEditing: function() {
-    this.setState({
-      editing: !this.state.editing,
-      editingName: this.state.filename
-    })
-  },
+    const label = document.createElement('label');
+    label.textContent = this.options.label;
 
-  handleEditChange: function(e) {
-    this.setState({editingName: e.target.value})
-  },
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = this.state.value;
+    input.addEventListener('change', (e) => this.updateValue(e.target.value));
 
-  handleRenameFile: function(e) {
-    var postId = this.props.post._id
-    var editingName = this.state.editingName
-    api.renamePost(postId, editingName).then(result => {
-      if (!result) {
-        console.log('error renaming file.')
-        this.toggleEditing()
-        return
-      }
-      console.log(`successfully renamed file to ${editingName}`)
+    if (this.state.error) {
+      const error = document.createElement('div');
+      error.className = 'error';
+      error.textContent = this.state.error;
+      container.appendChild(error);
+    }
 
-      var url = window.location.pathname.split('/')
-      var rootPath = url.slice(0, url.indexOf('admin')).join('/')
+    container.appendChild(label);
+    container.appendChild(input);
+
+    return container;
+  }
+}
+
+module.exports = RenameFile;
+
       var previewLink = path.join(rootPath, result.path)
 
       this.setState({filename: editingName, editing: false},

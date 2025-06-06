@@ -1,269 +1,203 @@
-var path = require('path')
-var React = require('react/addons')
-var cx = React.addons.classSet
-var Promise = require('es6-promise').Promise
-var PT = React.PropTypes
-var CodeMirror = require('./code-mirror')
-var SinceWhen = require('./since-when')
-var Rendered = require('./rendered')
-var CheckGrammar = require('./check-grammar')
-var ConfigDropper = require('./config-dropper')
-var RenameFile = require('./rename-file')
-var PopGallery = require('./pop-gallery')
+const path = require('path')
+const Promise = require('es6-promise').Promise
+const CodeMirror = require('./code-mirror')
+const SinceWhen = require('./since-when')
+const Rendered = require('./rendered')
+const CheckGrammar = require('./check-grammar')
+const ConfigDropper = require('./config-dropper')
+const RenameFile = require('./rename-file')
+const PopGallery = require('./pop-gallery')
 const codemirror = require('codemirror')
 
 // Étendre la classe Date
 Date.prototype.fromNow = function() {
-  const now = new Date();
-  const diffInMilliseconds = now - this;
+  const now = new Date()
+  const diffInMilliseconds = now - this
 
   // Convertir la différence en secondes, minutes, heures, jours, etc.
-  const diffInSeconds = Math.floor(diffInMilliseconds / 1000);
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  const diffInDays = Math.floor(diffInHours / 24);
+  const diffInSeconds = Math.floor(diffInMilliseconds / 1000)
+  const diffInMinutes = Math.floor(diffInSeconds / 60)
+  const diffInHours = Math.floor(diffInMinutes / 60)
+  const diffInDays = Math.floor(diffInHours / 24)
 
   if (diffInDays > 0) {
-      return `il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`;
+    return `il y a ${diffInDays} jour${diffInDays > 1 ? 's' : ''}`
   } else if (diffInHours > 0) {
-      return `il y a ${diffInHours} heure${diffInHours > 1 ? 's' : ''}`;
+    return `il y a ${diffInHours} heure${diffInHours > 1 ? 's' : ''}`
   } else if (diffInMinutes > 0) {
-      return `il y a ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''}`;
+    return `il y a ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''}`
   } else {
-      return `il y a ${diffInSeconds} seconde${diffInSeconds !== 1 ? 's' : ''}`;
+    return `il y a ${diffInSeconds} seconde${diffInSeconds !== 1 ? 's' : ''}`
   }
-};
+}
 
-// Exemple d'utilisation
-const pastDate = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // Il y a 2 jours
-console.log(pastDate.fromNow()); // Affiche "il y a 2 jours"
+class Editor {
+  constructor() {
+    this.state = {
+      postPath: '',
+      previewLink: '',
+      checkingGrammar: false,
+      openGallery: false,
+      renderedType: '',
+      tagsCategoriesAndMetadata: {},
+      onChange: null,
+      onChangeContent: null,
+      onChangeTitle: null,
+      onPublish: null,
+      onUnpublish: null,
+      onRemove: null,
+      mdLink: null
+    }
+  }
 
-var Editor = React.createClass({
+  init(container, props) {
+    this.container = container
+    this.props = props
 
-  // cmRef: null,
+    const url = window.location.href.split('/')
+    const rootPath = url.slice(0, url.indexOf('admin')).join('/')
+    const completeURL = rootPath + '/' + props.post.path
 
-  propTypes: {
-    post: PT.object,
-    raw: PT.string,
-    updatedRaw: PT.string,
-    onChangeTitle: PT.func,
-    title: PT.string,
-    updated: PT.object,
-    isDraft: PT.bool,
-    onPublish: PT.func.isRequired,
-    onUnpublish: PT.func.isRequired,
-    tagsCategoriesAndMetadata: PT.object,
-    adminSettings: PT.object,
-    type: PT.string,
-    onChange: PT.func,
-    onChangeContent: PT.func,
-    onRemove: PT.func
-  },
-
-  getInitialState: function() {
-    //FIXME, use href is right!
-    var url = window.location.href.split('/')
-    var rootPath = url.slice(0, url.indexOf('admin')).join('/');
-    var completeURL = rootPath+'/'+this.props.post.path;
-    return {
-      postPath: this.props.post.path,
+    this.state = {
+      postPath: props.post.path,
       previewLink: completeURL,
       checkingGrammar: false,
       openGallery: false,
-      renderedType: this.props.type,
-      tagsCategoriesAndMetadata: this.props.tagsCategoriesAndMetadata,
-      onChange: this.props.onChange,
-      onChangeContent: this.props.onChangeContent,
-      onChangeTitle: this.props.onChangeTitle,
-      onPublish: this.props.onPublish,
-      onUnpublish: this.props.onUnpublish,
-      onRemove: this.props.onRemove,
+      renderedType: props.type,
+      tagsCategoriesAndMetadata: props.tagsCategoriesAndMetadata,
+      onChange: props.onChange,
+      onChangeContent: props.onChangeContent,
+      onChangeTitle: props.onChangeTitle,
+      onPublish: props.onPublish,
+      onUnpublish: props.onUnpublish,
+      onRemove: props.onRemove,
       mdLink: null
     }
-  },
 
-  // TODO, ...just for test
-  componentDidMount: function() {
+    this.render()
+  }
 
-  },
+  handlePreviewLink(postNewPath) {
+    const url = window.location.href.split('/')
+    const rootPath = url.slice(0, url.indexOf('admin')).join('/')
+    const completeURL = rootPath + '/' + postNewPath
+    this.state.postPath = postNewPath
+    this.state.previewLink = completeURL
+    this.render()
+  }
 
-  // recreate previewLink
-  handlePreviewLink: function(postNewPath) {
-    var url = window.location.href.split('/')
-    var rootPath = url.slice(0, url.indexOf('admin')).join('/');
-    var completeURL = rootPath+'/'+postNewPath;
-    this.setState({
-      postPath: postNewPath,
-      previewLink: completeURL
-    })
-  },
-
-  handleChangeTitle: function (e) {
+  handleChangeTitle(e) {
     return this.props.onChangeTitle(e.target.value)
-  },
+  }
 
-  handleScroll: function (percent) {
+  handleScroll(percent) {
     if (!this.state.checkingGrammar) {
-      var node = this.refs.rendered.getDOMNode()
-      var height = node.getBoundingClientRect().height
+      const node = this.rendered
+      const height = node.getBoundingClientRect().height
       node.scrollTop = (node.scrollHeight - height) * percent
     }
-  },
+  }
 
-  onCheckGrammar: function () {
-    this.setState({
-      checkingGrammar: !this.state.checkingGrammar
-    });
-  },
+  onCheckGrammar() {
+    this.state.checkingGrammar = !this.state.checkingGrammar
+    this.render()
+  }
 
-  // TODO, ...add real image address...
-  onAddImage: function () {
-    this.setState({
-      // mdImg: '![image]()',
-      openGallery: !this.state.openGallery
-    });
-  },
+  onAddImage() {
+    this.state.openGallery = !this.state.openGallery
+    this.render()
+  }
 
-  // hide the gallery
-  handleEditFocus: function () {
-    this.setState({openGallery: false});
-  },
+  handleEditFocus() {
+    this.state.openGallery = false
+    this.render()
+  }
 
-  handleImgSelect: function (img) {
-    this.setState({
-      mdImg: '![image](/images/'+img+')',
-     
-    });
-  },
+  handleImgSelect(img) {
+    this.state.mdImg = '![image](/images/' + img + ')'
+    this.render()
+  }
 
-  onAddLink: function () {
-    const linkText = '\n[lien](lien a mettre)';
+  onAddLink() {
+    const linkText = '\n[lien](lien a mettre)'
     navigator.clipboard.writeText(linkText).then(() => {
-      this.setState({
-      //  mdLink: linkText
-      });
-     const notification = document.createElement('div');
-     notification.textContent = 'Le lien a été copié dans votre presse-papier';
-     notification.style.position = 'fixed';
-     notification.style.top = '20px';
-     notification.style.right = '20px';
-     notification.style.padding = '10px';
-     notification.style.backgroundColor = '#4CAF50';
-     notification.style.color = 'white';
-     notification.style.borderRadius = '4px';
-     notification.style.zIndex = '1000';
-     document.body.appendChild(notification);
-     setTimeout(() => {
-       notification.remove();
-     }, 3000);
-     // this.props.onChangeContent(this.props.raw + linkText);
+      const notification = document.createElement('div')
+      notification.textContent = 'Le lien a été copié dans votre presse-papier'
+      notification.style.position = 'fixed'
+      notification.style.top = '20px'
+      notification.style.right = '20px'
+      notification.style.padding = '10px'
+      notification.style.backgroundColor = '#4CAF50'
+      notification.style.color = 'white'
+      notification.style.borderRadius = '4px'
+      notification.style.zIndex = '1000'
+      document.body.appendChild(notification)
+      setTimeout(() => {
+        notification.remove()
+      }, 3000)
     }).catch(err => {
-      console.error('Erreur lors de la copie dans le presse-papier:', err);
-    });
-  },
+      console.error('Erreur lors de la copie dans le presse-papier:', err)
+    })
+  }
 
-  render: function () {
+  render() {
     console.log(this.props)
-    return <div className={cx({
-      "editor": true,
-      "editor--draft": this.props.isDraft
-    })}>
-      <div className="editor_top">
-        <input
-          className='editor_title'
-          value={this.props.title}
-          onChange={this.props.onChangeTitle}/>
+    const container = document.createElement('div')
+    container.className = `editor ${this.props.isDraft ? 'editor--draft' : ''}`
 
-        {this.state.renderedType === 'post' && !this.props.isPage && <ConfigDropper
-          post={this.props.post}
-          tagsCategoriesAndMetadata={this.props.tagsCategoriesAndMetadata}
-          onChange={this.props.onChange}/>}
+    const top = document.createElement('div')
+    top.className = 'editor_top'
 
-        {this.state.renderedType === 'post' && !this.props.isPage && (this.props.isDraft ?
-          /* this is a comment for publish button */
-          <button className="editor_publish" onClick={this.props.onPublish}>
-            Publish
-          </button> :
-          <button className="editor_unpublish" onClick={this.props.onUnpublish}>
-            Unpublish
-          </button>)}
+    const titleInput = document.createElement('input')
+    titleInput.className = 'editor_title'
+    titleInput.value = this.props.title
+    titleInput.onchange = (e) => this.props.onChangeTitle(e.target.value)
 
-        {this.state.renderedType === 'post' && !this.props.isPage && (this.props.isDraft ?
-          <button className="editor_remove" title="Remove"
-                  onClick={this.props.onRemove}>
-            <i className="fa fa-trash-o" aria-hidden="true"/>
-          </button> :
-          <button className="editor_remove" title="Can't Remove Published Post"
-                  onClick={this.props.onRemove} disabled>
-            <i className="fa fa-trash-o" aria-hidden="true"/>
-          </button>)}
+    top.appendChild(titleInput)
 
-        {this.state.renderedType === 'post' && !this.props.isPage &&
-        <button className="editor_checkGrammar" title="Check for Writing Improvements"
-                onClick={this.onCheckGrammar}>
-          <i className="fa fa-check-circle-o"/>
-        </button>}
-      
-        {this.state.renderedType === 'post' && !this.props.isPage &&
-          <button className="editor_addImage" title="Add Image to Post"
-                  onClick={this.onAddImage}>
-            <i className="fa fa-picture-o"/>
-          </button>
-        }
-      <button className="editor_addlink" title="Add Link to Post"
-      onClick={this.onAddLink}>
-      <i className="fa fa-link"/>
-      </button>
-      </div>
+    if (this.state.renderedType === 'post' && !this.props.isPage) {
+      const configDropper = new ConfigDropper()
+      configDropper.init(top, {
+        post: this.props.post,
+        tagsCategoriesAndMetadata: this.props.tagsCategoriesAndMetadata,
+        onChange: this.props.onChange
+      })
 
-      <div className="editor_main">
-        <div className="editor_edit">
-          <div className="editor_md-header">
-            {this.props.updated &&
-                <SinceWhen className="editor_updated"
-                prefix="saved "
-                time={new Date(this.props.post.updated)}/>}
-            <span>Markdown&nbsp;&nbsp;
-              <RenameFile post={this.props.post}
-                handlePreviewLink={this.handlePreviewLink} /></span>
-          </div>
-          <CodeMirror
-            mdImg={this.state.mdImg}
-            mdLink={this.state.mdLink}
-            onFocus={this.handleEditFocus}
-            forceLineNumbers={this.state.checkingGrammar}
-            onScroll={this.handleScroll}
-            initialValue={this.props.raw}
-            onChange={this.props.onChangeContent}
-            adminSettings={this.props.adminSettings} />
-        </div>
-        {/* end of editor */}
-        <div className="editor_display">
-          <div className="editor_display-header">
-            <span className="editor_word-count">
-              {this.props.wordCount} words
-            </span>
-            Preview
-            {' '}<a className="editor_perma-link" href={this.state.previewLink} target="_blank">
-              <i className="fa fa-link"/> {this.state.postPath}
-            </a>
-          </div>
-          {!this.state.checkingGrammar && <Rendered
-            ref="rendered"
-            className="editor_rendered"
-            text={this.props.rendered}
-            type={this.state.renderedType}/>}
-          {this.state.checkingGrammar && <CheckGrammar
-            toggleGrammar={this.onCheckGrammar}
-            raw={this.props.updatedRaw} />}
-        </div>
- 
-      </div>
-    
-      {this.state.openGallery && <PopGallery onChange={this.handleImgSelect}/>}
-    </div>;
-    
-  }// end of render()
-})// end of component
+      if (this.props.isDraft) {
+        const publishButton = document.createElement('button')
+        publishButton.className = 'editor_publish'
+        publishButton.onclick = this.props.onPublish
+        publishButton.textContent = 'Publish'
+        top.appendChild(publishButton)
+
+        const removeButton = document.createElement('button')
+        removeButton.className = 'editor_remove'
+        removeButton.title = 'Remove'
+        removeButton.onclick = this.props.onRemove
+        removeButton.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true"></i>'
+        top.appendChild(removeButton)
+      } else {
+        const unpublishButton = document.createElement('button')
+        unpublishButton.className = 'editor_unpublish'
+        unpublishButton.onclick = this.props.onUnpublish
+        unpublishButton.textContent = 'Unpublish'
+        top.appendChild(unpublishButton)
+
+        const removeButton = document.createElement('button')
+        removeButton.className = 'editor_remove'
+        removeButton.title = 'Can\'t Remove Published Post'
+        removeButton.onclick = this.props.onRemove
+        removeButton.disabled = true
+        removeButton.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true"></i>'
+        top.appendChild(removeButton)
+      }
+    }
+
+    container.appendChild(top)
+
+    this.container.innerHTML = ''
+    this.container.appendChild(container)
+  }
+}
 
 module.exports = Editor

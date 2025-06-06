@@ -1,8 +1,6 @@
-
-var router = require('./router')
-var React = require('react')
+var router = require('./app')
 
 module.exports = function (node) {
-  React.renderComponent(router(), node)
+  router.init()
 }
 

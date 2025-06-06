@@ -1,92 +1,92 @@
+const api = require('./api');
 
-var React = require('react')
-var PT = React.PropTypes
-var api = require('./api')
-
-var NewPage = React.createClass({
-  propTypes: {
-    onNew: PT.func
-  },
-
-  getInitialState: function () {
-    return {
+class NewPage {
+  constructor() {
+    this.state = {
       showing: false,
       loading: true,
       text: 'Untitled'
-    }
-  },
+    };
+    this.onNew = null;
+  }
 
-  componentDidUpdate: function (prevProps, prevState) {
-
-    if (this.state.showing && !prevState.showing) {
-      var node = this.refs.input.getDOMNode()
-      node.focus()
-      node.selectionStart = 0
-      node.selectionEnd = node.value.length
-    }
-  },
-
-  _onKeydown: function (e) {
+  _onKeydown(e) {
     if (e.key === 'Enter') {
-      this._onSubmit(e)
+      this._onSubmit(e);
     }
-  },
+  }
 
-  _onShow: function () {
-    this.setState({showing: true})
-  },
+  _onShow() {
+    this.state.showing = true;
+    this.render();
+  }
 
-  _onBlur: function () {
+  _onBlur() {
     if (this.state.showing) {
       this._onCancel();
     }
-  },
+  }
 
-  _onSubmit: function (e) {
+  _onSubmit(e) {
     e.preventDefault();
-    this.setState({loading: true, showing: false})
+    this.state.loading = true;
+    this.state.showing = false;
+    this.render();
+    
     api.newPage(this.state.text).then((page) => {
-      this.setState({showing: false, text: 'Untitled'})
-      this.props.onNew(page)
+      this.state.showing = false;
+      this.state.text = 'Untitled';
+      if (this.onNew) {
+        this.onNew(page);
+      }
     }, (err) => {
-      console.error('Failed! to make page', err)
-    })
-  },
+      console.error('Failed! to make page', err);
+    });
+  }
 
-  _onCancel: function () {
-    this.setState({showing: false})
-  },
+  _onCancel() {
+    this.state.showing = false;
+    this.render();
+  }
 
-  _onChange: function (e) {
-    this.setState({
-      text: e.target.value
-    })
-  },
+  _onChange(e) {
+    this.state.text = e.target.value;
+    this.render();
+  }
 
-  render: function () {
+  render() {
+    const container = document.createElement('div');
+    container.className = 'new-post';
+
     if (!this.state.showing) {
-      return <div className="new-post" onClick={this._onShow}>
-        <div className="new-post_button">
-          <i className="fa fa-plus"/>{' '}
-          New page
-        </div>
-      </div>
+      const button = document.createElement('div');
+      button.className = 'new-post_button';
+      button.innerHTML = '<i class="fa fa-plus"></i> New page';
+      button.addEventListener('click', this._onShow.bind(this));
+      container.appendChild(button);
+      return container;
     }
 
-    return <div className="new-post">
-      <input className="new-post_input"
-        ref="input"
-        value={this.state.text}
-        onBlur={this._onBlur}
-        onKeyPress={this._onKeydown}
-        onChange={this._onChange}
-        />
-      <i className="fa fa-check-circle new-post_ok"
-        onMouseDown={this._onSubmit} ></i>
-      <i className="fa fa-times-circle new-post_cancel"
-        onMouseDown={this._onCancel} ></i>
-    </div>
-  }
-})
+    const input = document.createElement('input');
+    input.className = 'new-post_input';
+    input.value = this.state.text;
+    input.addEventListener('blur', this._onBlur.bind(this));
+    input.addEventListener('keypress', this._onKeydown.bind(this));
+    input.addEventListener('change', this._onChange.bind(this));
+    container.appendChild(input);
 
-module.exports = NewPage
+    const okButton = document.createElement('i');
+    okButton.className = 'fa fa-check-circle new-post_ok';
+    okButton.addEventListener('mousedown', this._onSubmit.bind(this));
+    container.appendChild(okButton);
+
+    const cancelButton = document.createElement('i');
+    cancelButton.className = 'fa fa-times-circle new-post_cancel';
+    cancelButton.addEventListener('mousedown', this._onCancel.bind(this));
+    container.appendChild(cancelButton);
+
+    return container;
+  }
+}
+
+module.exports = NewPage;

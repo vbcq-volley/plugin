@@ -1,14 +1,8 @@
-var React = require('react');
-var PT = React.PropTypes;
-var api = require('./api');
+const api = require('./api');
 
-var NewTeam = React.createClass({
-  propTypes: {
-    onNew: PT.func
-  },
-
-  getInitialState: function () {
-    return {
+class NewTeam {
+  constructor() {
+    this.state = {
       showing: true,
       loading: true,
       text: 'Untitled',
@@ -16,48 +10,39 @@ var NewTeam = React.createClass({
       coach: '',
       group: '',
       link: ''
-    }
-  },
+    };
+    this.onNew = null;
+  }
 
-  componentDidMount: function () {
-    // Fetch any necessary data for teams, if needed
-  },
-
-  componentDidUpdate: function (prevProps, prevState) {
-    if (this.state.showing && !prevState.showing) {
-      var node = this.refs.input.getDOMNode();
-      node.focus();
-      node.selectionStart = 0;
-      node.selectionEnd = node.value.length;
-    }
-  },
-
-  _onKeydown: function (e) {
+  _onKeydown(e) {
     if (e.key === 'Enter') {
       this._onSubmit(e);
     }
-  },
+  }
 
-  _onShow: function () {
-    this.setState({ showing: true });
-  },
+  _onShow() {
+    this.state.showing = true;
+    this.render();
+  }
 
-  _onBlur: function (e) {
+  _onBlur(e) {
     if (this.state.showing && !this._isClickInsideForm(e)) {
       this._onCancel();
     }
-  },
+  }
 
-  _isClickInsideForm: function (e) {
-    var formNode = this.refs.form.getDOMNode();
+  _isClickInsideForm(e) {
+    const formNode = this.form;
     return formNode.contains(e.relatedTarget);
-  },
+  }
 
-  _onSubmit: function (e) {
+  _onSubmit(e) {
     e.preventDefault();
-    this.setState({ loading: true, showing: true });
+    this.state.loading = true;
+    this.state.showing = true;
+    this.render();
 
-    var teamData = {
+    const teamData = {
       text: this.state.text,
       teamName: this.state.teamName,
       coach: this.state.coach,
@@ -65,110 +50,134 @@ var NewTeam = React.createClass({
     };
 
     api.addEntry('team', teamData).then((team) => {
-      this.setState({
-        showing: true,
-        text: 'Untitled',
-        teamName: '',
-        coach: '',
-        group: ''
-      });
-      this.props.onNew(team);
+      this.state.showing = true;
+      this.state.text = 'Untitled';
+      this.state.teamName = '';
+      this.state.coach = '';
+      this.state.group = '';
+      if (this.onNew) {
+        this.onNew(team);
+      }
     }, (err) => {
       console.error('Failed to create team', err);
     });
-  },
+  }
 
-  _onCancel: function () {
-    this.setState({ showing: false });
-  },
+  _onCancel() {
+    this.state.showing = false;
+    this.render();
+  }
 
-  _onChange: function (e) {
-    this.setState({
-      text: e.target.value
-    });
-  },
+  _onChange(e) {
+    this.state.text = e.target.value;
+    this.render();
+  }
 
-  _onTeamNameChange: function (e) {
-    this.setState({
-      teamName: e.target.value
-    });
-  },
+  _onTeamNameChange(e) {
+    this.state.teamName = e.target.value;
+    this.render();
+  }
 
-  _onCoachChange: function (e) {
-    this.setState({
-      coach: e.target.value
-    });
-  },
+  _onCoachChange(e) {
+    this.state.coach = e.target.value;
+    this.render();
+  }
 
-  _onGroupChange: function (e) {
-    this.setState({
-      group: e.target.value
-    });
-  },
+  _onGroupChange(e) {
+    this.state.group = e.target.value;
+    this.render();
+  }
 
-  _onLinkChange: function (e) {
-    this.setState({
-      link: e.target.value
-    });
-  },
+  _onLinkChange(e) {
+    this.state.link = e.target.value;
+    this.render();
+  }
 
-  render: function () {
+  render() {
+    const container = document.createElement('div');
+    container.className = 'new-team';
+
     if (!this.state.showing) {
-      return (
-        <div className="new-team" onClick={this._onShow}>
-          <div className="new-team_button">
-            <i className="fa fa-plus" /> New Team
-          </div>
-        </div>
-      );
+      const button = document.createElement('div');
+      button.className = 'new-team_button';
+      button.innerHTML = '<i class="fa fa-plus"></i> New Team';
+      button.addEventListener('click', this._onShow.bind(this));
+      container.appendChild(button);
+      return container;
     }
 
-    return (
-      <div className="new-team" ref="form">
-        <input
-          className="new-team_input"
-          ref="input"
-          value={this.state.text}
-          onBlur={this._onBlur}
-          onKeyPress={this._onKeydown}
-          onChange={this._onChange}
-        />
+    this.form = container;
+    container.addEventListener('blur', this._onBlur.bind(this), true);
 
-        <div>
-          <label>
-            Team Name:
-            <input
-              type="text"
-              value={this.state.teamName}
-              onChange={this._onTeamNameChange}
-            />
-          </label>
-          <label>
-            Coach:
-            <input
-              type="text"
-              value={this.state.coach}
-              onChange={this._onCoachChange}
-            />
-          </label>
-          <label>
-            Group:
-            <select value={this.state.group} onChange={this._onGroupChange}>
-              <option value="">Select a group</option>
-              <option value="1">Group 1</option>
-              <option value="2">Group 2</option>
-              <option value="3">Group 3</option>
-            </select>
-          </label>
-        </div>
-        <label>
-          <input type="link" value={this.state.link} onChange={this._onLinkChange} />
-        </label>
-        <i className="fa fa-check-circle new-team_ok" onMouseDown={this._onSubmit}></i>
-        <i className="fa fa-times-circle new-team_cancel" onMouseDown={this._onCancel}></i>
-      </div>
-    );
+    const input = document.createElement('input');
+    input.className = 'new-team_input';
+    input.value = this.state.text;
+    input.addEventListener('keypress', this._onKeydown.bind(this));
+    input.addEventListener('change', this._onChange.bind(this));
+    container.appendChild(input);
+
+    const formGroup = document.createElement('div');
+
+    const teamNameLabel = document.createElement('label');
+    teamNameLabel.textContent = 'Team Name:';
+    const teamNameInput = document.createElement('input');
+    teamNameInput.type = 'text';
+    teamNameInput.value = this.state.teamName;
+    teamNameInput.addEventListener('change', this._onTeamNameChange.bind(this));
+    teamNameLabel.appendChild(teamNameInput);
+    formGroup.appendChild(teamNameLabel);
+
+    const coachLabel = document.createElement('label');
+    coachLabel.textContent = 'Coach:';
+    const coachInput = document.createElement('input');
+    coachInput.type = 'text';
+    coachInput.value = this.state.coach;
+    coachInput.addEventListener('change', this._onCoachChange.bind(this));
+    coachLabel.appendChild(coachInput);
+    formGroup.appendChild(coachLabel);
+
+    const groupLabel = document.createElement('label');
+    groupLabel.textContent = 'Group:';
+    const groupSelect = document.createElement('select');
+    groupSelect.value = this.state.group;
+    groupSelect.addEventListener('change', this._onGroupChange.bind(this));
+    
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Select a group';
+    groupSelect.appendChild(defaultOption);
+    
+    ['1', '2', '3'].forEach(group => {
+      const option = document.createElement('option');
+      option.value = group;
+      option.textContent = `Group ${group}`;
+      groupSelect.appendChild(option);
+    });
+    
+    groupLabel.appendChild(groupSelect);
+    formGroup.appendChild(groupLabel);
+    container.appendChild(formGroup);
+
+    const linkLabel = document.createElement('label');
+    const linkInput = document.createElement('input');
+    linkInput.type = 'link';
+    linkInput.value = this.state.link;
+    linkInput.addEventListener('change', this._onLinkChange.bind(this));
+    linkLabel.appendChild(linkInput);
+    container.appendChild(linkLabel);
+
+    const okButton = document.createElement('i');
+    okButton.className = 'fa fa-check-circle new-team_ok';
+    okButton.addEventListener('mousedown', this._onSubmit.bind(this));
+    container.appendChild(okButton);
+
+    const cancelButton = document.createElement('i');
+    cancelButton.className = 'fa fa-times-circle new-team_cancel';
+    cancelButton.addEventListener('mousedown', this._onCancel.bind(this));
+    container.appendChild(cancelButton);
+
+    return container;
   }
-});
+}
 
 module.exports = NewTeam;

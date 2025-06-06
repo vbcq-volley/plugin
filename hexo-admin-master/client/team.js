@@ -1,59 +1,45 @@
 var DataFetcher = require('./data-fetcher');
 var api = require('./api');
-var React = require('react/addons');
 var _ = require('lodash');
 var moment = require('moment');
 var Editor_data = require('./editor-data');
-var Data = React.createClass({
-  mixins: [DataFetcher((params) => {
-    console.log(params);
-    return {
-      params: params
-      // Assuming you have an API call to fetch team data
-       // You need to implement this function in your api module
-    };
-  })],
 
-  getInitialState: function () {
-    return {
+class Team {
+  constructor(params) {
+    this.params = params;
+    this.state = {
       updated: moment(),
-      team: [], // Initialize team data as null
-      filteredEntries: [] // Initialize filtered entries as an empty array
+      team: [],
+      filteredEntries: []
     };
-  },
+    this.init();
+  }
 
-  componentDidMount: function () {
-    // Fetch the team data when the component is mounted
-    this.fetchTeamData(this.props.params.matchId);
-  },
+  async init() {
+    await this.fetchTeamData(this.params.matchId);
+  }
 
-  fetchTeamData: function (id) {
-    console.log(id)
-    // Assuming api.fetchTeamData returns a Promise
-   api.getEntries("team").then((teams)=>{
-    this.setState({team:teams.find(match => match._id === id)});
-   })
-   this.render()
-  },
+  async fetchTeamData(id) {
+    console.log(id);
+    const teams = await api.getEntries("team");
+    this.state.team = teams.find(match => match._id === id);
+    this.render();
+  }
 
-  filterEntriesWithAPI: function () {
-    // Assuming the API has a getEntries method that filters the team data
-    api.getEntries(this.state.team).then((filteredEntries) => {
-      // Update the state with the filtered entries
-      this.setState({ filteredEntries: filteredEntries });
-    });
-  },
+  async filterEntriesWithAPI() {
+    const filteredEntries = await api.getEntries(this.state.team);
+    this.state.filteredEntries = filteredEntries;
+    this.render();
+  }
 
-  render: function () {
+  render() {
     if (!this.state.team) {
-      return <div>Loading team data...</div>;
+      return document.createElement('div').textContent = 'Loading team data...';
     }
 
-    // Extract all keys from the team data
-    
-
-    return <Editor_data id={this.props.params.matchId} type="team" />;
+    const editor = new Editor_data(this.params.matchId, "team");
+    return editor.render();
   }
-});
+}
 
-module.exports = Data;
+module.exports = Team;

@@ -1,86 +1,70 @@
+var api = require('./api');
+var _ = require('lodash');
+var moment = require('moment');
 
-var React = require('react/addons')
-var Link = require('react-router').Link
-var SettingsCheckbox = require('./settings-checkbox')
-var SettingsTextbox = require('./settings-textbox')
-
-var divStyle = {
-  whiteSpace: 'nowrap'
-};
-
-var Settings = React.createClass({
-  getInitialState: function() {
-    return {};
-  },
-
-  render: function () {
-    var LineNumbers = SettingsCheckbox({
-      name: 'lineNumbers',
-      enableOptions: {editor: {lineNumbers: true}},
-      disableOptions: {editor: {lineNumbers: false}},
-      label: 'Enable line numbering.'
-    });
-
-    var SpellCheck = SettingsCheckbox({
-      name: 'spellcheck',
-      enableOptions: {editor: {inputStyle: 'contenteditable', spellcheck: true}},
-      disableOptions: {editor: {inputStyle: null, spellcheck: false}},
-      label: 'Enable spellchecking. (buggy on older browsers)'
-    });
-
-    var AskImageFilename = SettingsCheckbox({
-      name: 'askImageFilename',
-      label: 'Always ask for filename.',
-      style: {width: '300px', display: 'inline-block'}
-    });
-
-    var OverwriteImages = SettingsCheckbox({
-      name: 'overwriteImages',
-      label: 'Overwrite images if file already exists.',
-      style: {width: '425px', display: 'inline-block'}
-    })
-
-    var ImagePath = SettingsTextbox({
-      name: 'imagePath',
-      defaultValue: '/images',
-      label: 'Image directory'
-    });
-
-    var ImagePrefix = SettingsTextbox({
-      name: 'imagePrefix',
-      defaultValue: 'pasted-',
-      label: 'Image filename prefix'
-    });
-
-    return (
-      <div className="settings" style={divStyle}>
-        <h1>Settings</h1>
-        <p>
-          Set various settings for your admin panel and editor.
-        </p>
-        <p>
-          Hexo admin can be secured with a password.
-          {' '}<Link to='auth-setup'>Setup authentification here.</Link>
-        </p>
-        <hr />
-
-        <h2>Editor Settings</h2>
-        {LineNumbers}
-        {SpellCheck}
-        <hr />
-
-        <h2>Image Pasting Settings</h2>
-        <p>
-          Hexo-admin allows you to paste images you copy from the web or elsewhere directly
-          into the editor. Decide how you'd like to handle the pasted images.
-        </p>
-        {AskImageFilename}
-        {OverwriteImages}
-        {ImagePath}
-        {ImagePrefix}
-      </div>
-    );
+class Settings {
+  constructor() {
+    this.state = {
+      settings: {},
+      loading: true
+    };
+    this.init();
   }
-})
 
-module.exports = Settings
+  async init() {
+    await this.fetchSettings();
+  }
+
+  async fetchSettings() {
+    try {
+      const settings = await api.getSettings();
+      this.state.settings = settings;
+      this.state.loading = false;
+      this.render();
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+      this.state.loading = false;
+      this.render();
+    }
+  }
+
+  async updateSetting(key, value) {
+    try {
+      await api.updateSetting(key, value);
+      this.state.settings[key] = value;
+      this.render();
+    } catch (error) {
+      console.error('Error updating setting:', error);
+    }
+  }
+
+  render() {
+    if (this.state.loading) {
+      return document.createElement('div').textContent = 'Loading settings...';
+    }
+
+    const container = document.createElement('div');
+    container.className = 'settings-container';
+
+    Object.entries(this.state.settings).forEach(([key, value]) => {
+      const settingElement = document.createElement('div');
+      settingElement.className = 'setting-item';
+
+      const label = document.createElement('label');
+      label.textContent = key;
+
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = value;
+      input.addEventListener('change', (e) => this.updateSetting(key, e.target.value));
+
+      settingElement.appendChild(label);
+      settingElement.appendChild(input);
+      container.appendChild(settingElement);
+    });
+
+    return container;
+  }
+}
+
+module.exports = Settings;

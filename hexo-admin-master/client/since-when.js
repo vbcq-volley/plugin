@@ -1,32 +1,44 @@
-
-var React = require('react')
-
-var SinceWhen = React.createClass({
-  componentDidMount: function () {
-    this._iv = setInterval(this.tick, 5000)
-  },
-  componentWillUnmount: function () {
-    clearInterval(this._iv)
-  },
-  getDefaultProps: function () {
-    return {
-      prefix: ''
+class SinceWhen {
+  constructor() {
+    this.interval = null
+    this.container = null
+    this.state = {
+      time: ''
     }
-  },
-  getInitialState: function () {
-    return {
-      time: this.props.time.fromNow()
-    }
-  },
-  tick: function () {
-    if (!this.isMounted()) {
-      return clearInterval(this._iv)
-    }
-    this.setState({time: this.props.time.fromNow()})
-  },
-  render: function () {
-    return this.transferPropsTo(<span>{this.props.prefix + this.state.time}</span>)
   }
-})
+
+  init(container, props) {
+    this.container = container
+    this.props = props
+    this.state.time = props.time.fromNow()
+    this.render()
+
+    this.interval = setInterval(() => this.tick(), 5000)
+  }
+
+  tick() {
+    if (!this.container) {
+      clearInterval(this.interval)
+      return
+    }
+    this.state.time = this.props.time.fromNow()
+    this.render()
+  }
+
+  render() {
+    const span = document.createElement('span')
+    span.textContent = this.props.prefix + this.state.time
+    span.className = this.props.className || ''
+
+    this.container.innerHTML = ''
+    this.container.appendChild(span)
+  }
+
+  destroy() {
+    if (this.interval) {
+      clearInterval(this.interval)
+    }
+  }
+}
 
 module.exports = SinceWhen

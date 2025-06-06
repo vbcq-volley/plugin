@@ -1,25 +1,12 @@
-var path = require('path')
-var React = require('react/addons')
-var cx = React.addons.classSet
-var Promise = require('es6-promise').Promise
-var PT = React.PropTypes
-var api=require("./api")
-var Router = require('react-router')
-var Editor = require('./editor')
-var marked = require('marked')
-var Editor_data = React.createClass({
+const path = require('path')
+const Promise = require('es6-promise').Promise
+const api = require('./api')
+const Editor = require('./editor')
+const marked = require('marked')
 
-  // cmRef: null,
-
-  propTypes: {
-  
-    id: PT.string,
-    type: PT.string
-
-  },
-
-  getInitialState: function() {
-    return {
+class Editor_data {
+  constructor() {
+    this.state = {
       showing: true,
       loading: true,
       text: 'Untitled',
@@ -33,827 +20,467 @@ var Editor_data = React.createClass({
       updated: null,
       isDraft: false
     }
-  },
+  }
 
-  componentDidMount: function() {
-    this.props.id = this.props.id || window.location.href.split('/').slice(-1)[0];
+  init(container, props) {
+    this.container = container
+    this.props = props
+    this.loadData()
+  }
+
+  loadData() {
+    this.props.id = this.props.id || window.location.href.split('/').slice(-1)[0]
     
-    // Si on a un ID, charger les données correspondantes
     if (this.props.id) {
-      // Utiliser le type spécifié dans les props ou par défaut
-      const type = this.props.type || this.state.pageType;
+      const type = this.props.type || this.state.pageType
       console.log(type)
       if (type) {
-        // Utiliser l'API appropriée selon le type
-        let apiCall;
+        let apiCall
         if (type === 'post') {
-          apiCall = api.post(this.props.id);
+          apiCall = api.post(this.props.id)
         } else if (type === 'page') {
-          apiCall = api.page(this.props.id);
+          apiCall = api.page(this.props.id)
         } else if (type === 'result') {
-          // Pour les résultats, d'abord vérifier si le résultat existe
           api.getEntry('result', this.props.id).then((result) => {
             if (result) {
-              // Si le résultat existe, l'utiliser
-              this.setState({
-                text: result.title || 'Sans titre',
-                pageType: type,
-                data: result,
-                loading: false
-              });
+              this.state.text = result.title || 'Sans titre'
+              this.state.pageType = type
+              this.state.data = result
+              this.state.loading = false
+              this.render()
             } else {
-              // Si le résultat n'existe pas, charger le match correspondant
               api.getEntry('match', this.props.id).then((match) => {
                 if (match) {
-                  this.setState({
-                    text: `Résultat: ${match.team1} vs ${match.team2}`,
-                    pageType: type,
-                    data: {
-                      matchId: match._id,
-                      team1: match.team1,
-                      team2: match.team2,
-                      matchType: 'home',
-                      team1Score: '',
-                      team2Score: '',
-                      isForfeit: false,
-                      isPostponed: false
-                    },
-                    loading: false
-                  });
+                  this.state.text = `Résultat: ${match.team1} vs ${match.team2}`
+                  this.state.pageType = type
+                  this.state.data = {
+                    matchId: match._id,
+                    team1: match.team1,
+                    team2: match.team2,
+                    matchType: 'home',
+                    team1Score: '',
+                    team2Score: '',
+                    isForfeit: false,
+                    isPostponed: false
+                  }
+                  this.state.loading = false
+                  this.render()
                 }
-              });
+              })
             }
-          });
-          return; // Sortir de la fonction car on gère le cas des résultats différemment
+          })
+          return
         } else {
-          apiCall = api.getEntry(type, this.props.id);
+          apiCall = api.getEntry(type, this.props.id)
         }
 
         apiCall.then((entry) => {
           if (entry) {
             if (type === 'post' || type === 'page') {
-              // Pour les posts et pages, extraire le contenu du front matter
-              const parts = entry.raw.split('---');
-              const _slice = parts[0] === '' ? 2 : 1;
-              const raw = parts.slice(_slice).join('---').trim();
+              const parts = entry.raw.split('---')
+              const _slice = parts[0] === '' ? 2 : 1
+              const raw = parts.slice(_slice).join('---').trim()
               console.log("entry ="+JSON.stringify(entry,null,2))
-              this.setState({
-                text: entry.title,
-                pageType: type,
-                data: entry,
-                raw: raw,
-                rendered: entry.content,
-                loading: false
-              });
+              this.state.text = entry.title
+              this.state.pageType = type
+              this.state.data = entry
+              this.state.raw = raw
+              this.state.rendered = entry.content
+              this.state.loading = false
             } else {
-              this.setState({
-                text: entry.title || entry.teamName || 'Sans titre',
-                pageType: type,
-                data: entry,
-                loading: false
-              });
+              this.state.text = entry.title || entry.teamName || 'Sans titre'
+              this.state.pageType = type
+              this.state.data = entry
+              this.state.loading = false
             }
+            this.render()
           }
         }).catch((err) => {
-          console.error('Erreur lors du chargement des données:', err);
-          this.setState({ loading: false });
-        });
+          console.error('Erreur lors du chargement des données:', err)
+          this.state.loading = false
+          this.render()
+        })
 
-        // Si c'est un match ou un résultat, charger aussi la liste des matchs
         if (type === 'match' || type === 'result') {
           api.getEntries("match").then((matches) => {
-            this.setState({ matches: matches });
-          });
+            this.state.matches = matches
+            this.render()
+          })
         }
       }
     } else {
-      this.setState({ loading: false });
+      this.state.loading = false
+      this.render()
     }
-  },
+  }
 
-  // recreate previewLink
- 
+  handleCheckboxChange(field, e) {
+    this.state[field] = e.target.checked
+    this.onDataChange(field, e.target.checked)
+    this.render()
+  }
 
-  handleCheckboxChange: function(field, e) {
-    var newState = {}
-    newState[field] = e.target.checked
-    this._onDataChange(field,e.target.checked)
-    this.setState(newState)
-  },
-
-
-  componentDidUpdate: function (prevProps, prevState) {
-    if (this.state.showing && !prevState.showing) {
-      var node = this.refs.input.getDOMNode();
-      node.focus();
-      node.selectionStart = 0;
-      node.selectionEnd = node.value.length;
-    }
-  },
-
-  _onKeydown: function (e) {
+  onKeydown(e) {
     if (e.key === 'Enter') {
-      this._onSubmit(e);
+      this.onSubmit(e)
     }
-  },
+  }
 
-  _onShow: function () {
-    this.setState({ showing: true });
-  },
+  onShow() {
+    this.state.showing = true
+    this.render()
+  }
 
-  _onBlur: function (e) {
-    if (this.state.showing && !this._isClickInsideForm(e)) {
-      this._onCancel();
+  onBlur(e) {
+    if (this.state.showing && !this.isClickInsideForm(e)) {
+      this.onCancel()
     }
-  },
+  }
 
-  _isClickInsideForm: function (e) {
-    var formNode = this.refs.form.getDOMNode();
-    return formNode.contains(e.relatedTarget);
-  },
+  isClickInsideForm(e) {
+    return this.form.contains(e.relatedTarget)
+  }
 
-  _onSubmit: function (e) {
-    e.preventDefault();
-    this.setState({ loading: true, showing: true });
+  onSubmit(e) {
+    e.preventDefault()
+    this.state.loading = true
+    this.state.showing = true
+    this.render()
 
     const formatDate = (dateTimeString) => {
-      if (!dateTimeString) return '';
-      const date = new Date(dateTimeString);
+      if (!dateTimeString) return ''
+      const date = new Date(dateTimeString)
       return new Intl.DateTimeFormat('fr-FR', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
-      }).format(date);
-    };
+      }).format(date)
+    }
 
-    var pageData = {
+    const pageData = {
       text: this.state.text,
       type: this.state.pageType,
       ...this.state.data
-    };
+    }
 
     if (pageData.type === 'post') {
-      api.post(pageData._id,pageData).then((page) => {
-        Router.transitionTo('posts');
+      api.post(pageData._id, pageData).then(() => {
+        window.location.hash = '#/posts'
       }, (err) => {
-        console.error('Échec de la création du post', err);
-      });
+        console.error('Erreur lors de la sauvegarde:', err)
+        this.state.loading = false
+        this.render()
+      })
     } else if (pageData.type === 'page') {
-      api.page(pageData._id,pageData).then((page) => {
-        Router.transitionTo('pages');
+      api.page(pageData._id, pageData).then(() => {
+        window.location.hash = '#/pages'
       }, (err) => {
-        console.error('Échec de la création de la page', err);
-      });
-    } else {
-      api.updateEntry(pageData.type, pageData).then((page) => {
-        if (pageData.type === 'match') {
-          Router.transitionTo('matches');
-        } else if (pageData.type === 'team') {
-          Router.transitionTo('teams');
-        } else if (pageData.type === 'result') {
-          Router.transitionTo('results');
-        } else if (pageData.type === 'stade') {
-          Router.transitionTo('stades');
-        } else {
-          Router.transitionTo('datas');
+        console.error('Erreur lors de la sauvegarde:', err)
+        this.state.loading = false
+        this.render()
+      })
+    } else if (pageData.type === 'result') {
+      api.addEntry('result', pageData).then(() => {
+        window.location.hash = '#/results'
+      }, (err) => {
+        console.error('Erreur lors de la sauvegarde:', err)
+        this.state.loading = false
+        this.render()
+      })
+    }
+  }
+
+  onCancel() {
+    this.state.showing = false
+    this.render()
+  }
+
+  onDataChange(field, value) {
+    this.state.data[field] = value
+  }
+
+  render() {
+    if (this.state.loading) {
+      this.container.innerHTML = '<div class="loading">Chargement...</div>'
+      return
+    }
+
+    const container = document.createElement('div')
+    container.className = 'editor-data'
+
+    const form = document.createElement('form')
+    form.className = 'editor-form'
+    form.onsubmit = (e) => this.onSubmit(e)
+    this.form = form
+
+    const titleInput = document.createElement('input')
+    titleInput.type = 'text'
+    titleInput.className = 'editor-title'
+    titleInput.value = this.state.text
+    titleInput.onchange = (e) => {
+      this.state.text = e.target.value
+      this.render()
+    }
+    titleInput.onkeydown = (e) => this.onKeydown(e)
+    titleInput.onblur = (e) => this.onBlur(e)
+
+    form.appendChild(titleInput)
+
+    if (this.state.pageType === 'result') {
+      // Match selection
+      const matchGroup = document.createElement('div')
+      matchGroup.className = 'form-group'
+
+      const matchLabel = document.createElement('label')
+      matchLabel.textContent = 'Match'
+
+      const matchSelect = document.createElement('select')
+      matchSelect.className = 'form-control'
+      matchSelect.value = this.state.data.matchId || ''
+      matchSelect.onchange = (e) => {
+        const matchId = e.target.value
+        const selectedMatch = this.state.matches.find(m => m._id === matchId)
+        if (selectedMatch) {
+          this.state.data.matchId = selectedMatch._id
+          this.state.data.team1 = selectedMatch.team1
+          this.state.data.team2 = selectedMatch.team2
+          this.state.data.date = selectedMatch.homeDate
+          this.state.data.group = selectedMatch.group
+          this.state.data.session = selectedMatch.session
+          this.render()
         }
-      }, (err) => {
-        console.error('Échec de la création de l\'entrée', err);
-      });
-    }
-  },
+      }
 
-  _onCancel: function () {
-    this.setState({ showing: false });
-  },
+      const defaultOption = document.createElement('option')
+      defaultOption.value = ''
+      defaultOption.textContent = 'Sélectionner un match...'
+      matchSelect.appendChild(defaultOption)
 
-  _onChange: function (e) {
-    this.setState({
-      text: e.target.value
-    });
-  
-  },
+      this.state.matches.forEach(match => {
+        const option = document.createElement('option')
+        option.value = match._id
+        option.textContent = `${match.team1} vs ${match.team2} - ${match.homeDate}`
+        matchSelect.appendChild(option)
+      })
 
-  _onPageTypeChange: function (e) {
-    this.setState({
-      pageType: e.target.value,
-      data: {} // Reset data when changing type
-    });
-  },
+      matchGroup.appendChild(matchLabel)
+      matchGroup.appendChild(matchSelect)
+      form.appendChild(matchGroup)
 
-  _onDataChange: function (field, value) {
-    console.log("field ="+field)
-    console.log("la data est"+JSON.stringify(this.state.data))
-    const newData = { ...this.state.data };
-    newData[field] = value;
-    
-    this.setState({ data: newData });
-    if(this.state.pageType==="post"){
-      this.setState({rendered:marked(this.state.data.raw)})
-      api.post(this.state.data._id,this.state.data).then((page) => {
-        console.log("post modifié"+JSON.stringify(page,null,2)) 
-      }, (err) => {
-        console.error('Échec de la création du post', err);
-      });
-    } else if(this.state.pageType==="page"){
-      this.setState({rendered:marked(this.state.data.raw)})
-      api.page(this.state.data._id,this.state.data).then((page) => {
-        console.log("post modifié"+JSON.stringify(page,null,2)) 
-      }, (err) => {
-        console.error('Échec de la création du post', err);
-      });
-    } else {
-      // Logique particulière pour les autres types d'entrées
-      api.updateEntry(this.state.pageType, this.state.data._id, this.state.data).then((entry) => {
-        console.log("Entrée modifiée: "+JSON.stringify(entry,null,2))
-      }, (err) => {
-        console.error('Échec de la modification de l\'entrée', err);
-      });
-    }
-  },
+      // Match type
+      const typeGroup = document.createElement('div')
+      typeGroup.className = 'form-group'
 
-  handleChangeTitle: function (e) {
-    return this.props.onChangeTitle(e.target.value)
-  },
+      const typeLabel = document.createElement('label')
+      typeLabel.textContent = 'Type de Match'
 
+      const typeSelect = document.createElement('select')
+      typeSelect.className = 'form-control'
+      typeSelect.value = this.state.data.matchType || 'home'
+      typeSelect.onchange = (e) => {
+        const matchType = e.target.value
+        const selectedMatch = this.state.matches.find(m => m._id === this.state.data.matchId)
+        if (selectedMatch) {
+          this.state.data.matchType = matchType
+          this.state.data.date = matchType === 'home' ? selectedMatch.homeDate : selectedMatch.awayDate
+          this.render()
+        }
+      }
 
+      const homeOption = document.createElement('option')
+      homeOption.value = 'home'
+      homeOption.textContent = 'Domicile'
 
-  handlePublish: function() {
-    this.setState({ isDraft: false });
-    return this.props.onPublish()
-  },
+      const awayOption = document.createElement('option')
+      awayOption.value = 'away'
+      awayOption.textContent = 'Extérieur'
 
-  handleUnpublish: function() {
-      this.setState({ isDraft: true });
-    return this.props.onUnpublish()
-  },
+      typeSelect.appendChild(homeOption)
+      typeSelect.appendChild(awayOption)
 
-  handleChange: function(data) {
-    
-    return this.props.onChange(data)
-  },
+      typeGroup.appendChild(typeLabel)
+      typeGroup.appendChild(typeSelect)
+      form.appendChild(typeGroup)
 
-  renderFormFields: function() {
-    const { pageType, data, matches } = this.state;
-    console.log(pageType)
-    switch(pageType) {
-      case 'match':
-        return (
-          <div className="visible">
-            <label>
-              Équipe 1:
-              <input
-                type="text"
-                placeholder="Équipe 1"
-                value={data.team1 || ''}
-                onChange={(e) => this._onDataChange('team1', e.target.value)}
-              />
-            </label>
-            <label>
-              Équipe 2:
-              <input
-                type="text"
-                placeholder="Équipe 2"
-                value={data.team2 || ''}
-                onChange={(e) => this._onDataChange('team2', e.target.value)}
-              />
-            </label>
-            <label>
-              Session:
-              <input
-                type="number"
-                min="1"
-                max="20"
-                value={data.session || ''}
-                onChange={(e) => this._onDataChange('session', parseInt(e.target.value))}
-                placeholder="Entrez un numéro de session (1-20)"
-              />
-            </label>
-            <label>
-              Groupe:
-              <select 
-                value={data.group || ''} 
-                onChange={(e) => this._onDataChange('group', e.target.value)}
-              >
-                <option value="">Sélectionnez un groupe</option>
-                <option value="1">Groupe 1</option>
-                <option value="2">Groupe 2</option>
-                <option value="3">Groupe 3</option>
-              </select>
-            </label>
-            <label>
-              Date et heure du match à domicile:
-              <input
-                type="datetime-local"
-                value={data.homeDateTime || ''}
-                onChange={(e) => this._onDataChange('homeDateTime', e.target.value)}
-              />
-            </label>
-            <label>
-              Date et heure du match à l'extérieur:
-              <input
-                type="datetime-local"
-                value={data.awayDateTime || ''}
-                onChange={(e) => this._onDataChange('awayDateTime', e.target.value)}
-              />
-            </label>
-            <label>
-              Lieu du match à domicile:
-              <input
-                type="text"
-                placeholder="Lieu du match à domicile"
-                value={data.homeLocation || ''}
-                onChange={(e) => this._onDataChange('homeLocation', e.target.value)}
-              />
-            </label>
-            <label>
-              Lieu du match à l'extérieur:
-              <input
-                type="text"
-                placeholder="Lieu du match à l'extérieur"
-                value={data.awayLocation || ''}
-                onChange={(e) => this._onDataChange('awayLocation', e.target.value)}
-              />
-            </label>
-            <label>
-              Statut du match:
-              <select 
-                value={data.matchStatus || 'scheduled'} 
-                onChange={(e) => this._onDataChange('matchStatus', e.target.value)}
-              >
-                <option value="scheduled">Programmé</option>
-                <option value="in_progress">En cours</option>
-                <option value="completed">Terminé</option>
-                <option value="forfeit">Forfait</option>
-                <option value="postponed">Report demandé</option>
-              </select>
-            </label>
-            {(data.matchStatus === 'in_progress' || data.matchStatus === 'completed') && (
-              <div className="match-scores">
-                <h3>Scores</h3>
-                <label>
-                  Score Équipe 1:
-                  <input
-                    type="number"
-                    placeholder="Score Équipe 1"
-                    value={data.team1Score || ''}
-                    onChange={(e) => this._onDataChange('team1Score', e.target.value)}
-                    disabled={data.isForfeit || data.isPostponed}
-                  />
-                </label>
-                <label>
-                  Score Équipe 2:
-                  <input
-                    type="number"
-                    placeholder="Score Équipe 2"
-                    value={data.team2Score || ''}
-                    onChange={(e) => this._onDataChange('team2Score', e.target.value)}
-                    disabled={data.isForfeit || data.isPostponed}
-                  />
-                </label>
-                {data.matchStatus === 'completed' && (
-                  <div className="result-correction">
-                    <h4>Correction du résultat</h4>
-                    <label>
-                      Nouveau score Équipe 1:
-                      <input
-                        type="number"
-                        placeholder="Nouveau score Équipe 1"
-                        value={data.correctedTeam1Score || ''}
-                        onChange={(e) => this._onDataChange('correctedTeam1Score', e.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Nouveau score Équipe 2:
-                      <input
-                        type="number"
-                        placeholder="Nouveau score Équipe 2"
-                        value={data.correctedTeam2Score || ''}
-                        onChange={(e) => this._onDataChange('correctedTeam2Score', e.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Motif de la correction:
-                      <textarea
-                        placeholder="Expliquez la raison de la correction"
-                        value={data.correctionReason || ''}
-                        onChange={(e) => this._onDataChange('correctionReason', e.target.value)}
-                      />
-                    </label>
-                    <button 
-                      className="correction-submit"
-                      onClick={() => {
-                        const correctionHistory = data.data.correctionHistory || [];
-                        const newCorrection = {
-                          previousScore: {
-                            team1: data.data.team1Score,
-                            team2: data.data.team2Score
-                          },
-                          newScore: {
-                            team1: data.correctedTeam1Score,
-                            team2: data.correctedTeam2Score
-                          },
-                          reason: data.correctionReason,
-                          date: new Date().toISOString()
-                        };
-                        correctionHistory.push(newCorrection);
-                        
-                        const newData = {
-                          ...this.state.data,
-                          team1Score: this.state.data.correctedTeam1Score,
-                          team2Score: this.state.data.correctedTeam2Score,
-                          correctionHistory: correctionHistory
-                        };
-                        this.setState({ data: newData });
-                      }}
-                    >
-                      Appliquer la correction
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-            <label>
-              Forfait:
-              <input
-                type="checkbox"
-                checked={data.isForfeit || false}
-                onChange={(e) => {
-                  const newData = { ...this.state.data };
-                  newData.isForfeit = e.target.checked;
-                  if (e.target.checked) {
-                    newData.isPostponed = false;
-                    newData.team1Score = '';
-                    newData.team2Score = '';
-                    newData.matchStatus = 'forfeit';
-                  }
-                  this.setState({ data: newData });
-                }}
-              />
-            </label>
-            {data.isForfeit && (
-              <label>
-                Équipe en forfait:
-                <select 
-                  value={data.forfeitTeam || ''} 
-                  onChange={(e) => this._onDataChange('forfeitTeam', e.target.value)}
-                >
-                  <option value="">Sélectionnez l'équipe</option>
-                  <option value="team1">{data.team1}</option>
-                  <option value="team2">{data.team2}</option>
-                </select>
-              </label>
-            )}
-            <label>
-              Reporté:
-              <input
-                type="checkbox"
-                checked={data.isPostponed || false}
-                onChange={(e) => {
-                  const newData = { ...this.state.data };
-                  newData.isPostponed = e.target.checked;
-                  if (e.target.checked) {
-                    newData.isForfeit = false;
-                    newData.team1Score = '';
-                    newData.team2Score = '';
-                    newData.matchStatus = 'postponed';
-                  }
-                  this.setState({ data: newData });
-                }}
-              />
-            </label>
-            {data.isPostponed && (
-              <label>
-                Équipe demandant le report:
-                <select 
-                  value={data.postponedTeam || ''} 
-                  onChange={(e) => this._onDataChange('postponedTeam', e.target.value)}
-                >
-                  <option value="">Sélectionnez l'équipe</option>
-                  <option value="team1">{data.team1}</option>
-                  <option value="team2">{data.team2}</option>
-                </select>
-              </label>
-            )}
-            {data.correctionHistory && data.correctionHistory.length > 0 && (
-              <div className="correction-history">
-                <h4>Historique des corrections</h4>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Ancien score</th>
-                      <th>Nouveau score</th>
-                      <th>Motif</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.correctionHistory.map((correction, index) => (
-                      <tr key={index}>
-                        <td>{new Date(correction.date).toLocaleString()}</td>
-                        <td>{correction.previousScore.team1} - {correction.previousScore.team2}</td>
-                        <td>{correction.newScore.team1} - {correction.newScore.team2}</td>
-                        <td>{correction.reason}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        );
-      
-      case 'result':
-        return (
-          <div className="visible">
-            <div className="form-group">
-          <label>Type de Match</label>
-          <select 
-            value={data.matchType}
-            onChange={this.handleMatchTypeChange}
-            className="form-control"
-          >
-            <option value="home">Domicile</option>
-            <option value="away">Extérieur</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label>Équipe 1</label>
-          <input 
-            type="text" 
-            value={data.team1}
-            onChange={this.handleChange.bind(this, 'team1')}
-            className="form-control"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Score Équipe 1</label>
-          <input 
-            type="number" 
-            value={data.team1Score}
-            onChange={this.handleChange.bind(this, 'team1Score')}
-            className="form-control"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Score Équipe 2</label>
-          <input 
-            type="number" 
-            value={data.team2Score}
-            onChange={this.handleChange.bind(this, 'team2Score')}
-            className="form-control"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Équipe 2</label>
-          <input 
-            type="text" 
-            value={data.team2}
-            onChange={this.handleChange.bind(this, 'team2')}
-            className="form-control"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>Date du match</label>
-          <input 
-            type="text" 
-            value={data.date}
-            onChange={this.handleChange.bind(this, 'date')}
-            className="form-control"
-            placeholder="ex: 31 mars 2025 à 20:30"
-            required
-          />
-        </div>
-        <div className="form-group">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={data.team1Forfeit}
-              onChange={this.handleCheckboxChange.bind(this, 'team1Forfeit')}
-            />
-            {data.team1} - Forfait
-          </label>
-        </div>
-        <div className="form-group">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={data.team2Forfeit}
-              onChange={this.handleCheckboxChange.bind(this, 'team2Forfeit')}
-            />
-            {data.team2} - Forfait
-          </label>
-        </div>
-        <div className="form-group">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={data.team1Postponed}
-              onChange={this.handleCheckboxChange.bind(this, 'team1Postponed')}
-            />
-            {data.team1} - Demande de report
-          </label>
-        </div>
-        <div className="form-group">
-          <label>
-            <input 
-              type="checkbox" 
-              checked={data.team2Postponed}
-              onChange={this.handleCheckboxChange.bind(this, 'team2Postponed')}
-            />
-            {data.team2} - Demande de report
-          </label>
-        </div>
-        <button type="submit" className="btn btn-primary">
-          <i className="fa fa-save" /> Enregistrer
-        </button>
-      
-    </div>
-         
-        );
+      // Team 1
+      const team1Group = document.createElement('div')
+      team1Group.className = 'form-group'
 
-      case 'team':
-        return (
-          <div className="visible">
-            <label>
-              Nom de l'équipe:
-              <input
-                type="text"
-                placeholder="Nom de l'équipe"
-                value={data.teamName || ''}
-                onChange={(e) => this._onDataChange('teamName', e.target.value)}
-              />
-            </label>
-              <label>
-                Description:
-                <textarea
-                  placeholder="Description de l'équipe"
-                  value={data.description || ''}
-                  onChange={(e) => this._onDataChange('description', e.target.value)}
-                />
-              </label>
-              <label>
-                Coach:
-                <input
-                  type="text"
-                  placeholder="Coach de l'équipe"
-                  value={data.coach || ''}
-                  onChange={(e) => this._onDataChange('coach', e.target.value)}
-                />
-              </label>
-              <label>
-                  Groupe:
-                  <select 
-                    value={data.group || ''} 
-                    onChange={(e) => this._onDataChange('group', e.target.value)}
-                  >
-                    <option value="">Sélectionnez un groupe</option>
-                    <option value="1">Groupe 1</option>
-                    <option value="2">Groupe 2</option>
-                    <option value="3">Groupe 3</option>
-                  </select>
-                </label>
-            <label>
-              Lien public:
-              <input
-                type="text"
-                placeholder="Lien public de l'équipe"
-                value={data.publicLink || ''}
-                onChange={(e) => this._onDataChange('publicLink', e.target.value)}
-              />
-            </label>
-            
+      const team1Label = document.createElement('label')
+      team1Label.textContent = 'Équipe 1'
 
+      const team1Input = document.createElement('input')
+      team1Input.type = 'text'
+      team1Input.className = 'form-control'
+      team1Input.value = this.state.data.team1 || ''
+      team1Input.required = true
+      team1Input.onchange = (e) => {
+        this.state.data.team1 = e.target.value
+        this.render()
+      }
 
+      team1Group.appendChild(team1Label)
+      team1Group.appendChild(team1Input)
+      form.appendChild(team1Group)
 
+      // Team 1 Score
+      const score1Group = document.createElement('div')
+      score1Group.className = 'form-group'
 
+      const score1Label = document.createElement('label')
+      score1Label.textContent = 'Score Équipe 1'
 
-            </div>
-        );
+      const score1Input = document.createElement('input')
+      score1Input.type = 'number'
+      score1Input.className = 'form-control'
+      score1Input.value = this.state.data.team1Score || ''
+      score1Input.required = true
+      score1Input.onchange = (e) => {
+        this.state.data.team1Score = e.target.value
+        this.render()
+      }
 
-      case 'stade':
-        return (
-          <div className="visible">
-            <label>
-              Nom du stade:
-              <input
-                type="text"
-                placeholder="Nom du stade"
-                value={data.stadeName || ''}
-                onChange={(e) => this._onDataChange('stadeName', e.target.value)}
-              />
-            </label>
-            <label>
-              Adresse:
-              <textarea
-                placeholder="Adresse du stade"
-                value={data.address || ''}
-                onChange={(e) => this._onDataChange('address', e.target.value)}
-                style={{ width: '100%', minHeight: '100px' }}
-              />
-            </label>
-          </div>
-        );
+      score1Group.appendChild(score1Label)
+      score1Group.appendChild(score1Input)
+      form.appendChild(score1Group)
 
-      case 'post':
-        return (
-          <Editor
-            post={this.props.post || { path: this.state.text }}
-            raw={this.state.raw}
-            rendered={this.props.rendered}
-            onChangeTitle={this.props.onChangeTitle}
-            title={this.state.text}
-            updated={this.state.updated}
-            isDraft={this.state.isDraft}
-            onPublish={this.props.onPublish}
-            onUnpublish={this.props.onUnpublish}
-            onChangeContent={this.props.onChangeContent}
-            wordCount={this.state.wordCount}
-            type={pageType}
-            adminSettings={this.props.adminSettings}
-            tagsCategoriesAndMetadata={this.props.tagsCategoriesAndMetadata}
-            onChange={this.props.onChange}
-          
-          />
-        );
-      case 'page':
-        return (
-          <Editor
-            post={this.props.post || { path: this.state.text }}
-            raw={this.state.raw}
-            rendered={this.props.rendered}
-            onChangeTitle={this.props.onChangeTitle}
-            title={this.state.text}
-            updated={this.state.updated}
-            isDraft={this.state.isDraft}
-            onPublish={this.props.onPublish}
-            onUnpublish={this.props.onUnpublish}
-            onChangeContent={this.props.onChangeContent}
-            wordCount={this.state.wordCount}
-            type={pageType}
-            adminSettings={this.props.adminSettings}
-            tagsCategoriesAndMetadata={this.props.tagsCategoriesAndMetadata}
-            onChange={this.props.onChange}
-          />
-        );
+      // Team 2 Score
+      const score2Group = document.createElement('div')
+      score2Group.className = 'form-group'
 
-      default:
-        return null;
-    }
-  },
+      const score2Label = document.createElement('label')
+      score2Label.textContent = 'Score Équipe 2'
 
-  render: function () {
-    if (!this.state.showing) {
-      return (
-        <div className="new-post" onClick={this._onShow}>
-          <div className="new-post_button">
-            <i className="fa fa-plus" />{' '}
-            Nouvelle entrée
-          </div>
-        </div>
-      );
+      const score2Input = document.createElement('input')
+      score2Input.type = 'number'
+      score2Input.className = 'form-control'
+      score2Input.value = this.state.data.team2Score || ''
+      score2Input.required = true
+      score2Input.onchange = (e) => {
+        this.state.data.team2Score = e.target.value
+        this.render()
+      }
+
+      score2Group.appendChild(score2Label)
+      score2Group.appendChild(score2Input)
+      form.appendChild(score2Group)
+
+      // Team 2
+      const team2Group = document.createElement('div')
+      team2Group.className = 'form-group'
+
+      const team2Label = document.createElement('label')
+      team2Label.textContent = 'Équipe 2'
+
+      const team2Input = document.createElement('input')
+      team2Input.type = 'text'
+      team2Input.className = 'form-control'
+      team2Input.value = this.state.data.team2 || ''
+      team2Input.required = true
+      team2Input.onchange = (e) => {
+        this.state.data.team2 = e.target.value
+        this.render()
+      }
+
+      team2Group.appendChild(team2Label)
+      team2Group.appendChild(team2Input)
+      form.appendChild(team2Group)
+
+      // Date
+      const dateGroup = document.createElement('div')
+      dateGroup.className = 'form-group'
+
+      const dateLabel = document.createElement('label')
+      dateLabel.textContent = 'Date du match'
+
+      const dateInput = document.createElement('input')
+      dateInput.type = 'text'
+      dateInput.className = 'form-control'
+      dateInput.value = this.state.data.date || ''
+      dateInput.placeholder = 'ex: 31 mars 2025 à 20:30'
+      dateInput.required = true
+      dateInput.onchange = (e) => {
+        this.state.data.date = e.target.value
+        this.render()
+      }
+
+      dateGroup.appendChild(dateLabel)
+      dateGroup.appendChild(dateInput)
+      form.appendChild(dateGroup)
+
+      // Forfeit checkboxes
+      const forfeit1Group = document.createElement('div')
+      forfeit1Group.className = 'form-group'
+
+      const forfeit1Label = document.createElement('label')
+      const forfeit1Checkbox = document.createElement('input')
+      forfeit1Checkbox.type = 'checkbox'
+      forfeit1Checkbox.checked = this.state.data.team1Forfeit || false
+      forfeit1Checkbox.onchange = (e) => this.handleCheckboxChange('team1Forfeit', e)
+      forfeit1Label.appendChild(forfeit1Checkbox)
+      forfeit1Label.appendChild(document.createTextNode(` ${this.state.data.team1 || 'Équipe 1'} - Forfait`))
+
+      forfeit1Group.appendChild(forfeit1Label)
+      form.appendChild(forfeit1Group)
+
+      const forfeit2Group = document.createElement('div')
+      forfeit2Group.className = 'form-group'
+
+      const forfeit2Label = document.createElement('label')
+      const forfeit2Checkbox = document.createElement('input')
+      forfeit2Checkbox.type = 'checkbox'
+      forfeit2Checkbox.checked = this.state.data.team2Forfeit || false
+      forfeit2Checkbox.onchange = (e) => this.handleCheckboxChange('team2Forfeit', e)
+      forfeit2Label.appendChild(forfeit2Checkbox)
+      forfeit2Label.appendChild(document.createTextNode(` ${this.state.data.team2 || 'Équipe 2'} - Forfait`))
+
+      forfeit2Group.appendChild(forfeit2Label)
+      form.appendChild(forfeit2Group)
+
+      // Postponed checkboxes
+      const postponed1Group = document.createElement('div')
+      postponed1Group.className = 'form-group'
+
+      const postponed1Label = document.createElement('label')
+      const postponed1Checkbox = document.createElement('input')
+      postponed1Checkbox.type = 'checkbox'
+      postponed1Checkbox.checked = this.state.data.team1Postponed || false
+      postponed1Checkbox.onchange = (e) => this.handleCheckboxChange('team1Postponed', e)
+      postponed1Label.appendChild(postponed1Checkbox)
+      postponed1Label.appendChild(document.createTextNode(` ${this.state.data.team1 || 'Équipe 1'} - Reporté`))
+
+      postponed1Group.appendChild(postponed1Label)
+      form.appendChild(postponed1Group)
+
+      const postponed2Group = document.createElement('div')
+      postponed2Group.className = 'form-group'
+
+      const postponed2Label = document.createElement('label')
+      const postponed2Checkbox = document.createElement('input')
+      postponed2Checkbox.type = 'checkbox'
+      postponed2Checkbox.checked = this.state.data.team2Postponed || false
+      postponed2Checkbox.onchange = (e) => this.handleCheckboxChange('team2Postponed', e)
+      postponed2Label.appendChild(postponed2Checkbox)
+      postponed2Label.appendChild(document.createTextNode(` ${this.state.data.team2 || 'Équipe 2'} - Reporté`))
+
+      postponed2Group.appendChild(postponed2Label)
+      form.appendChild(postponed2Group)
     }
 
-    if (this.state.pageType === 'post' || this.state.pageType === 'page') {
-      return this.renderFormFields();
-    }
+    // Submit button
+    const submitButton = document.createElement('button')
+    submitButton.type = 'submit'
+    submitButton.className = 'btn btn-primary'
+    submitButton.textContent = 'Enregistrer'
+    form.appendChild(submitButton)
 
-    return (
-      <div className="new-post" ref="form">
-        <input
-          className="new-post_input"
-          ref="input"
-          value={this.state.text}
-          onBlur={this._onBlur}
-          onKeyPress={this._onKeydown}
-          onChange={this._onChange}
-        />
-        
-        <label>
-          Type de données:
-          <select value={this.state.pageType} onChange={this._onPageTypeChange}>
-            <option value="match">Match</option>
-            <option value="result">Résultat</option>
-            <option value="team">Équipe</option>
-            <option value="stade">Stade</option>
-            <option value="post">Article</option>
-            <option value="page">Page</option>
-          </select>
-        </label>
+    container.appendChild(form)
 
-        {this.renderFormFields()}
-
-        <i className="fa fa-check-circle new-post_ok" onMouseDown={this._onSubmit}></i>
-        <i className="fa fa-times-circle new-post_cancel" onMouseDown={this._onCancel}></i>
-      </div>
-    );
-  }// end of render()
-})// end of component
+    this.container.innerHTML = ''
+    this.container.appendChild(container)
+  }
+}
 
 module.exports = Editor_data

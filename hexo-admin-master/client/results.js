@@ -1,26 +1,13 @@
-var React = require('react/addons')
-var cx = React.addons.classSet
-var Link = require('react-router').Link;
-var Router = require('react-router');
-var _ = require('lodash')
-var moment = require('moment')
-var SinceWhen = require('./since-when')
+const _ = require('lodash')
+const moment = require('moment')
+const SinceWhen = require('./since-when')
+const Rendered = require('./rendered')
+const NewResult = require('./new-result')
+const api = require('./api')
 
-var Rendered = require('./rendered')
-var DataFetcher = require('./data-fetcher');
-var NewResult = require('./new-result')
-var api = require('./api');
-
-var Results = React.createClass({
-  mixins: [DataFetcher((params) => {
-    console.log(params)
-    return {
-      params: params
-    }
-  })],
-
-  getInitialState: function () {
-    return {
+class Results {
+  constructor() {
+    this.state = {
       selected: 0,
       showNewForm: false,
       results: [],
@@ -38,127 +25,151 @@ var Results = React.createClass({
         'text':'match'
       }
     }
-  },
+  }
 
-  componentDidMount: function() {
+  init(container) {
+    this.container = container
+    this.loadData()
+    this.render()
+  }
+
+  loadData() {
     api.getEntries("result").then((results) => {
-        console.log("la data est"+JSON.stringify(results))
-      this.setState({results: results})
-      console.log(this.state)
-      this.componentDidUpdate()
+      console.log("la data est"+JSON.stringify(results))
+      this.state.results = results
+      this.render()
     })
-    this.componentDidUpdate()
-  },
-    componentDidUpdate: function() {
-    if (this.state.results && this.state.results.length > 0) { // Vérification si les pages sont arrivées et non vides
-      console.log("Pages arrivées, mise à jour du rendu");
-      console.log(this.state.results)
-      this.state.results.map((item)=>{
-        console.log(item)
-      })
-      this.render(); // Force la mise à jour du rendu
-    }
-  },
-  toggleNewForm: function() {
-    this.componentDidUpdate()
-    this.setState({ showNewForm: !this.state.showNewForm });
-  },
+  }
 
-  _onNew: function (result) {
-    var results = this.state.results.slice()
+  toggleNewForm() {
+    this.state.showNewForm = !this.state.showNewForm
+    this.render()
+  }
+
+  onNew(result) {
+    const results = this.state.results.slice()
     results.unshift(result)
-    this.setState({results: results})
-    Router.transitionTo('result', {matchId: result._id})
-  },
+    this.state.results = results
+    window.location.hash = `#/result/${result._id}`
+  }
 
-  _onDelete: function (id, e) {
+  onDelete(id, e) {
     if (e) {
       e.preventDefault()
     }
     if (confirm('Êtes-vous sûr de vouloir supprimer ce résultat ?')) {
       api.deleteEntry("result", id).then(() => {
-        var results = this.state.results.filter(result => result._id !== id)
-        this.setState({results: results})
+        const results = this.state.results.filter(result => result._id !== id)
+        this.state.results = results
+        this.render()
       })
     }
-  },
+  }
 
-  goTo: function (id, e) {
-    console.log(id)
+  goTo(id, e) {
     if (e) {
       e.preventDefault()
     }
-    Router.transitionTo('result', {matchId: id})
-  },
-
-  render: function () {
-    //this.componentDidUpdate()
-    console.log(this.state.results)
-    if (!this.state.results) {
-      return <div className='results'>Loading...</div>
-    }
-    var current = this.state.results[this.state.selected] || {}
-    var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
-    var rootPath = url.slice(0, url.indexOf('admin')).join('/')
-    return <div className="posts">
-      <div className="posts_header">
-        <h2>Résultats</h2>
-        <button onClick={this.toggleNewForm} className="new-result-button">
-          <i className="fa fa-plus" /> {this.state.showNewForm ? 'Annuler' : 'Nouveau résultat'}
-        </button>
-      </div>
-      {this.state.showNewForm && (
-        <div className="new-result-form-container">
-          <NewResult onNew={this._onNew}/>
-        </div>
-      )}
-      <ul className='posts_list'>
-        {
-          this.state.results.map((result, i) =>
-            <li key={result._id} className={cx({
-                "posts_post": true,
-                "posts_post--draft": true,
-                "posts_post--selected": i === this.state.selected
-              })}
-              onDoubleClick={this.goTo.bind(null, result._id)}
-              onClick={this.setState.bind(this, {selected: i}, null)}
-            >
-              <span className="posts_post-title">
-                {result.text}
-              </span>
-              <span className="posts_post-date">
-                {result.date}
-              </span>
-            
-              <Link className='posts_edit-link' to="result" resultId={result._id}>
-                <i className='fa fa-pencil-square-o'/>
-              </Link>
-              <a className='posts_delete-link' onClick={this._onDelete.bind(null, result._id)}>
-           
-              {i === this.state.selected && (
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash" viewBox="0 0 16 16">
-                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                </svg>
-              )}
-              </a>
-            </li>
-          )
-        }
-      </ul>
-      <div className={cx({
-        'posts_display': true,
-        'posts_display--draft': true
-      })}>
-  
-        <Rendered
-          ref="rendered"
-          className="posts_content"
-          text={JSON.stringify(current,null,2)}
-          type="result"/>
-      </div>
-    </div>
+    window.location.hash = `#/result/${id}`
   }
-});
 
-module.exports = Results;
+  render() {
+    if (!this.state.results) {
+      this.container.innerHTML = '<div class="results">Loading...</div>'
+      return
+    }
+
+    const current = this.state.results[this.state.selected] || {}
+    const url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
+    const rootPath = url.slice(0, url.indexOf('admin')).join('/')
+
+    const container = document.createElement('div')
+    container.className = 'posts'
+
+    const header = document.createElement('div')
+    header.className = 'posts_header'
+
+    const title = document.createElement('h2')
+    title.textContent = 'Résultats'
+
+    const newButton = document.createElement('button')
+    newButton.className = 'new-result-button'
+    newButton.innerHTML = `<i class="fa fa-plus"></i> ${this.state.showNewForm ? 'Annuler' : 'Nouveau résultat'}`
+    newButton.onclick = () => this.toggleNewForm()
+
+    header.appendChild(title)
+    header.appendChild(newButton)
+    container.appendChild(header)
+
+    if (this.state.showNewForm) {
+      const formContainer = document.createElement('div')
+      formContainer.className = 'new-result-form-container'
+      const newResult = new NewResult()
+      newResult.init(formContainer, (result) => this.onNew(result))
+      container.appendChild(formContainer)
+    }
+
+    const list = document.createElement('ul')
+    list.className = 'posts_list'
+
+    this.state.results.forEach((result, i) => {
+      const item = document.createElement('li')
+      item.className = `posts_post posts_post--draft ${i === this.state.selected ? 'posts_post--selected' : ''}`
+      item.ondblclick = () => this.goTo(result._id)
+      item.onclick = () => {
+        this.state.selected = i
+        this.render()
+      }
+
+      const title = document.createElement('span')
+      title.className = 'posts_post-title'
+      title.textContent = result.text
+
+      const date = document.createElement('span')
+      date.className = 'posts_post-date'
+      date.textContent = result.date
+
+      const editLink = document.createElement('a')
+      editLink.className = 'posts_edit-link'
+      editLink.href = `#/result/${result._id}`
+      editLink.innerHTML = '<i class="fa fa-pencil-square-o"></i>'
+
+      const deleteLink = document.createElement('a')
+      deleteLink.className = 'posts_delete-link'
+      deleteLink.onclick = (e) => this.onDelete(result._id, e)
+
+      if (i === this.state.selected) {
+        deleteLink.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+          </svg>
+        `
+      }
+
+      item.appendChild(title)
+      item.appendChild(date)
+      item.appendChild(editLink)
+      item.appendChild(deleteLink)
+      list.appendChild(item)
+    })
+
+    container.appendChild(list)
+
+    const display = document.createElement('div')
+    display.className = 'posts_display posts_display--draft'
+
+    const rendered = new Rendered()
+    rendered.init(display, {
+      text: JSON.stringify(current, null, 2),
+      type: 'result'
+    })
+
+    container.appendChild(display)
+
+    this.container.innerHTML = ''
+    this.container.appendChild(container)
+  }
+}
+
+module.exports = new Results()

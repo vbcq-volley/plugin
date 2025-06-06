@@ -1,4 +1,3 @@
-
 var browserify = require('browserify');
 var gulp = require('gulp');
 var source = require('vinyl-source-stream');
@@ -6,14 +5,12 @@ var buffer = require('vinyl-buffer');
 var gutil = require('gulp-util');
 // var uglify = require('gulp-uglify');
 var sourcemaps = require('gulp-sourcemaps');
-var reactify = require('reactify');
 var rename = require('gulp-rename');
 
 gulp.task('demo', function () {
   var b = browserify({
     entries: './docs/demo/run.js',
-    debug: true,
-    transform: [[reactify, {es6: true, everything: true}]]
+    debug: true
   });
 
   return b.bundle()
@@ -26,8 +23,7 @@ gulp.task('demo', function () {
 gulp.task('javascript', function () {
   var b = browserify({
     entries: './client/run.js',
-    debug: true,
-    transform: [[reactify, {es6: true, everything: true}]]
+    debug: true
   });
 
   return b.bundle()

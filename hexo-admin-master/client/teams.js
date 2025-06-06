@@ -1,135 +1,179 @@
-var React = require('react/addons')
-var cx = React.addons.classSet
-var Link = require('react-router').Link;
-var Router = require('react-router');
-var _ = require('lodash')
-var moment = require('moment')
-var SinceWhen = require('./since-when')
+const _ = require('lodash');
+const moment = require('moment');
+const SinceWhen = require('./since-when');
+const Rendered = require('./rendered');
+const DataFetcher = require('./data-fetcher');
+const Newteam = require('./new-team');
+const api = require('./api');
+const Router = require('./router');
 
-var Rendered = require('./rendered')
-var DataFetcher = require('./data-fetcher');
-var Newteam = require('./new-team')
-var api = require('./api');
-
-var Teams = React.createClass({
-  mixins: [DataFetcher((params) => {
-    console.log(params)
-    return {
-      params: params
-    }
-  })],
-
-  getInitialState: function () {
-    return {
+class Teams {
+  constructor() {
+    this.state = {
       selected: 0,
       showNewForm: false,
       teams: [],
       updated: moment()
+    };
+    this.init();
+  }
+
+  async init() {
+    try {
+      const teams = await api.getEntries("team");
+      this.state.teams = teams;
+      this.render();
+    } catch (error) {
+      console.error('Error loading teams:', error);
     }
-  },
+  }
 
-  componentDidMount: function() {
-    api.getEntries("team").then((teams) => {
-      this.setState({teams: teams})
-      this.render()
-    })
-  },
+  toggleNewForm() {
+    this.state.showNewForm = !this.state.showNewForm;
+    this.render();
+  }
 
-  toggleNewForm: function() {
-    this.setState({ showNewForm: !this.state.showNewForm });
-  },
+  onNew(team) {
+    this.state.teams.unshift(team);
+    this.render();
+    window.location.hash = `#/team/${team._id}`;
+  }
 
-  _onNew: function (team) {
-    var teams = this.state.teams.slice()
-    teams.unshift(team)
-    this.setState({teams: teams})
-    Router.transitionTo('team', {matchId: team._id})
-  },
-
-  _onDelete: function (id, e) {
+  onDelete(id, e) {
     if (e) {
-      e.preventDefault()
+      e.preventDefault();
     }
     if (confirm('Êtes-vous sûr de vouloir supprimer cette équipe ?')) {
       api.deleteEntry("team", id).then(() => {
-        var teams = this.state.teams.filter(team => team._id !== id)
-        this.setState({teams: teams})
-      })
+        this.state.teams = this.state.teams.filter(team => team._id !== id);
+        this.render();
+      });
     }
-  },
-
-  goTo: function (id, e) {
-    if (e) {
-      e.preventDefault()
-    }
-    Router.transitionTo('team', {matchId: id})
-  },
-
-  render: function () {
-    if (!this.state.teams) {
-      return <div className='teams'>Loading...</div>
-    }
-    var current = this.state.teams[this.state.selected] || {}
-    var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/')
-    var rootPath = url.slice(0, url.indexOf('admin')).join('/')
-    return <div className="posts">
-      <div className="posts_header">
-        <h2>Équipes</h2>
-        <button onClick={this.toggleNewForm} className="new-team-button">
-          <i className="fa fa-plus" /> {this.state.showNewForm ? 'Annuler' : 'Nouvelle équipe'}
-        </button>
-      </div>
-      {this.state.showNewForm && (
-        <div className="new-team-form-container">
-          <Newteam onNew={this._onNew}/>
-        </div>
-      )}
-      <ul className='posts_list'>
-        {
-          this.state.teams.map((team, i) =>
-            <li key={team._id} className={cx({
-                "posts_post": true,
-                "posts_post--draft": team.isDraft,
-                "posts_post--selected": i === this.state.selected
-              })}
-              onDoubleClick={this.goTo.bind(null, team._id)}
-              onClick={this.setState.bind(this, {selected: i}, null)}
-            >
-              <span className="posts_post-title">
-                {team.teamName}
-              </span>
-              <span className="posts_post-date">
-                {team.date}
-              </span>
-              <a className='posts_perma-link' target="_blank" href={rootPath + '/' + team.path}>
-                <i className='fa fa-link'/>
-              </a>
-              <Link className='posts_edit-link' to="team" matchId={team._id}>
-                <i className='fa fa-pencil'/>
-              </Link>
-              <a className='posts_delete-link' onClick={this._onDelete.bind(null, team._id)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" className="bi bi-trash" viewBox="0 0 16 16">
-                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-                </svg>
-              </a>
-            </li>
-          )
-        }
-      </ul>
-      <div className={cx({
-        'posts_display': true,
-        'posts_display--draft': current.isDraft
-      })}>
-        {current.isDraft && <div className="posts_draft-message">Draft</div>}
-        <Rendered
-          ref="rendered"
-          className="posts_content"
-          text={JSON.stringify(current,null,2)}
-          type="team"/>
-      </div>
-    </div>
   }
-});
+
+  goTo(id, e) {
+    if (e) {
+      e.preventDefault();
+    }
+    window.location.hash = `#/team/${id}`;
+  }
+
+  render() {
+    if (!this.state.teams) {
+      const loading = document.createElement('div');
+      loading.className = 'teams';
+      loading.textContent = 'Loading...';
+      return loading;
+    }
+
+    const container = document.createElement('div');
+    container.className = 'posts';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'posts_header';
+    
+    const title = document.createElement('h2');
+    title.textContent = 'Équipes';
+    
+    const newButton = document.createElement('button');
+    newButton.className = 'new-team-button';
+    newButton.innerHTML = `<i class="fa fa-plus" /> ${this.state.showNewForm ? 'Annuler' : 'Nouvelle équipe'}`;
+    newButton.addEventListener('click', this.toggleNewForm.bind(this));
+    
+    header.appendChild(title);
+    header.appendChild(newButton);
+    container.appendChild(header);
+
+    // New team form
+    if (this.state.showNewForm) {
+      const formContainer = document.createElement('div');
+      formContainer.className = 'new-team-form-container';
+      
+      const newTeam = new Newteam();
+      newTeam.onNew = this.onNew.bind(this);
+      formContainer.appendChild(newTeam.render());
+      
+      container.appendChild(formContainer);
+    }
+
+    // Teams list
+    const list = document.createElement('ul');
+    list.className = 'posts_list';
+
+    this.state.teams.forEach((team, i) => {
+      const li = document.createElement('li');
+      li.className = `posts_post ${team.isDraft ? 'posts_post--draft' : ''} ${i === this.state.selected ? 'posts_post--selected' : ''}`;
+      
+      const title = document.createElement('span');
+      title.className = 'posts_post-title';
+      title.textContent = team.teamName;
+      
+      const date = document.createElement('span');
+      date.className = 'posts_post-date';
+      date.textContent = team.date;
+      
+      const permaLink = document.createElement('a');
+      permaLink.className = 'posts_perma-link';
+      permaLink.target = '_blank';
+      const url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/');
+      const rootPath = url.slice(0, url.indexOf('admin')).join('/');
+      permaLink.href = rootPath + '/' + team.path;
+      permaLink.innerHTML = '<i class="fa fa-link"></i>';
+      
+      const editLink = document.createElement('a');
+      editLink.className = 'posts_edit-link';
+      editLink.href = `#/team/${team._id}`;
+      editLink.innerHTML = '<i class="fa fa-pencil"></i>';
+      
+      const deleteLink = document.createElement('a');
+      deleteLink.className = 'posts_delete-link';
+      deleteLink.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+          <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+        </svg>
+      `;
+      deleteLink.addEventListener('click', this.onDelete.bind(this, team._id));
+      
+      li.appendChild(title);
+      li.appendChild(date);
+      li.appendChild(permaLink);
+      li.appendChild(editLink);
+      li.appendChild(deleteLink);
+      
+      li.addEventListener('dblclick', this.goTo.bind(this, team._id));
+      li.addEventListener('click', () => {
+        this.state.selected = i;
+        this.render();
+      });
+      
+      list.appendChild(li);
+    });
+
+    container.appendChild(list);
+
+    // Display selected team
+    const current = this.state.teams[this.state.selected] || {};
+    const display = document.createElement('div');
+    display.className = `posts_display ${current.isDraft ? 'posts_display--draft' : ''}`;
+
+    if (current.isDraft) {
+      const draftMessage = document.createElement('div');
+      draftMessage.className = 'posts_draft-message';
+      draftMessage.textContent = 'Draft';
+      display.appendChild(draftMessage);
+    }
+
+    const rendered = new Rendered();
+    rendered.className = 'posts_content';
+    rendered.text = JSON.stringify(current, null, 2);
+    rendered.type = 'team';
+    display.appendChild(rendered.render());
+
+    container.appendChild(display);
+    return container;
+  }
+}
 
 module.exports = Teams;

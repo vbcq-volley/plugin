@@ -1,10 +1,6 @@
-
 // index.js
 var admin = require('./')
   , api = require('./api')
-
-// for debugging
-window.React = require('react');
 
 var url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/');
 var rootPath = url.slice(0, url.indexOf('admin')).join('/');
