@@ -27,7 +27,7 @@ var Data = React.createClass({
   },
 
   render: function () {
-    return <Editor_data id={this.props.params.matchId} type="result" />
+    return <Editor_data id={this.props.params.matchId} type="match" />
   }
 });
 

@@ -122,7 +122,7 @@ var Stades = React.createClass({
               </span>
              
               
-              <Link className='posts_edit-link' to={`stade`} stadeId={stade._id}>
+              <Link className='' to={`stade`} stadeId={stade._id}>
                 <i className='fa fa-pencil'/>
               </Link>
               <a className='posts_delete-link' onClick={this._onDelete.bind(null, stade._id)}>
