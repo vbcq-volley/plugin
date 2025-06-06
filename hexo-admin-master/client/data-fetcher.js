@@ -2,6 +2,7 @@ var p = require('es6-promise')
   , Promise = p.Promise
 
 module.exports = function (fetch) {
+  
   return {
     getInitialState: function () {
       return { }
@@ -18,9 +19,10 @@ module.exports = function (fetch) {
     loadData: function (props) {
       console.log(props.params)
       if(props.params==Object()){
-        return
+        return 
       }
       var items = fetch(props.params)
+      console.log(props)
       Object.keys(items).forEach((name) => {
         Promise.resolve(items[name]).then((data) => {
           if (!this.isMounted()) return

@@ -37,14 +37,7 @@ var NewData = React.createClass({
   },
 
   componentDidMount: function () {
-    api.getEntries("match").then((matches) => {
-      console.log(matches);
-      this.setState({ matches: matches });
-    });
-    api.getEntries("team").then((team)=>{
-      this.setState({ team: team });
-    })
-    this.render()
+    
   },
 
   componentDidUpdate: function (prevProps, prevState) {
@@ -63,7 +56,16 @@ var NewData = React.createClass({
   },
 
   _onShow: function () {
-    this.setState({ showing: true });
+    const temp={showing: true}
+    api.getEntries("match").then((matches) => {
+      console.log(matches);
+      temp["match"]=matches
+    });
+    api.getEntries("team").then((team)=>{
+      temp["team"]=team
+    })
+    this.render()
+    this.setState(temp);
   },
 
   _onBlur: function (e) {
