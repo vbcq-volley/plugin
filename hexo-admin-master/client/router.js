@@ -40,8 +40,9 @@ class Router {
     this.params = {};
   }
 
-  init() {
+  init(div) {
     window.addEventListener('hashchange', this.handleRoute.bind(this));
+    this.div=div
     this.handleRoute();
   }
 
@@ -52,7 +53,10 @@ class Router {
     const handler = this.routes[route] || Posts;
     this.params = params;
     
-    const main = document.querySelector('.app_main');
+    let main = this.div
+    while (!main) {
+      main = this.div
+    }
     main.innerHTML = '';
     
     if (typeof handler === 'function') {

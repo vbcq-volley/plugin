@@ -42,17 +42,25 @@ class App {
     
     const main = document.createElement('div');
     main.className = 'app_main';
+    main.id=main.className
     app.appendChild(main);
     
-    document.body.appendChild(app);
+    // Attendre que le DOM soit chargé
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.appendChild(app);
+      });
+    } else {
+      document.body.appendChild(app);
+    }
     
     // Gestion du routage
     window.addEventListener('hashchange', this.handleRoute.bind(this));
-    this.handleRoute();
+    this.handleRoute(main);
   }
   
-  handleRoute() {
-    router.handleRoute();
+  handleRoute(div) {
+    router.handleRoute(div);
   }
 }
 

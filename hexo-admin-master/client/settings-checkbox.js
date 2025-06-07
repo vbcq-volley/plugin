@@ -1,65 +1,69 @@
-
-var React = require('react/addons')
-var PT = React.PropTypes
 var api = require('./api')
 
-var SettingsCheckbox = React.createClass({
-  propTypes: {
-    name: PT.string.isRequired,
-    label: PT.string.isRequired,
-    style: PT.object,
-    enableOptions: PT.object,
-    disableOptions: PT.object,
-    onClick: PT.func
-  },
-
-  getInitialState: function () {
-    return {
-      checked: false,
-    }
-  },
-
-  componentDidMount: function() {
-    var name = this.props.name
-    api.settings().then( (settings) => {
-      var checked
-      if (!settings.options) {
-        checked = false
-      } else {
-        checked = !!settings.options[name]
-      }
-      this.setState({checked: checked})
-    })
-  },
-
-  handleChange: function(e) {
-    var name = this.props.name
-    var addedOptions = e.target.checked ? this.props.enableOptions
-                                        : this.props.disableOptions
-    var value = e.target.checked
-    api.setSetting(name, value, addedOptions).then( (result) => {
-      console.log(result.updated)
-      this.setState({
-        checked: result.settings.options[name]
-      });
-    });
-  },
-
-  render: function() {
-    return (
-      <p style={this.props.style}>
-      <label>
-          <input
-            checked={this.state.checked}
-            type="checkbox"
-            onChange={this.handleChange}
-            onClick={this.props.onClick}
-          />
-          &nbsp; {this.props.label}
-        </label>
-      </p>
-    );
+class SettingsCheckbox {
+  constructor(options) {
+    this.options = options;
+    this.checked = false;
+    this.element = null;
+    this.init();
   }
-});
 
-module.exports = SettingsCheckbox
+  init() {
+    this.element = document.createElement('p');
+    if (this.options.style) {
+      Object.assign(this.element.style, this.options.style);
+    }
+    this.render();
+    this.loadSettings();
+  }
+
+  loadSettings() {
+    api.settings().then(settings => {
+      let checked;
+      if (!settings.options) {
+        checked = false;
+      } else {
+        checked = !!settings.options[this.options.name];
+      }
+      this.checked = checked;
+      this.render();
+    });
+  }
+
+  handleChange(e) {
+    const addedOptions = e.target.checked ? this.options.enableOptions : this.options.disableOptions;
+    const value = e.target.checked;
+    api.setSetting(this.options.name, value, addedOptions).then(result => {
+      console.log(result.updated);
+      this.checked = result.settings.options[this.options.name];
+      this.render();
+    });
+  }
+
+  render() {
+    // Nettoyer le contenu existant
+    while (this.element.firstChild) {
+      this.element.removeChild(this.element.firstChild);
+    }
+
+    // Créer le label
+    const label = document.createElement('label');
+
+    // Créer la checkbox
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.checked = this.checked;
+    input.addEventListener('change', this.handleChange.bind(this));
+    if (this.options.onClick) {
+      input.addEventListener('click', this.options.onClick);
+    }
+    label.appendChild(input);
+
+    // Ajouter l'espace et le texte du label
+    label.appendChild(document.createTextNode(' ' + this.options.label));
+
+    this.element.appendChild(label);
+  }
+}
+
+module.exports = SettingsCheckbox;

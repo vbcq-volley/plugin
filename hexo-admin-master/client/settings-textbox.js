@@ -1,62 +1,63 @@
-
-var React = require('react/addons')
-var PT = React.PropTypes
 var api = require('./api')
 
-var SettingsTextbox = React.createClass({
-  propTypes: {
-    name: PT.string.isRequired,
-    defaultValue: PT.string.isRequired,
-    label: PT.string.isRequired
-  },
+class SettingsTextbox {
+  constructor(options) {
+    this.options = options;
+    this.value = options.defaultValue;
+    this.element = null;
+    this.init();
+  }
 
-  getInitialState: function () {
-    return {
-      value: this.props.defaultValue
-    }
-  },
+  init() {
+    this.element = document.createElement('p');
+    this.render();
+    this.loadSettings();
+  }
 
-  componentDidMount: function() {
-    var name = this.props.name
-    var defaultValue = this.props.defaultValue
-    api.settings().then( (settings) => {
-      var value;
+  loadSettings() {
+    api.settings().then(settings => {
+      let value;
       if (!settings.options) {
-        value = defaultValue
+        value = this.options.defaultValue;
       } else {
-        if(!settings.options[name]) {
-          value = defaultValue
+        if (!settings.options[this.options.name]) {
+          value = this.options.defaultValue;
         } else {
-          value = settings.options[name]
+          value = settings.options[this.options.name];
         }
       }
-      this.setState({value: value})
-    })
-  },
-
-  handleChange: function(e) {
-    var name = this.props.name
-    var value = e.target.value
-    api.setSetting(name, value).then( (result) => {
-      console.log(result.updated)
-      this.setState({
-        value: result.settings.options[name]
-      });
+      this.value = value;
+      this.render();
     });
-  },
-
-  render: function() {
-    return (
-      <p>
-        <b>{this.props.label}:  </b>
-        <input
-          type="text"
-          onChange={this.handleChange}
-          value ={this.state.value}
-        />
-      </p>
-    );
   }
-});
 
-module.exports = SettingsTextbox
+  handleChange(e) {
+    const value = e.target.value;
+    api.setSetting(this.options.name, value).then(result => {
+      console.log(result.updated);
+      this.value = result.settings.options[this.options.name];
+      this.render();
+    });
+  }
+
+  render() {
+    // Nettoyer le contenu existant
+    while (this.element.firstChild) {
+      this.element.removeChild(this.element.firstChild);
+    }
+
+    // Créer le label
+    const b = document.createElement('b');
+    b.textContent = this.options.label + ':  ';
+    this.element.appendChild(b);
+
+    // Créer l'input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = this.value;
+    input.addEventListener('change', this.handleChange.bind(this));
+    this.element.appendChild(input);
+  }
+}
+
+module.exports = SettingsTextbox;

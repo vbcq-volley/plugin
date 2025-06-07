@@ -1,9 +1,6 @@
 var admin = require('../../client')
   , api = require('../../client/api')
 
-// for debugging
-window.React = require('react')
-
 api.init(require('./test-api.js'), {
   posts: require('./posts.js'),
   tagsAndCategories: require('./tags-and-categories.js'),

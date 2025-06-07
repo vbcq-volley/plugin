@@ -1,10 +1,8 @@
 /**
- * v 2.2.4 fix using reactjs v0.11.1
+ * v 2.2.4
  * @2018/02/06
  */
 
-// var React = require('react');
-var React = require('react/addons');
 var accept = require('attr-accept');
 
 class Dropzone {
