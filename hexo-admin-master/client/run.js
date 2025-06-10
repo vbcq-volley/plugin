@@ -1268,8 +1268,8 @@ class ResultEditor {
             <input type="text" id="awayDate" name="awayDate" value="${this.formatDate(result.awayDate)}" required placeholder="JJ/MM/AAAA HH:mm">
           </div>
           <div class="form-group">
-            <label for="stadium">Stade</label>
-            <input type="text" id="stadium" name="stadium" value="${result.stadium || ''}" required>
+            <label for="stadium">Adresse du stade</label>
+            <input type="text" id="stadium" name="stadium" value="${result.stadium || ''}" required placeholder="Adresse du stade">
           </div>
           <div class="form-group">
             <label for="competition">Compétition</label>
@@ -1297,11 +1297,11 @@ class ResultEditor {
       
       if (matchTypeSelect.value === 'away') {
         // Pour un match à l'extérieur, on ajoute 2 heures à la date du match à domicile
-        const date = new Date(year, month , day, parseInt(hour) + 2, minute);
+        const date = new Date(year, month , day, parseInt(hour) , minute);
         awayDateInput.value = this.formatDate(date);
       } else {
         // Pour un match à domicile, on soustrait 2 heures à la date du match à l'extérieur
-        const date = new Date(year, month - 1, day, parseInt(hour) - 2, minute);
+        const date = new Date(year, month , day, parseInt(hour) , minute);
         homeDateInput.value = this.formatDate(date);
       }
     };
