@@ -1297,7 +1297,7 @@ class ResultEditor {
       
       if (matchTypeSelect.value === 'away') {
         // Pour un match à l'extérieur, on ajoute 2 heures à la date du match à domicile
-        const date = new Date(year, month - 1, day, parseInt(hour) + 2, minute);
+        const date = new Date(year, month , day, parseInt(hour) + 2, minute);
         awayDateInput.value = this.formatDate(date);
       } else {
         // Pour un match à domicile, on soustrait 2 heures à la date du match à l'extérieur
