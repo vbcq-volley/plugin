@@ -1965,7 +1965,16 @@ window.addEventListener('load', () => {
     };
   }
 });
-
+window.addEventListener('load', () => {
+  if (typeof marked !== 'undefined') {
+    marked.setOptions({
+      breaks: true,      // Permet les retours à la ligne avec un simple saut de ligne
+      gfm: true,         // Active GitHub Flavored Markdown
+      headerIds: true,   // Ajoute des IDs aux titres
+      mangle: false      // Ne modifie pas les caractères spéciaux dans les IDs
+    });
+  }
+});
 // Ajout des styles CSS pour la modale
 document.head.innerHTML += `
   <style>
