@@ -1053,19 +1053,11 @@ class TeamEditor {
           </div>
           <div class="form-group">
             <label for="coach">Entraîneur</label>
-            <input type="text" id="coach" name="coach" value="${team.coach || ''}">
+            <input type="text" id="coach" name="coach" value="${team.coach || ''}" required>
           </div>
           <div class="form-group">
-            <label for="stadium">Stade</label>
-            <input type="text" id="stadium" name="stadium" value="${team.stadium || ''}">
-          </div>
-          <div class="form-group">
-            <label for="founded">Année de création</label>
-            <input type="number" id="founded" name="founded" value="${team.founded || ''}">
-          </div>
-          <div class="form-group">
-            <label for="country">Pays</label>
-            <input type="text" id="country" name="country" value="${team.country || ''}">
+            <label for="group">Groupe</label>
+            <input type="text" id="group" name="group" value="${team.group || ''}" required>
           </div>
           <button type="submit">Enregistrer</button>
         </form>
@@ -1080,9 +1072,7 @@ class TeamEditor {
       const data = {
         teamName: formData.get('teamName'),
         coach: formData.get('coach'),
-        stadium: formData.get('stadium'),
-        founded: parseInt(formData.get('founded')),
-        country: formData.get('country')
+        group: formData.get('group')
       };
 
       try {
