@@ -1170,10 +1170,15 @@ class ResultEditor {
     this.node = node;
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchResult.bind(this));
+    this.matchesFetcher = new DataFetcher(this.fetchMatches.bind(this));
   }
 
   async fetchResult() {
     return this.id ? api.getEntry('result', this.id) : null;
+  }
+
+  async fetchMatches() {
+    return api.getEntries('match');
   }
 
   formatDate(date) {
@@ -1197,25 +1202,48 @@ class ResultEditor {
   }
 
   render() {
-    this.dataFetcher.getData().then(() => this.updateView());
+    Promise.all([
+      this.dataFetcher.getData(),
+      this.matchesFetcher.getData()
+    ]).then(() => this.updateView());
   }
 
   updateView() {
-    if (this.dataFetcher.loading) {
+    if (this.dataFetcher.loading || this.matchesFetcher.loading) {
       this.node.innerHTML = '<div class="loading">Chargement...</div>';
       return;
     }
 
-    if (this.dataFetcher.error) {
-      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+    if (this.dataFetcher.error || this.matchesFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.matchesFetcher.error}</div>`;
       return;
     }
 
     const result = this.dataFetcher.data || {};
+    const matches = this.matchesFetcher.data || [];
+
     const html = `
       <div class="result-editor">
         <h2>${this.id ? 'Modifier le résultat' : 'Nouveau résultat'}</h2>
         <form id="result-form">
+          <div class="form-group">
+            <label for="matchId">Match</label>
+            <select id="matchId" name="matchId" required>
+              <option value="">Sélectionner un match</option>
+              ${matches.map(match => `
+                <option value="${match._id}" 
+                  ${result.matchId === match._id ? 'selected' : ''}
+                  data-team1="${match.team1}"
+                  data-team2="${match.team2}"
+                  data-home-date="${match.homeDate}"
+                  data-away-date="${match.awayDate}"
+                  data-group="${match.group}"
+                  data-session="${match.session}">
+                  ${match.team1} vs ${match.team2} (${match.homeDate})
+                </option>
+              `).join('')}
+            </select>
+          </div>
           <div class="form-group">
             <label for="matchType">Type de match</label>
             <select id="matchType" name="matchType" required>
@@ -1224,32 +1252,12 @@ class ResultEditor {
             </select>
           </div>
           <div class="form-group">
-            <label for="team1">Équipe 1</label>
-            <input type="text" id="team1" name="team1" value="${result.team1 || ''}" required>
-          </div>
-          <div class="form-group">
-            <label for="team2">Équipe 2</label>
-            <input type="text" id="team2" name="team2" value="${result.team2 || ''}" required>
-          </div>
-          <div class="form-group">
             <label for="team1Score">Score équipe 1</label>
             <input type="number" id="team1Score" name="team1Score" value="${result.team1Score || ''}" required>
           </div>
           <div class="form-group">
             <label for="team2Score">Score équipe 2</label>
             <input type="number" id="team2Score" name="team2Score" value="${result.team2Score || ''}" required>
-          </div>
-          <div class="form-group">
-            <label for="date">Date du match</label>
-            <input type="text" id="date" name="date" value="${result.date || ''}" required placeholder="JJ mois AAAA à HH:mm">
-          </div>
-          <div class="form-group">
-            <label for="group">Groupe</label>
-            <input type="text" id="group" name="group" value="${result.group || ''}" required>
-          </div>
-          <div class="form-group">
-            <label for="session">Session</label>
-            <input type="number" id="session" name="session" value="${result.session || ''}" required>
           </div>
           <div class="form-group">
             <label for="isForfeit">Forfait</label>
@@ -1267,10 +1275,6 @@ class ResultEditor {
             <label for="postponedTeam">Équipe reportée</label>
             <input type="text" id="postponedTeam" name="postponedTeam" value="${result.postponedTeam || ''}">
           </div>
-          <div class="form-group">
-            <label for="matchId">ID du match</label>
-            <input type="text" id="matchId" name="matchId" value="${result.matchId || ''}" required>
-          </div>
           <button type="submit">Enregistrer</button>
         </form>
       </div>
@@ -1282,6 +1286,7 @@ class ResultEditor {
     const forfeitTeamGroup = document.getElementById('forfeitTeamGroup');
     const isPostponedCheckbox = document.getElementById('isPostponed');
     const postponedTeamGroup = document.getElementById('postponedTeamGroup');
+    const matchSelect = document.getElementById('matchId');
 
     isForfeitCheckbox.addEventListener('change', () => {
       forfeitTeamGroup.style.display = isForfeitCheckbox.checked ? 'block' : 'none';
@@ -1291,24 +1296,49 @@ class ResultEditor {
       postponedTeamGroup.style.display = isPostponedCheckbox.checked ? 'block' : 'none';
     });
 
+    // Mise à jour des équipes et dates en fonction du match sélectionné
+    matchSelect.addEventListener('change', () => {
+      const selectedOption = matchSelect.options[matchSelect.selectedIndex];
+      if (selectedOption.value) {
+        const team1 = selectedOption.dataset.team1;
+        const team2 = selectedOption.dataset.team2;
+        const homeDate = selectedOption.dataset.homeDate;
+        const awayDate = selectedOption.dataset.awayDate;
+        const group = selectedOption.dataset.group;
+        const session = selectedOption.dataset.session;
+
+        // Mise à jour des champs cachés
+        const form = document.getElementById('result-form');
+        form.dataset.team1 = team1;
+        form.dataset.team2 = team2;
+        form.dataset.homeDate = homeDate;
+        form.dataset.awayDate = awayDate;
+        form.dataset.group = group;
+        form.dataset.session = session;
+      }
+    });
+
     const form = document.getElementById('result-form');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
+      const matchType = formData.get('matchType');
+      const selectedMatch = matches.find(m => m._id === formData.get('matchId'));
+      
       const data = {
-        matchType: formData.get('matchType'),
-        team1: formData.get('team1'),
-        team2: formData.get('team2'),
+        matchType,
+        team1: selectedMatch.team1,
+        team2: selectedMatch.team2,
         team1Score: formData.get('team1Score'),
         team2Score: formData.get('team2Score'),
-        date: formData.get('date'),
-        group: formData.get('group'),
-        session: parseInt(formData.get('session')),
         isForfeit: formData.get('isForfeit') === 'on',
         forfeitTeam: formData.get('forfeitTeam'),
         isPostponed: formData.get('isPostponed') === 'on',
         postponedTeam: formData.get('postponedTeam'),
-        matchId: formData.get('matchId')
+        matchId: formData.get('matchId'),
+        group: selectedMatch.group,
+        session: parseInt(selectedMatch.session),
+        date: matchType === 'home' ? selectedMatch.homeDate : selectedMatch.awayDate
       };
 
       try {
