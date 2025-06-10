@@ -1938,8 +1938,8 @@ document.head.innerHTML += `
 // Initialisation de CodeMirror après le chargement des scripts
 window.addEventListener('load', () => {
   window.addEventListener('load', () => {
-    if (typeof marked !== 'undefined') {
-      marked.setOptions({
+    if (typeof Marked !== 'undefined') {
+      Marked.setOptions({
         breaks: true,      // Permet les retours à la ligne avec un simple saut de ligne
         gfm: true,         // Active GitHub Flavored Markdown
         headerIds: true,   // Ajoute des IDs aux titres
