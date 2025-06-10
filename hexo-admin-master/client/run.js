@@ -1790,7 +1790,16 @@ class App {
 
     try {
       for (let i = 0; i < files.length; i++) {
-        await api.uploadImage([files[i]]);
+        const file = files[i];
+        const reader = new FileReader();
+        
+        const imageData = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        
+        await api.uploadImage(imageData, file.name);
       }
       await this.loadImages();
     } catch (error) {
