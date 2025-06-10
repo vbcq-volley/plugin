@@ -1260,8 +1260,12 @@ class ResultEditor {
             <input type="number" id="opponentScore" name="opponentScore" value="${result.team2Score || ''}" required>
           </div>
           <div class="form-group">
-            <label for="date">Date et heure</label>
-            <input type="text" id="date" name="date" value="${this.formatDate(result.date)}" required placeholder="JJ/MM/AAAA HH:mm">
+            <label for="homeDate">Date et heure (domicile)</label>
+            <input type="text" id="homeDate" name="homeDate" value="${this.formatDate(result.homeDate)}" required placeholder="JJ/MM/AAAA HH:mm">
+          </div>
+          <div class="form-group">
+            <label for="awayDate">Date et heure (extérieur)</label>
+            <input type="text" id="awayDate" name="awayDate" value="${this.formatDate(result.awayDate)}" required placeholder="JJ/MM/AAAA HH:mm">
           </div>
           <div class="form-group">
             <label for="stadium">Stade</label>
@@ -1279,29 +1283,31 @@ class ResultEditor {
 
     const form = document.getElementById('result-form');
     const matchTypeSelect = document.getElementById('matchType');
-    const dateInput = document.getElementById('date');
+    const homeDateInput = document.getElementById('homeDate');
+    const awayDateInput = document.getElementById('awayDate');
 
-    // Fonction pour mettre à jour la date en fonction du type de match
-    const updateDate = () => {
-      const currentDate = dateInput.value;
+    // Fonction pour mettre à jour les dates en fonction du type de match
+    const updateDates = () => {
+      const currentDate = matchTypeSelect.value === 'home' ? homeDateInput.value : awayDateInput.value;
       if (!currentDate) return;
       
       const [datePart, timePart] = currentDate.split(' ');
       const [day, month, year] = datePart.split('/');
       const [hour, minute] = timePart.split(':');
       
-      // Ajouter 2 heures pour les matchs à l'extérieur
       if (matchTypeSelect.value === 'away') {
+        // Pour un match à l'extérieur, on ajoute 2 heures à la date du match à domicile
         const date = new Date(year, month - 1, day, parseInt(hour) + 2, minute);
-        dateInput.value = this.formatDate(date);
+        awayDateInput.value = this.formatDate(date);
       } else {
-        const date = new Date(year, month - 1, day, hour, minute);
-        dateInput.value = this.formatDate(date);
+        // Pour un match à domicile, on soustrait 2 heures à la date du match à l'extérieur
+        const date = new Date(year, month - 1, day, parseInt(hour) - 2, minute);
+        homeDateInput.value = this.formatDate(date);
       }
     };
 
     // Écouter les changements du type de match
-    matchTypeSelect.addEventListener('change', updateDate);
+    matchTypeSelect.addEventListener('change', updateDates);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1314,7 +1320,8 @@ class ResultEditor {
         team2: formData.get('opponent'),
         team1Score: parseInt(formData.get('teamScore')),
         team2Score: parseInt(formData.get('opponentScore')),
-        date: this.parseDate(formData.get('date')),
+        homeDate: this.parseDate(formData.get('homeDate')),
+        awayDate: this.parseDate(formData.get('awayDate')),
         stadium: formData.get('stadium'),
         competition: formData.get('competition')
       };
@@ -1325,11 +1332,13 @@ class ResultEditor {
         data.awayTeam = data.team2;
         data.homeScore = data.team1Score;
         data.awayScore = data.team2Score;
+        data.date = data.homeDate;
       } else {
         data.homeTeam = data.team2;
         data.awayTeam = data.team1;
         data.homeScore = data.team2Score;
         data.awayScore = data.team1Score;
+        data.date = data.awayDate;
       }
 
       try {
