@@ -1937,6 +1937,16 @@ document.head.innerHTML += `
 
 // Initialisation de CodeMirror après le chargement des scripts
 window.addEventListener('load', () => {
+  window.addEventListener('load', () => {
+    if (typeof marked !== 'undefined') {
+      marked.setOptions({
+        breaks: true,      // Permet les retours à la ligne avec un simple saut de ligne
+        gfm: true,         // Active GitHub Flavored Markdown
+        headerIds: true,   // Ajoute des IDs aux titres
+        mangle: false      // Ne modifie pas les caractères spéciaux dans les IDs
+      });
+    }
+  });
   if (typeof CodeMirror !== 'undefined') {
     // Configuration globale de CodeMirror
     CodeMirror.defaults = {
@@ -2060,6 +2070,7 @@ document.head.innerHTML += `
       border-radius: 4px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 `;
 
 // Ajout des styles CSS pour la barre de progression
