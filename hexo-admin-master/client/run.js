@@ -161,6 +161,7 @@ class API {
   }
 
   async uploadMultiFiles(files) {
+    
     const formData = new FormData();
     files.forEach(file => {
       formData.append(file.name, file);
@@ -1777,7 +1778,7 @@ class App {
   async handleImageUpload() {
     const fileInput = this.imageModal.querySelector('#image-upload');
     const files = fileInput.files;
-    
+    console.log(files)
     if (files.length === 0) {
       alert('Veuillez sélectionner au moins une image');
       return;
