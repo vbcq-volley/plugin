@@ -1,7 +1,7 @@
 // index.js
 class API {
   constructor() {
-    this.baseUrl = 'admin/api';
+    this.baseUrl = '';
   }
 
   init(type, baseUrl) {
@@ -26,42 +26,156 @@ class API {
   }
 
   async getEntries(type) {
-    return this.request(`/${type}`);
+    return this.request(`/db/${type}`);
   }
 
   async getEntry(type, id) {
-    return this.request(`/${type}/${id}`);
+    return this.request(`/db/${type}/${id}`);
   }
 
   async createEntry(type, data) {
-    return this.request(`/${type}`, {
+    return this.request(`/db/${type}`, {
       method: 'POST',
       body: JSON.stringify(data)
     });
   }
 
   async updateEntry(type, id, data) {
-    return this.request(`/${type}/${id}`, {
+    return this.request(`/db/${type}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data)
     });
   }
 
   async deleteEntry(type, id) {
-    return this.request(`/${type}/${id}`, {
+    return this.request(`/db/${type}/${id}`, {
       method: 'DELETE'
     });
   }
 
-  async getSettings() {
-    return this.request('/settings');
+  async getPosts() {
+    return this.request('/posts/list');
   }
 
-  async updateSettings(settings) {
-    return this.request('/settings', {
-      method: 'PUT',
-      body: JSON.stringify(settings)
+  async getPost(id, data) {
+    if (data) {
+      return this.request(`/posts/${id}`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    }
+    return this.request(`/posts/${id}`);
+  }
+
+  async createPost(title) {
+    return this.request('/posts/new', {
+      method: 'POST',
+      body: JSON.stringify({ title })
     });
+  }
+
+  async getPages() {
+    return this.request('/pages/list');
+  }
+
+  async getPage(id, data) {
+    if (data) {
+      return this.request(`/pages/${id}`, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    }
+    return this.request(`/pages/${id}`);
+  }
+
+  async createPage(title) {
+    return this.request('/pages/new', {
+      method: 'POST',
+      body: JSON.stringify({ title })
+    });
+  }
+
+  async deploy(message) {
+    return this.request('/deploy', {
+      method: 'POST',
+      body: JSON.stringify({ message })
+    });
+  }
+
+  async uploadImage(data, filename) {
+    return this.request('/images/upload', {
+      method: 'POST',
+      body: JSON.stringify({ data, filename })
+    });
+  }
+
+  async removePost(id) {
+    return this.request(`/posts/${id}/remove`, {
+      method: 'POST'
+    });
+  }
+
+  async publishPost(id) {
+    return this.request(`/posts/${id}/publish`, {
+      method: 'POST'
+    });
+  }
+
+  async unpublishPost(id) {
+    return this.request(`/posts/${id}/unpublish`, {
+      method: 'POST'
+    });
+  }
+
+  async renamePost(id, filename) {
+    return this.request(`/posts/${id}/rename`, {
+      method: 'POST',
+      body: JSON.stringify({ filename })
+    });
+  }
+
+  async getTagsCategoriesAndMetadata() {
+    return this.request('/tags-categories-and-metadata');
+  }
+
+  async getSettings() {
+    return this.request('/settings/list');
+  }
+
+  async setSetting(name, value, addedOptions) {
+    return this.request('/settings/set', {
+      method: 'POST',
+      body: JSON.stringify({ name, value, addedOptions })
+    });
+  }
+
+  async getGallery() {
+    return this.request('/gallery/list');
+  }
+
+  async setGallery(name, createAt) {
+    return this.request('/gallery/set', {
+      method: 'POST',
+      body: JSON.stringify({ name, createAt })
+    });
+  }
+
+  async uploadMultiFiles(files) {
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append(file.name, file);
+    });
+    return this.request('/upload', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  }
+
+  async getMatch() {
+    return this.getEntries("math");
   }
 }
 
@@ -96,7 +210,7 @@ class Posts {
   }
 
   async fetchPosts() {
-    return api.getEntries('post');
+    return api.getPosts();
   }
 
   render() {
@@ -143,7 +257,7 @@ class Pages {
   }
 
   async fetchPages() {
-    return api.getEntries('page');
+    return api.getPages();
   }
 
   render() {
@@ -332,7 +446,7 @@ class Datas {
   }
 
   async fetchDatas() {
-    return api.getEntries('data');
+    return api.getMatch();
   }
 
   render() {
@@ -422,11 +536,9 @@ class Settings {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-      const newSettings = {};
       for (const [key, value] of formData.entries()) {
-        newSettings[key] = value === 'on' ? true : value;
+        await api.setSetting(key, value === 'on' ? true : value);
       }
-      await api.updateSettings(newSettings);
       this.render();
     });
   }
@@ -465,7 +577,7 @@ class Post {
   }
 
   async fetchPost() {
-    return api.getEntry('post', this.id);
+    return api.getPost(this.id);
   }
 
   render() {
@@ -510,7 +622,7 @@ class Page {
   }
 
   async fetchPage() {
-    return api.getEntry('page', this.id);
+    return api.getPage(this.id);
   }
 
   render() {
@@ -723,6 +835,498 @@ class Data {
   }
 }
 
+class PostEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchPost.bind(this));
+  }
+
+  async fetchPost() {
+    return this.id ? api.getPost(this.id) : null;
+  }
+
+  render() {
+    this.dataFetcher.getData().then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+      return;
+    }
+
+    const post = this.dataFetcher.data || {};
+    const html = `
+      <div class="post-editor">
+        <h2>${this.id ? 'Modifier le post' : 'Nouveau post'}</h2>
+        <form id="post-form">
+          <div class="form-group">
+            <label for="title">Titre</label>
+            <input type="text" id="title" name="title" value="${post.title || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="content">Contenu</label>
+            <textarea id="content" name="content" rows="10" required>${post.content || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" value="${post.date ? new Date(post.date).toISOString().split('T')[0] : ''}">
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    const form = document.getElementById('post-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        title: formData.get('title'),
+        content: formData.get('content'),
+        date: formData.get('date')
+      };
+
+      try {
+        if (this.id) {
+          await api.getPost(this.id, data);
+        } else {
+          await api.createPost(data.title);
+        }
+        window.location.hash = '#/posts';
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
+class PageEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchPage.bind(this));
+  }
+
+  async fetchPage() {
+    return this.id ? api.getPage(this.id) : null;
+  }
+
+  render() {
+    this.dataFetcher.getData().then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+      return;
+    }
+
+    const page = this.dataFetcher.data || {};
+    const html = `
+      <div class="page-editor">
+        <h2>${this.id ? 'Modifier la page' : 'Nouvelle page'}</h2>
+        <form id="page-form">
+          <div class="form-group">
+            <label for="title">Titre</label>
+            <input type="text" id="title" name="title" value="${page.title || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="content">Contenu</label>
+            <textarea id="content" name="content" rows="10" required>${page.content || ''}</textarea>
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    const form = document.getElementById('page-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        title: formData.get('title'),
+        content: formData.get('content')
+      };
+
+      try {
+        if (this.id) {
+          await api.getPage(this.id, data);
+        } else {
+          await api.createPage(data.title);
+        }
+        window.location.hash = '#/pages';
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
+class TeamEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchTeam.bind(this));
+  }
+
+  async fetchTeam() {
+    return this.id ? api.getEntry('team', this.id) : null;
+  }
+
+  render() {
+    this.dataFetcher.getData().then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+      return;
+    }
+
+    const team = this.dataFetcher.data || {};
+    const html = `
+      <div class="team-editor">
+        <h2>${this.id ? 'Modifier l\'équipe' : 'Nouvelle équipe'}</h2>
+        <form id="team-form">
+          <div class="form-group">
+            <label for="teamName">Nom de l'équipe</label>
+            <input type="text" id="teamName" name="teamName" value="${team.teamName || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="coach">Entraîneur</label>
+            <input type="text" id="coach" name="coach" value="${team.coach || ''}">
+          </div>
+          <div class="form-group">
+            <label for="stadium">Stade</label>
+            <input type="text" id="stadium" name="stadium" value="${team.stadium || ''}">
+          </div>
+          <div class="form-group">
+            <label for="founded">Année de création</label>
+            <input type="number" id="founded" name="founded" value="${team.founded || ''}">
+          </div>
+          <div class="form-group">
+            <label for="country">Pays</label>
+            <input type="text" id="country" name="country" value="${team.country || ''}">
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    const form = document.getElementById('team-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        teamName: formData.get('teamName'),
+        coach: formData.get('coach'),
+        stadium: formData.get('stadium'),
+        founded: formData.get('founded'),
+        country: formData.get('country')
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('team', this.id, data);
+        } else {
+          await api.createEntry('team', data);
+        }
+        window.location.hash = '#/teams';
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
+class StadeEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchStade.bind(this));
+  }
+
+  async fetchStade() {
+    return this.id ? api.getEntry('stade', this.id) : null;
+  }
+
+  render() {
+    this.dataFetcher.getData().then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+      return;
+    }
+
+    const stade = this.dataFetcher.data || {};
+    const html = `
+      <div class="stade-editor">
+        <h2>${this.id ? 'Modifier le stade' : 'Nouveau stade'}</h2>
+        <form id="stade-form">
+          <div class="form-group">
+            <label for="name">Nom du stade</label>
+            <input type="text" id="name" name="name" value="${stade.name || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="capacity">Capacité</label>
+            <input type="number" id="capacity" name="capacity" value="${stade.capacity || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="city">Ville</label>
+            <input type="text" id="city" name="city" value="${stade.city || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="country">Pays</label>
+            <input type="text" id="country" name="country" value="${stade.country || ''}" required>
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    const form = document.getElementById('stade-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get('name'),
+        capacity: parseInt(formData.get('capacity')),
+        city: formData.get('city'),
+        country: formData.get('country')
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('stade', this.id, data);
+        } else {
+          await api.createEntry('stade', data);
+        }
+        window.location.hash = '#/stades';
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
+class ResultEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchResult.bind(this));
+  }
+
+  async fetchResult() {
+    return this.id ? api.getEntry('result', this.id) : null;
+  }
+
+  render() {
+    this.dataFetcher.getData().then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+      return;
+    }
+
+    const result = this.dataFetcher.data || {};
+    const html = `
+      <div class="result-editor">
+        <h2>${this.id ? 'Modifier le résultat' : 'Nouveau résultat'}</h2>
+        <form id="result-form">
+          <div class="form-group">
+            <label for="homeTeam">Équipe à domicile</label>
+            <input type="text" id="homeTeam" name="homeTeam" value="${result.homeTeam || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="awayTeam">Équipe à l'extérieur</label>
+            <input type="text" id="awayTeam" name="awayTeam" value="${result.awayTeam || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="homeScore">Score domicile</label>
+            <input type="number" id="homeScore" name="homeScore" value="${result.homeScore || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="awayScore">Score extérieur</label>
+            <input type="number" id="awayScore" name="awayScore" value="${result.awayScore || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" value="${result.date ? new Date(result.date).toISOString().split('T')[0] : ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="stadium">Stade</label>
+            <input type="text" id="stadium" name="stadium" value="${result.stadium || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="competition">Compétition</label>
+            <input type="text" id="competition" name="competition" value="${result.competition || ''}" required>
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    const form = document.getElementById('result-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        homeTeam: formData.get('homeTeam'),
+        awayTeam: formData.get('awayTeam'),
+        homeScore: parseInt(formData.get('homeScore')),
+        awayScore: parseInt(formData.get('awayScore')),
+        date: formData.get('date'),
+        stadium: formData.get('stadium'),
+        competition: formData.get('competition')
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('result', this.id, data);
+        } else {
+          await api.createEntry('result', data);
+        }
+        window.location.hash = '#/results';
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
+class DataEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchData.bind(this));
+  }
+
+  async fetchData() {
+    return this.id ? api.getEntry('data', this.id) : null;
+  }
+
+  render() {
+    this.dataFetcher.getData().then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+      return;
+    }
+
+    const data = this.dataFetcher.data || {};
+    const html = `
+      <div class="data-editor">
+        <h2>${this.id ? 'Modifier le match' : 'Nouveau match'}</h2>
+        <form id="data-form">
+          <div class="form-group">
+            <label for="title">Titre</label>
+            <input type="text" id="title" name="title" value="${data.title || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="content">Contenu</label>
+            <textarea id="content" name="content" rows="10" required>${data.content || ''}</textarea>
+          </div>
+          <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" name="date" value="${data.date ? new Date(data.date).toISOString().split('T')[0] : ''}" required>
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    const form = document.getElementById('data-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        title: formData.get('title'),
+        content: formData.get('content'),
+        date: formData.get('date')
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('data', this.id, data);
+        } else {
+          await api.createEntry('data', data);
+        }
+        window.location.hash = '#/datas';
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
 class App {
   constructor(node) {
     this.node = node;
@@ -798,20 +1402,56 @@ class App {
       case 'posts':
         view = new Posts(this.main);
         break;
+      case 'post':
+        view = id ? new Post(this.main, id) : new PostEditor(this.main);
+        break;
+      case 'post-edit':
+        view = new PostEditor(this.main, id);
+        break;
       case 'pages':
         view = new Pages(this.main);
+        break;
+      case 'page':
+        view = id ? new Page(this.main, id) : new PageEditor(this.main);
+        break;
+      case 'page-edit':
+        view = new PageEditor(this.main, id);
         break;
       case 'teams':
         view = new Teams(this.main);
         break;
+      case 'team':
+        view = id ? new Team(this.main, id) : new TeamEditor(this.main);
+        break;
+      case 'team-edit':
+        view = new TeamEditor(this.main, id);
+        break;
       case 'stades':
         view = new Stades(this.main);
+        break;
+      case 'stade':
+        view = id ? new Stade(this.main, id) : new StadeEditor(this.main);
+        break;
+      case 'stade-edit':
+        view = new StadeEditor(this.main, id);
         break;
       case 'results':
         view = new Results(this.main);
         break;
+      case 'result':
+        view = id ? new Result(this.main, id) : new ResultEditor(this.main);
+        break;
+      case 'result-edit':
+        view = new ResultEditor(this.main, id);
+        break;
       case 'datas':
         view = new Datas(this.main);
+        break;
+      case 'data':
+        view = id ? new Data(this.main, id) : new DataEditor(this.main);
+        break;
+      case 'data-edit':
+        view = new DataEditor(this.main, id);
         break;
       case 'settings':
         view = new Settings(this.main);
@@ -820,34 +1460,7 @@ class App {
         view = new About(this.main);
         break;
       default:
-        if (id) {
-          switch (route) {
-            case 'post':
-              view = new Post(this.main, id);
-              break;
-            case 'page':
-              view = new Page(this.main, id);
-              break;
-            case 'team':
-              view = new Team(this.main, id);
-              break;
-            case 'stade':
-              view = new Stade(this.main, id);
-              break;
-            case 'result':
-              view = new Result(this.main, id);
-              break;
-            case 'data':
-              view = new Data(this.main, id);
-              break;
-            default:
-              this.main.innerHTML = '<div class="error">Route non trouvée</div>';
-              return;
-          }
-        } else {
-          this.main.innerHTML = '<div class="error">Route non trouvée</div>';
-          return;
-        }
+        view = new Posts(this.main);
     }
     
     this.state.currentView = view;
@@ -858,6 +1471,7 @@ class App {
 // Initialisation de l'API
 const url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/');
 const rootPath = url.slice(0, url.indexOf('admin')).join('/');
+
 api.init('rest', rootPath + '/admin/api');
 
 // Création de la div et initialisation de l'application
@@ -867,6 +1481,4 @@ document.addEventListener('DOMContentLoaded', () => {
   new App(node);
 });
 
-module.exports = function(node) {
-  return new App(node);
-};
+
