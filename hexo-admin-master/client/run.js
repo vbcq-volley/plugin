@@ -324,12 +324,18 @@ class Teams {
     const teams = this.dataFetcher.data;
     const html = `
       <div class="teams">
-        <h2>Équipes</h2>
+        <div class="header-actions">
+          <h2>Équipes</h2>
+          <button class="create-button" onclick="window.location.hash='#/team'">Créer une équipe</button>
+        </div>
         <ul>
           ${teams.map(team => `
             <li>
               <a href="#/team/${team._id}">${team.teamName}</a>
-              <span class="coach">${team.coach}</span>
+              <div class="team-details">
+                <span class="coach">Entraîneur: ${team.coach}</span>
+                <span class="group">Groupe: ${team.group}</span>
+              </div>
             </li>
           `).join('')}
         </ul>
@@ -371,12 +377,15 @@ class Stades {
     const stades = this.dataFetcher.data;
     const html = `
       <div class="stades">
-        <h2>Stades</h2>
+        <div class="header-actions">
+          <h2>Stades</h2>
+          <button class="create-button" onclick="window.location.hash='#/stade'">Créer un stade</button>
+        </div>
         <ul>
           ${stades.map(stade => `
             <li>
-              <a href="#/stade/${stade._id}">${stade.name}</a>
-              <span class="capacity">${stade.capacity} places</span>
+              <a href="#/stade/${stade._id}">${stade.stadeName}</a>
+              <span class="address">${stade.address}</span>
             </li>
           `).join('')}
         </ul>
@@ -418,14 +427,17 @@ class Results {
     const results = this.dataFetcher.data;
     const html = `
       <div class="results">
-        <h2>Résultats</h2>
+        <div class="header-actions">
+          <h2>Résultats</h2>
+          <button class="create-button" onclick="window.location.hash='#/result'">Créer un résultat</button>
+        </div>
         <ul>
           ${results.map(result => `
             <li>
               <a href="#/result/${result._id}">
-                ${result.homeTeam} ${result.homeScore} - ${result.awayScore} ${result.awayTeam}
+                ${result.team1} ${result.team1Score} - ${result.team2Score} ${result.team2}
               </a>
-              <span class="date">${new Date(result.date).toLocaleDateString()}</span>
+              <span class="date">${result.date}</span>
             </li>
           `).join('')}
         </ul>
@@ -467,7 +479,10 @@ class Datas {
     const datas = this.dataFetcher.data;
     const html = `
       <div class="datas">
-        <h2>Matchs</h2>
+        <div class="header-actions">
+          <h2>Matchs</h2>
+          <button class="create-button" onclick="window.location.hash='#/data'">Créer un match</button>
+        </div>
         <ul>
           ${datas.map(data => `
             <li>
