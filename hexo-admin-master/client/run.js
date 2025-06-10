@@ -1789,6 +1789,7 @@ class App {
       this.loadImages();
       fileInput.value = '';
     } catch (error) {
+      
       alert('Erreur lors de l\'upload: ' + error.message);
     }
   }
