@@ -1634,7 +1634,7 @@ class App {
     // Ajout du bouton de gestion des images
     const imageButton = document.createElement('button');
     imageButton.className = 'image-manager-button';
-    imageButton.innerHTML = '<i class="fas fa-images"></i> Gérer les images';
+    imageButton.innerHTML = '📷 Images';
     imageButton.onclick = () => this.showImageModal();
     header.appendChild(imageButton);
     
@@ -1661,28 +1661,22 @@ class App {
         </div>
         <div class="image-modal-body">
           <div class="image-upload-section">
-            <h3>Uploader une image</h3>
             <input type="file" id="image-upload" accept="image/*" multiple>
             <button id="upload-button">Uploader</button>
           </div>
-          <div class="image-gallery">
-            <h3>Images disponibles</h3>
-            <div class="image-list"></div>
-          </div>
+          <div class="image-gallery"></div>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
     this.imageModal = modal;
 
-    // Gestionnaire d'événements pour la modale
     const closeButton = modal.querySelector('.close-button');
     closeButton.onclick = () => this.hideImageModal();
 
     const uploadButton = modal.querySelector('#upload-button');
     uploadButton.onclick = () => this.handleImageUpload();
 
-    // Fermer la modale en cliquant en dehors
     modal.onclick = (e) => {
       if (e.target === modal) {
         this.hideImageModal();
@@ -1702,15 +1696,13 @@ class App {
   async loadImages() {
     try {
       const images = await api.getGallery();
-      const imageList = this.imageModal.querySelector('.image-list');
-      imageList.innerHTML = images.map(image => `
+      const gallery = this.imageModal.querySelector('.image-gallery');
+      gallery.innerHTML = images.map(image => `
         <div class="image-item">
           <img src="${image.url}" alt="${image.name}">
-          <div class="image-actions">
-            <button onclick="navigator.clipboard.writeText('${image.url}')" class="copy-button">
-              Copier le lien
-            </button>
-          </div>
+          <button onclick="navigator.clipboard.writeText('${image.url}')" class="copy-button">
+            Copier le lien
+          </button>
         </div>
       `).join('');
     } catch (error) {
@@ -1742,8 +1734,7 @@ class App {
 
   handleRoute() {
     const hash = window.location.hash.slice(1);
-    console.log(hash.split('/'))
-    const [bin,route, id] = hash.split('/');
+    const [route, id] = hash.split('/');
     this.state.currentRoute = route;
     
     if (this.state.currentView) {
@@ -1770,7 +1761,7 @@ class App {
         break;
       case 'page':
         if (id) {
-          view = new Pageditor(this.main, id);
+          view = new PageEditor(this.main, id);
         } else {
           view = new PageEditor(this.main);
         }
@@ -1830,9 +1821,6 @@ class App {
       case 'data-edit':
         view = new DataEditor(this.main, id);
         break;
-      case 'settings':
-        view = new Settings(this.main);
-        break;
       case 'about':
         view = new About(this.main);
         break;
@@ -1859,7 +1847,7 @@ document.head.innerHTML += `
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
 `;
 
-// Ajout des styles CSS pour la modale et le bouton
+// Ajout des styles CSS pour la modale
 document.head.innerHTML += `
   <style>
     .image-manager-button {
@@ -1872,13 +1860,6 @@ document.head.innerHTML += `
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .image-manager-button:hover {
-      background-color: #45a049;
     }
 
     .image-modal {
@@ -1900,8 +1881,6 @@ document.head.innerHTML += `
       width: 80%;
       max-width: 800px;
       border-radius: 8px;
-      max-height: 80vh;
-      overflow-y: auto;
     }
 
     .image-modal-header {
@@ -1919,17 +1898,11 @@ document.head.innerHTML += `
       cursor: pointer;
     }
 
-    .image-upload-section {
-      margin-bottom: 20px;
-      padding: 20px;
-      background-color: #f5f5f5;
-      border-radius: 4px;
-    }
-
     .image-gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 20px;
+      margin-top: 20px;
     }
 
     .image-item {
@@ -1945,31 +1918,22 @@ document.head.innerHTML += `
       object-fit: cover;
     }
 
-    .image-actions {
-      padding: 8px;
-      background-color: rgba(0,0,0,0.7);
+    .copy-button {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      display: flex;
-      justify-content: center;
-    }
-
-    .copy-button {
-      background-color: #4CAF50;
+      background-color: rgba(0,0,0,0.7);
       color: white;
       border: none;
-      padding: 4px 8px;
-      border-radius: 4px;
+      padding: 8px;
       cursor: pointer;
     }
 
-    .copy-button:hover {
-      background-color: #45a049;
+    .image-upload-section {
+      margin-bottom: 20px;
     }
   </style>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 `;
 
 // Création de la div et initialisation de l'application
