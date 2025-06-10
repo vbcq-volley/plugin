@@ -996,11 +996,10 @@ class PageEditor {
           await api.getPage(this.id, data);
         } else {
           await api.createPage(data.title);
-          // Mise à jour du contenu après création
           const newPage = await api.getPage(this.id);
           await api.getPage(newPage._id, data);
         }
-        window.location.hash = '#/pages';
+        window.location.hash = '#/admin/pages';
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1090,7 +1089,7 @@ class TeamEditor {
         } else {
           await api.createEntry('team', data);
         }
-        window.location.hash = '#/teams';
+        window.location.hash = '#/admin/teams';
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1172,7 +1171,7 @@ class StadeEditor {
         } else {
           await api.createEntry('stade', data);
         }
-        window.location.hash = '#/stades';
+        window.location.hash = '#/admin/stades';
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1269,7 +1268,7 @@ class ResultEditor {
         } else {
           await api.createEntry('result', data);
         }
-        window.location.hash = '#/results';
+        window.location.hash = '#/admin/results';
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1346,7 +1345,7 @@ class DataEditor {
         } else {
           await api.createEntry('match', data);
         }
-        window.location.hash = '#/datas';
+        window.location.hash = '#/admin/datas';
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1401,7 +1400,7 @@ class App {
     menuItems.forEach(item => {
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href = `#/${item.route}`;
+      a.href = `#/admin/${item.route}`;
       a.textContent = item.text;
       li.appendChild(a);
       nav.appendChild(li);
