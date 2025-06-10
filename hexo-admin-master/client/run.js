@@ -1798,7 +1798,7 @@ class App {
 
   handleRoute() {
     const hash = window.location.hash.slice(1);
-    const [route, id] = hash.split('/');
+    const [bin,route, id] = hash.split('/');
     this.state.currentRoute = route;
     
     if (this.state.currentView) {
