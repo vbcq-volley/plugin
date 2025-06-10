@@ -1700,8 +1700,8 @@ class App {
       gallery.innerHTML = images.map(image => `
         <div class="image-item">
           <img src="${image.url}" alt="${image.name}">
-          <button onclick="navigator.clipboard.writeText('${image.url}')" class="copy-button">
-            Copier le lien
+          <button onclick="navigator.clipboard.writeText('![${image.name}](${image.url})')" class="copy-button">
+            Copier le code Markdown
           </button>
         </div>
       `).join('');
