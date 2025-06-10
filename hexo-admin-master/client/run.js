@@ -1619,7 +1619,6 @@ class App {
       { text: 'Stades', route: 'stades' },
       { text: 'Résultats', route: 'results' },
       { text: 'Matchs', route: 'datas' },
-  
       { text: 'À propos', route: 'about' }
     ];
     
@@ -1631,6 +1630,13 @@ class App {
       li.appendChild(a);
       nav.appendChild(li);
     });
+
+    // Ajout du bouton de gestion des images
+    const imageButton = document.createElement('button');
+    imageButton.className = 'image-manager-button';
+    imageButton.innerHTML = '<i class="fas fa-images"></i> Gérer les images';
+    imageButton.onclick = () => this.showImageModal();
+    header.appendChild(imageButton);
     
     const main = document.createElement('div');
     main.className = 'app_main';
@@ -1638,6 +1644,96 @@ class App {
     app.appendChild(main);
     
     this.main = main;
+
+    // Création de la modale des images
+    this.createImageModal();
+  }
+
+  createImageModal() {
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    modal.style.display = 'none';
+    modal.innerHTML = `
+      <div class="image-modal-content">
+        <div class="image-modal-header">
+          <h2>Gestionnaire d'images</h2>
+          <button class="close-button">&times;</button>
+        </div>
+        <div class="image-modal-body">
+          <div class="image-upload-section">
+            <h3>Uploader une image</h3>
+            <input type="file" id="image-upload" accept="image/*" multiple>
+            <button id="upload-button">Uploader</button>
+          </div>
+          <div class="image-gallery">
+            <h3>Images disponibles</h3>
+            <div class="image-list"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    this.imageModal = modal;
+
+    // Gestionnaire d'événements pour la modale
+    const closeButton = modal.querySelector('.close-button');
+    closeButton.onclick = () => this.hideImageModal();
+
+    const uploadButton = modal.querySelector('#upload-button');
+    uploadButton.onclick = () => this.handleImageUpload();
+
+    // Fermer la modale en cliquant en dehors
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        this.hideImageModal();
+      }
+    };
+  }
+
+  showImageModal() {
+    this.imageModal.style.display = 'block';
+    this.loadImages();
+  }
+
+  hideImageModal() {
+    this.imageModal.style.display = 'none';
+  }
+
+  async loadImages() {
+    try {
+      const images = await api.getGallery();
+      const imageList = this.imageModal.querySelector('.image-list');
+      imageList.innerHTML = images.map(image => `
+        <div class="image-item">
+          <img src="${image.url}" alt="${image.name}">
+          <div class="image-actions">
+            <button onclick="navigator.clipboard.writeText('${image.url}')" class="copy-button">
+              Copier le lien
+            </button>
+          </div>
+        </div>
+      `).join('');
+    } catch (error) {
+      console.error('Erreur lors du chargement des images:', error);
+    }
+  }
+
+  async handleImageUpload() {
+    const fileInput = this.imageModal.querySelector('#image-upload');
+    const files = fileInput.files;
+
+    if (files.length === 0) {
+      alert('Veuillez sélectionner au moins une image');
+      return;
+    }
+
+    try {
+      await api.uploadMultiFiles(files);
+      this.loadImages();
+      fileInput.value = '';
+    } catch (error) {
+      alert('Erreur lors de l\'upload: ' + error.message);
+    }
   }
 
   setupEventListeners() {
@@ -1761,6 +1857,119 @@ document.head.innerHTML += `
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+`;
+
+// Ajout des styles CSS pour la modale et le bouton
+document.head.innerHTML += `
+  <style>
+    .image-manager-button {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .image-manager-button:hover {
+      background-color: #45a049;
+    }
+
+    .image-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 1000;
+    }
+
+    .image-modal-content {
+      position: relative;
+      background-color: #fefefe;
+      margin: 5% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 800px;
+      border-radius: 8px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .image-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .close-button {
+      font-size: 24px;
+      font-weight: bold;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .image-upload-section {
+      margin-bottom: 20px;
+      padding: 20px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    .image-gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+    }
+
+    .image-item {
+      position: relative;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .image-item img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .image-actions {
+      padding: 8px;
+      background-color: rgba(0,0,0,0.7);
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .copy-button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .copy-button:hover {
+      background-color: #45a049;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 `;
 
 // Création de la div et initialisation de l'application
