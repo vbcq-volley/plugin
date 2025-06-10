@@ -487,7 +487,7 @@ class Datas {
           ${datas.map(data => `
             <li>
               <a href="#/data/${data._id}">${data.title}</a>
-              <span class="date">${data.hom}</span>
+              <span class="date">${data.homeDate}</span>
             </li>
           `).join('')}
         </ul>
