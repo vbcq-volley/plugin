@@ -437,7 +437,7 @@ class Results {
               <a href="#/result/${result._id}">
                 ${result.team1} ${result.team1Score} - ${result.team2Score} ${result.team2}
               </a>
-              <span class="date">${result.date}</span>
+            
             </li>
           `).join('')}
         </ul>
