@@ -1604,7 +1604,7 @@ class App {
       { text: 'Stades', route: 'stades' },
       { text: 'Résultats', route: 'results' },
       { text: 'Matchs', route: 'datas' },
-      { text: 'Paramètres', route: 'settings' },
+  
       { text: 'À propos', route: 'about' }
     ];
     
