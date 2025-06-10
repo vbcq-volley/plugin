@@ -1778,18 +1778,55 @@ class App {
   async handleImageUpload() {
     const fileInput = this.imageModal.querySelector('#image-upload');
     const files = Array.from(fileInput.files);
+    const uploadButton = this.imageModal.querySelector('#upload-button');
+    const gallery = this.imageModal.querySelector('.image-gallery');
 
     if (files.length === 0) {
       alert('Veuillez sélectionner au moins une image');
       return;
     }
 
+    // Désactiver le bouton pendant l'upload
+    uploadButton.disabled = true;
+    uploadButton.textContent = 'Upload en cours...';
+
     try {
-      await api.uploadMultiFiles(files);
-      this.loadImages();
-      fileInput.value = '';
+      // Ajouter une barre de progression
+      const progressBar = document.createElement('div');
+      progressBar.className = 'upload-progress';
+      progressBar.innerHTML = `
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+        <div class="progress-text">0/${files.length} fichiers uploadés</div>
+      `;
+      gallery.insertBefore(progressBar, gallery.firstChild);
+
+      // Upload des fichiers un par un
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        await api.uploadMultiFiles([file]);
+        
+        // Mettre à jour la barre de progression
+        const progressFill = progressBar.querySelector('.progress-fill');
+        const progressText = progressBar.querySelector('.progress-text');
+        const progress = ((i + 1) / files.length) * 100;
+        progressFill.style.width = `${progress}%`;
+        progressText.textContent = `${i + 1}/${files.length} fichiers uploadés`;
+      }
+
+      // Recharger la galerie
+      await this.loadImages();
+      
+      // Supprimer la barre de progression
+      progressBar.remove();
     } catch (error) {
       alert('Erreur lors de l\'upload: ' + error.message);
+    } finally {
+      // Réactiver le bouton
+      uploadButton.disabled = false;
+      uploadButton.textContent = 'Uploader';
+      fileInput.value = '';
     }
   }
 
@@ -2019,6 +2056,40 @@ document.head.innerHTML += `
     }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+`;
+
+// Ajout des styles CSS pour la barre de progression
+document.head.innerHTML += `
+  <style>
+    .upload-progress {
+      margin: 20px 0;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 4px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background-color: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      background-color: #4CAF50;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      margin-top: 5px;
+      font-size: 14px;
+      color: #666;
+    }
+  </style>
 `;
 
 // Création de la div et initialisation de l'application
