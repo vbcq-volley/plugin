@@ -1502,7 +1502,7 @@ class App {
         break;
       case 'data':
         if (id) {
-          view = new Data(this.main, id);
+          view = new DataEditor(this.main, id);
         } else {
           view = new DataEditor(this.main);
         }
