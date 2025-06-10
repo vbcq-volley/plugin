@@ -1245,19 +1245,19 @@ class ResultEditor {
           </div>
           <div class="form-group">
             <label for="team">Équipe</label>
-            <input type="text" id="team" name="team" value="${result.team || ''}" required>
+            <input type="text" id="team" name="team" value="${result.team1 || ''}" required>
           </div>
           <div class="form-group">
             <label for="opponent">Adversaire</label>
-            <input type="text" id="opponent" name="opponent" value="${result.opponent || ''}" required>
+            <input type="text" id="opponent" name="opponent" value="${result.team2 || ''}" required>
           </div>
           <div class="form-group">
             <label for="teamScore">Score de l'équipe</label>
-            <input type="number" id="teamScore" name="teamScore" value="${result.teamScore || ''}" required>
+            <input type="number" id="teamScore" name="teamScore" value="${result.team1Score || ''}" required>
           </div>
           <div class="form-group">
             <label for="opponentScore">Score de l'adversaire</label>
-            <input type="number" id="opponentScore" name="opponentScore" value="${result.opponentScore || ''}" required>
+            <input type="number" id="opponentScore" name="opponentScore" value="${result.team2Score || ''}" required>
           </div>
           <div class="form-group">
             <label for="date">Date et heure</label>
