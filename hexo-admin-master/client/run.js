@@ -1764,8 +1764,7 @@ class App {
       const gallery = this.imageModal.querySelector('.image-gallery');
       gallery.innerHTML = images.map(image => `
         <div class="image-item">
-          <img src="          <button onclick="navigator.clipboard.writeText('![${image.name}](/images/${image.name})')" class="copy-button">
-" alt="${image.name}">
+          <img src="/images/${image.name}" alt="${image.name}">
           <button onclick="navigator.clipboard.writeText('![${image.name}](/images/${image.name})')" class="copy-button">
             Copier le code Markdown
           </button>
