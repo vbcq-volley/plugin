@@ -1268,7 +1268,7 @@ class ResultEditor {
         } else {
           await api.createEntry('result', data);
         }
-        window.location.hash = '#/admin/results';
+        window.location.hash = '#/results';
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1345,7 +1345,7 @@ class DataEditor {
         } else {
           await api.createEntry('match', data);
         }
-        window.location.hash = '#/admin/datas';
+        window.location.hash = '#/datas';
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
