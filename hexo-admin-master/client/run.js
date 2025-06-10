@@ -1414,39 +1414,74 @@ class DataEditor {
     this.node = node;
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchData.bind(this));
+    this.teamsFetcher = new DataFetcher(this.fetchTeams.bind(this));
+    this.stadesFetcher = new DataFetcher(this.fetchStades.bind(this));
   }
 
   async fetchData() {
     return this.id ? api.getEntry('match', this.id) : null;
   }
 
+  async fetchTeams() {
+    return api.getEntries('team');
+  }
+
+  async fetchStades() {
+    return api.getEntries('stade');
+  }
+
   render() {
-    this.dataFetcher.getData().then(() => this.updateView());
+    Promise.all([
+      this.dataFetcher.getData(),
+      this.teamsFetcher.getData(),
+      this.stadesFetcher.getData()
+    ]).then(() => this.updateView());
   }
 
   updateView() {
-    if (this.dataFetcher.loading) {
+    if (this.dataFetcher.loading || this.teamsFetcher.loading || this.stadesFetcher.loading) {
       this.node.innerHTML = '<div class="loading">Chargement...</div>';
       return;
     }
 
-    if (this.dataFetcher.error) {
-      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+    if (this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error}</div>`;
       return;
     }
 
     const data = this.dataFetcher.data || {};
+    const teams = this.teamsFetcher.data || [];
+    const stades = this.stadesFetcher.data || [];
+
     const html = `
       <div class="data-editor">
         <h2>${this.id ? 'Modifier le match' : 'Nouveau match'}</h2>
         <form id="data-form">
           <div class="form-group">
             <label for="team1">Équipe 1</label>
-            <input type="text" id="team1" name="team1" value="${data.team1 || ''}" required>
+            <select id="team1" name="team1" required>
+              <option value="">Sélectionner une équipe</option>
+              ${teams.map(team => `
+                <option value="${team.teamName}" 
+                  ${data.team1 === team.teamName ? 'selected' : ''}
+                  data-group="${team.group}">
+                  ${team.teamName} (${team.coach})
+                </option>
+              `).join('')}
+            </select>
           </div>
           <div class="form-group">
             <label for="team2">Équipe 2</label>
-            <input type="text" id="team2" name="team2" value="${data.team2 || ''}" required>
+            <select id="team2" name="team2" required>
+              <option value="">Sélectionner une équipe</option>
+              ${teams.map(team => `
+                <option value="${team.teamName}" 
+                  ${data.team2 === team.teamName ? 'selected' : ''}
+                  data-group="${team.group}">
+                  ${team.teamName} (${team.coach})
+                </option>
+              `).join('')}
+            </select>
           </div>
           <div class="form-group">
             <label for="homeDate">Date du match à domicile</label>
@@ -1458,15 +1493,36 @@ class DataEditor {
           </div>
           <div class="form-group">
             <label for="homeLocation">Lieu du match à domicile</label>
-            <input type="text" id="homeLocation" name="homeLocation" value="${data.homeLocation || ''}" required>
+            <select id="homeLocation" name="homeLocation" required>
+              <option value="">Sélectionner un stade</option>
+              ${stades.map(stade => `
+                <option value="${stade.stadeName}" 
+                  ${data.homeLocation === stade.stadeName ? 'selected' : ''}>
+                  ${stade.stadeName} (${stade.address})
+                </option>
+              `).join('')}
+            </select>
           </div>
           <div class="form-group">
             <label for="awayLocation">Lieu du match à l'extérieur</label>
-            <input type="text" id="awayLocation" name="awayLocation" value="${data.awayLocation || ''}" required>
+            <select id="awayLocation" name="awayLocation" required>
+              <option value="">Sélectionner un stade</option>
+              ${stades.map(stade => `
+                <option value="${stade.stadeName}" 
+                  ${data.awayLocation === stade.stadeName ? 'selected' : ''}>
+                  ${stade.stadeName} (${stade.address})
+                </option>
+              `).join('')}
+            </select>
           </div>
           <div class="form-group">
             <label for="group">Groupe</label>
-            <input type="text" id="group" name="group" value="${data.group || ''}" required>
+            <select id="group" name="group" required>
+              <option value="">Sélectionner un groupe</option>
+              <option value="1" ${data.group === '1' ? 'selected' : ''}>Groupe 1</option>
+              <option value="2" ${data.group === '2' ? 'selected' : ''}>Groupe 2</option>
+              <option value="3" ${data.group === '3' ? 'selected' : ''}>Groupe 3</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="session">Session</label>
@@ -1488,6 +1544,31 @@ class DataEditor {
     this.node.innerHTML = html;
 
     const form = document.getElementById('data-form');
+    const team1Select = document.getElementById('team1');
+    const team2Select = document.getElementById('team2');
+    const groupSelect = document.getElementById('group');
+
+    // Mise à jour automatique du groupe en fonction de l'équipe sélectionnée
+    const updateGroup = () => {
+      const team1Option = team1Select.options[team1Select.selectedIndex];
+      const team2Option = team2Select.options[team2Select.selectedIndex];
+      
+      if (team1Option.value && team2Option.value) {
+        const team1Group = team1Option.dataset.group;
+        const team2Group = team2Option.dataset.group;
+        
+        if (team1Group === team2Group) {
+          groupSelect.value = team1Group;
+        } else {
+          alert('Les équipes sélectionnées doivent appartenir au même groupe');
+          groupSelect.value = '';
+        }
+      }
+    };
+
+    team1Select.addEventListener('change', updateGroup);
+    team2Select.addEventListener('change', updateGroup);
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
