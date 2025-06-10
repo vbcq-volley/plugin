@@ -909,11 +909,10 @@ class PostEditor {
           await api.getPost(this.id, data);
         } else {
           await api.createPost(data.title);
-          // Mise à jour du contenu après création
           const newPost = await api.getPost(this.id);
           await api.getPost(newPost._id, data);
         }
-        window.location.hash = '#/posts';
+        window.location.hash = '#/admin/posts';
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
