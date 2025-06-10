@@ -779,6 +779,27 @@ return res.done(db.read(req.body.data.type))  }
                 return res.send(500, `Failed to save image: ${err.message}`);
             }
             
+            // Mise à jour du fichier JSON des images
+            var imagesFile = path.join(hexo.source_dir, 'hexo-admin-ehc-images.json');
+            var imagesData = [];
+            
+            try {
+                if (fs.existsSync(imagesFile)) {
+                    imagesData = JSON.parse(fs.readFileSync(imagesFile));
+                }
+            } catch (e) {
+                hexo.log.w('Error reading images file, starting fresh');
+            }
+            
+            // Ajout de la nouvelle image au début du tableau
+            imagesData.unshift({
+                name: filename,
+                date: new Date().getTime()
+            });
+            
+            // Sauvegarde du fichier JSON mis à jour
+            fs.writeFileSync(imagesFile, JSON.stringify(imagesData));
+            
             hexo.source.process().then(function () {
                 res.done({
                     src: hexo.config.url + path.join(imagePath, filename),
