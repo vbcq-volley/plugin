@@ -1935,18 +1935,6 @@ document.head.innerHTML += `
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 `;
 
-// Configuration de marked
-window.addEventListener('load', () => {
-  if (typeof marked !== 'undefined') {
-    marked.setOptions({
-      breaks: true,
-      gfm: true,
-      headerIds: true,
-      mangle: false
-    });
-  }
-});
-
 // Initialisation de CodeMirror après le chargement des scripts
 window.addEventListener('load', () => {
   if (typeof CodeMirror !== 'undefined') {
@@ -1965,16 +1953,7 @@ window.addEventListener('load', () => {
     };
   }
 });
-window.addEventListener('load', () => {
-  if (typeof marked !== 'undefined') {
-    marked.setOptions({
-      breaks: true,      // Permet les retours à la ligne avec un simple saut de ligne
-      gfm: true,         // Active GitHub Flavored Markdown
-      headerIds: true,   // Ajoute des IDs aux titres
-      mangle: false      // Ne modifie pas les caractères spéciaux dans les IDs
-    });
-  }
-});
+
 // Ajout des styles CSS pour la modale
 document.head.innerHTML += `
   <style>
