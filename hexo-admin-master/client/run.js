@@ -1928,7 +1928,30 @@ document.head.innerHTML += `
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/display/placeholder.min.js"></script>
 `;
+
+// Initialisation de CodeMirror après le chargement des scripts
+window.addEventListener('load', () => {
+  if (typeof CodeMirror !== 'undefined') {
+    // Configuration globale de CodeMirror
+    CodeMirror.defaults = {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      matchBrackets: true,
+      autoCloseBrackets: true,
+      styleActiveLine: true,
+      extraKeys: {
+        "Enter": "newlineAndIndentContinueMarkdownList"
+      }
+    };
+  }
+});
 
 // Ajout des styles CSS pour la modale
 document.head.innerHTML += `
