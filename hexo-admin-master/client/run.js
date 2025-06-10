@@ -175,7 +175,7 @@ class API {
   }
 
   async getMatch() {
-    return this.getEntries("math");
+    return this.getEntries("match");
   }
 }
 
@@ -840,6 +840,7 @@ class PostEditor {
     this.node = node;
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchPost.bind(this));
+    this.editor = null;
   }
 
   async fetchPost() {
@@ -884,13 +885,22 @@ class PostEditor {
     `;
     this.node.innerHTML = html;
 
+    // Initialisation de CodeMirror
+    this.editor = CodeMirror.fromTextArea(document.getElementById('content'), {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      autofocus: true
+    });
+
     const form = document.getElementById('post-form');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
       const data = {
         title: formData.get('title'),
-        content: formData.get('content'),
+        content: this.editor.getValue(),
         date: formData.get('date')
       };
 
@@ -899,6 +909,9 @@ class PostEditor {
           await api.getPost(this.id, data);
         } else {
           await api.createPost(data.title);
+          // Mise à jour du contenu après création
+          const newPost = await api.getPost(this.id);
+          await api.getPost(newPost._id, data);
         }
         window.location.hash = '#/posts';
       } catch (error) {
@@ -908,6 +921,9 @@ class PostEditor {
   }
 
   destroy() {
+    if (this.editor) {
+      this.editor.toTextArea();
+    }
     this.node.innerHTML = '';
   }
 }
@@ -917,6 +933,7 @@ class PageEditor {
     this.node = node;
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchPage.bind(this));
+    this.editor = null;
   }
 
   async fetchPage() {
@@ -957,13 +974,22 @@ class PageEditor {
     `;
     this.node.innerHTML = html;
 
+    // Initialisation de CodeMirror
+    this.editor = CodeMirror.fromTextArea(document.getElementById('content'), {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      autofocus: true
+    });
+
     const form = document.getElementById('page-form');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
       const data = {
         title: formData.get('title'),
-        content: formData.get('content')
+        content: this.editor.getValue()
       };
 
       try {
@@ -971,6 +997,9 @@ class PageEditor {
           await api.getPage(this.id, data);
         } else {
           await api.createPage(data.title);
+          // Mise à jour du contenu après création
+          const newPage = await api.getPage(this.id);
+          await api.getPage(newPage._id, data);
         }
         window.location.hash = '#/pages';
       } catch (error) {
@@ -980,6 +1009,9 @@ class PageEditor {
   }
 
   destroy() {
+    if (this.editor) {
+      this.editor.toTextArea();
+    }
     this.node.innerHTML = '';
   }
 }
@@ -1049,7 +1081,7 @@ class TeamEditor {
         teamName: formData.get('teamName'),
         coach: formData.get('coach'),
         stadium: formData.get('stadium'),
-        founded: formData.get('founded'),
+        founded: parseInt(formData.get('founded')),
         country: formData.get('country')
       };
 
@@ -1258,7 +1290,7 @@ class DataEditor {
   }
 
   async fetchData() {
-    return this.id ? api.getEntry('data', this.id) : null;
+    return this.id ? api.getEntry('match', this.id) : null;
   }
 
   render() {
@@ -1311,9 +1343,9 @@ class DataEditor {
 
       try {
         if (this.id) {
-          await api.updateEntry('data', this.id, data);
+          await api.updateEntry('match', this.id, data);
         } else {
-          await api.createEntry('data', data);
+          await api.createEntry('match', data);
         }
         window.location.hash = '#/datas';
       } catch (error) {
@@ -1390,7 +1422,8 @@ class App {
 
   handleRoute() {
     const hash = window.location.hash.slice(1);
-    const [route, id] = hash.split('/');
+    console.log(hash.split('/'))
+    const [bin,route, id] = hash.split('/');
     this.state.currentRoute = route;
     
     if (this.state.currentView) {
@@ -1403,7 +1436,11 @@ class App {
         view = new Posts(this.main);
         break;
       case 'post':
-        view = id ? new Post(this.main, id) : new PostEditor(this.main);
+        if (id) {
+          view = new Post(this.main, id);
+        } else {
+          view = new PostEditor(this.main);
+        }
         break;
       case 'post-edit':
         view = new PostEditor(this.main, id);
@@ -1412,7 +1449,11 @@ class App {
         view = new Pages(this.main);
         break;
       case 'page':
-        view = id ? new Page(this.main, id) : new PageEditor(this.main);
+        if (id) {
+          view = new Page(this.main, id);
+        } else {
+          view = new PageEditor(this.main);
+        }
         break;
       case 'page-edit':
         view = new PageEditor(this.main, id);
@@ -1421,7 +1462,11 @@ class App {
         view = new Teams(this.main);
         break;
       case 'team':
-        view = id ? new Team(this.main, id) : new TeamEditor(this.main);
+        if (id) {
+          view = new Team(this.main, id);
+        } else {
+          view = new TeamEditor(this.main);
+        }
         break;
       case 'team-edit':
         view = new TeamEditor(this.main, id);
@@ -1430,7 +1475,11 @@ class App {
         view = new Stades(this.main);
         break;
       case 'stade':
-        view = id ? new Stade(this.main, id) : new StadeEditor(this.main);
+        if (id) {
+          view = new Stade(this.main, id);
+        } else {
+          view = new StadeEditor(this.main);
+        }
         break;
       case 'stade-edit':
         view = new StadeEditor(this.main, id);
@@ -1439,7 +1488,11 @@ class App {
         view = new Results(this.main);
         break;
       case 'result':
-        view = id ? new Result(this.main, id) : new ResultEditor(this.main);
+        if (id) {
+          view = new Result(this.main, id);
+        } else {
+          view = new ResultEditor(this.main);
+        }
         break;
       case 'result-edit':
         view = new ResultEditor(this.main, id);
@@ -1448,7 +1501,11 @@ class App {
         view = new Datas(this.main);
         break;
       case 'data':
-        view = id ? new Data(this.main, id) : new DataEditor(this.main);
+        if (id) {
+          view = new Data(this.main, id);
+        } else {
+          view = new DataEditor(this.main);
+        }
         break;
       case 'data-edit':
         view = new DataEditor(this.main, id);
@@ -1473,6 +1530,14 @@ const url = window.location.href.replace(/^.*\/\/[^\/]+/, '').split('/');
 const rootPath = url.slice(0, url.indexOf('admin')).join('/');
 
 api.init('rest', rootPath + '/admin/api');
+
+// Ajout de CodeMirror dans le head
+document.head.innerHTML += `
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/markdown/markdown.min.js"></script>
+`;
 
 // Création de la div et initialisation de l'application
 document.addEventListener('DOMContentLoaded', () => {
