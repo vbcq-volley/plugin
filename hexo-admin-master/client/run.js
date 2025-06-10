@@ -1021,32 +1021,57 @@ class TeamEditor {
     this.node = node;
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchTeam.bind(this));
+    this.teamsFetcher = new DataFetcher(this.fetchTeams.bind(this));
   }
 
   async fetchTeam() {
     return this.id ? api.getEntry('team', this.id) : null;
   }
 
+  async fetchTeams() {
+    return api.getEntries('team');
+  }
+
   render() {
-    this.dataFetcher.getData().then(() => this.updateView());
+    Promise.all([
+      this.dataFetcher.getData(),
+      this.teamsFetcher.getData()
+    ]).then(() => this.updateView());
   }
 
   updateView() {
-    if (this.dataFetcher.loading) {
+    if (this.dataFetcher.loading || this.teamsFetcher.loading) {
       this.node.innerHTML = '<div class="loading">Chargement...</div>';
       return;
     }
 
-    if (this.dataFetcher.error) {
-      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+    if (this.dataFetcher.error || this.teamsFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.teamsFetcher.error}</div>`;
       return;
     }
 
     const team = this.dataFetcher.data || {};
+    const teams = this.teamsFetcher.data || [];
+
     const html = `
       <div class="team-editor">
         <h2>${this.id ? 'Modifier l\'équipe' : 'Nouvelle équipe'}</h2>
         <form id="team-form">
+          <div class="form-group">
+            <label for="existingTeam">Sélectionner une équipe existante</label>
+            <select id="existingTeam" name="existingTeam">
+              <option value="">Créer une nouvelle équipe</option>
+              ${teams.map(t => `
+                <option value="${t._id}" 
+                  ${team._id === t._id ? 'selected' : ''}
+                  data-team-name="${t.teamName}"
+                  data-coach="${t.coach}"
+                  data-group="${t.group}">
+                  ${t.teamName} (${t.coach})
+                </option>
+              `).join('')}
+            </select>
+          </div>
           <div class="form-group">
             <label for="teamName">Nom de l'équipe</label>
             <input type="text" id="teamName" name="teamName" value="${team.teamName || ''}" required>
@@ -1057,7 +1082,12 @@ class TeamEditor {
           </div>
           <div class="form-group">
             <label for="group">Groupe</label>
-            <input type="text" id="group" name="group" value="${team.group || ''}" required>
+            <select id="group" name="group" required>
+              <option value="">Sélectionner un groupe</option>
+              <option value="1" ${team.group === '1' ? 'selected' : ''}>Groupe 1</option>
+              <option value="2" ${team.group === '2' ? 'selected' : ''}>Groupe 2</option>
+              <option value="3" ${team.group === '3' ? 'selected' : ''}>Groupe 3</option>
+            </select>
           </div>
           <button type="submit">Enregistrer</button>
         </form>
@@ -1066,6 +1096,26 @@ class TeamEditor {
     this.node.innerHTML = html;
 
     const form = document.getElementById('team-form');
+    const existingTeamSelect = document.getElementById('existingTeam');
+    const teamNameInput = document.getElementById('teamName');
+    const coachInput = document.getElementById('coach');
+    const groupSelect = document.getElementById('group');
+
+    // Mise à jour des champs lors de la sélection d'une équipe existante
+    existingTeamSelect.addEventListener('change', () => {
+      const selectedOption = existingTeamSelect.options[existingTeamSelect.selectedIndex];
+      if (selectedOption.value) {
+        teamNameInput.value = selectedOption.dataset.teamName;
+        coachInput.value = selectedOption.dataset.coach;
+        groupSelect.value = selectedOption.dataset.group;
+      } else {
+        // Réinitialiser les champs si "Créer une nouvelle équipe" est sélectionné
+        teamNameInput.value = '';
+        coachInput.value = '';
+        groupSelect.value = '';
+      }
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
