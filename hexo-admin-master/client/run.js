@@ -1450,7 +1450,7 @@ class App {
         break;
       case 'page':
         if (id) {
-          view = new Page(this.main, id);
+          view = new Pageditor(this.main, id);
         } else {
           view = new PageEditor(this.main);
         }
