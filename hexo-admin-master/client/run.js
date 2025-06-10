@@ -1,7 +1,7 @@
 // index.js
 class API {
   constructor() {
-    this.baseUrl = '';
+    this.baseUrl = 'admin/api';
   }
 
   init(type, baseUrl) {
