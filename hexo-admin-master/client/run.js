@@ -1196,6 +1196,26 @@ class ResultEditor {
     return this.id ? api.getEntry('result', this.id) : null;
   }
 
+  formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  parseDate(dateStr) {
+    if (!dateStr) return null;
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    const [hour, minute] = timePart.split(':');
+    return new Date(year, month - 1, day, hour, minute).toISOString();
+  }
+
   render() {
     this.dataFetcher.getData().then(() => this.updateView());
   }
@@ -1217,24 +1237,31 @@ class ResultEditor {
         <h2>${this.id ? 'Modifier le résultat' : 'Nouveau résultat'}</h2>
         <form id="result-form">
           <div class="form-group">
-            <label for="homeTeam">Équipe à domicile</label>
-            <input type="text" id="homeTeam" name="homeTeam" value="${result.homeTeam || ''}" required>
+            <label for="matchType">Type de match</label>
+            <select id="matchType" name="matchType" required>
+              <option value="home" ${result.matchType === 'home' ? 'selected' : ''}>Match à domicile</option>
+              <option value="away" ${result.matchType === 'away' ? 'selected' : ''}>Match à l'extérieur</option>
+            </select>
           </div>
           <div class="form-group">
-            <label for="awayTeam">Équipe à l'extérieur</label>
-            <input type="text" id="awayTeam" name="awayTeam" value="${result.awayTeam || ''}" required>
+            <label for="team">Équipe</label>
+            <input type="text" id="team" name="team" value="${result.team || ''}" required>
           </div>
           <div class="form-group">
-            <label for="homeScore">Score domicile</label>
-            <input type="number" id="homeScore" name="homeScore" value="${result.homeScore || ''}" required>
+            <label for="opponent">Adversaire</label>
+            <input type="text" id="opponent" name="opponent" value="${result.opponent || ''}" required>
           </div>
           <div class="form-group">
-            <label for="awayScore">Score extérieur</label>
-            <input type="number" id="awayScore" name="awayScore" value="${result.awayScore || ''}" required>
+            <label for="teamScore">Score de l'équipe</label>
+            <input type="number" id="teamScore" name="teamScore" value="${result.teamScore || ''}" required>
           </div>
           <div class="form-group">
-            <label for="date">Date</label>
-            <input type="date" id="date" name="date" value="${result.date ? new Date(result.date).toISOString().split('T')[0] : ''}" required>
+            <label for="opponentScore">Score de l'adversaire</label>
+            <input type="number" id="opponentScore" name="opponentScore" value="${result.opponentScore || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="date">Date et heure</label>
+            <input type="text" id="date" name="date" value="${this.formatDate(result.date)}" required placeholder="JJ/MM/AAAA HH:mm">
           </div>
           <div class="form-group">
             <label for="stadium">Stade</label>
@@ -1254,15 +1281,31 @@ class ResultEditor {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
+      const matchType = formData.get('matchType');
+      
       const data = {
-        homeTeam: formData.get('homeTeam'),
-        awayTeam: formData.get('awayTeam'),
-        homeScore: parseInt(formData.get('homeScore')),
-        awayScore: parseInt(formData.get('awayScore')),
-        date: formData.get('date'),
+        matchType,
+        team: formData.get('team'),
+        opponent: formData.get('opponent'),
+        teamScore: parseInt(formData.get('teamScore')),
+        opponentScore: parseInt(formData.get('opponentScore')),
+        date: this.parseDate(formData.get('date')),
         stadium: formData.get('stadium'),
         competition: formData.get('competition')
       };
+
+      // Ajout des champs home/away selon le type de match
+      if (matchType === 'home') {
+        data.homeTeam = data.team;
+        data.awayTeam = data.opponent;
+        data.homeScore = data.teamScore;
+        data.awayScore = data.opponentScore;
+      } else {
+        data.homeTeam = data.opponent;
+        data.awayTeam = data.team;
+        data.homeScore = data.opponentScore;
+        data.awayScore = data.teamScore;
+      }
 
       try {
         if (this.id) {
