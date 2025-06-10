@@ -1400,7 +1400,7 @@ class App {
     menuItems.forEach(item => {
       const li = document.createElement('li');
       const a = document.createElement('a');
-      a.href = `#/admin/${item.route}`;
+      a.href = `#/${item.route}`;
       a.textContent = item.text;
       li.appendChild(a);
       nav.appendChild(li);
@@ -1435,7 +1435,7 @@ class App {
         break;
       case 'post':
         if (id) {
-          view = new Post(this.main, id);
+          view = new PostEditor(this.main, id);
         } else {
           view = new PostEditor(this.main);
         }
