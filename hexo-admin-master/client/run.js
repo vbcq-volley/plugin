@@ -231,12 +231,18 @@ class Posts {
     const posts = this.dataFetcher.data;
     const html = `
       <div class="posts">
-        <h2>Posts</h2>
+        <div class="header-actions">
+          <h2>Posts</h2>
+          <button class="create-button" onclick="window.location.hash='#/post'">Créer un nouveau post</button>
+        </div>
         <ul>
           ${posts.map(post => `
             <li>
               <a href="#/post/${post._id}">${post.title}</a>
-              <span class="date">${new Date(post.date).toLocaleDateString()}</span>
+              <div class="post-details">
+                <span class="date">${new Date(post.date).toLocaleDateString()}</span>
+                <span class="author">${post.author || 'Anonyme'}</span>
+              </div>
             </li>
           `).join('')}
         </ul>
