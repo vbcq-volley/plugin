@@ -1176,6 +1176,26 @@ class ResultEditor {
     return this.id ? api.getEntry('result', this.id) : null;
   }
 
+  formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  parseDate(dateStr) {
+    if (!dateStr) return null;
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    const [hour, minute] = timePart.split(':');
+    return new Date(year, month - 1, day, hour, minute).toISOString();
+  }
+
   render() {
     this.dataFetcher.getData().then(() => this.updateView());
   }
@@ -1341,16 +1361,45 @@ class DataEditor {
         <h2>${this.id ? 'Modifier le match' : 'Nouveau match'}</h2>
         <form id="data-form">
           <div class="form-group">
-            <label for="title">Titre</label>
-            <input type="text" id="title" name="title" value="${data.title || ''}" required>
+            <label for="team1">Équipe 1</label>
+            <input type="text" id="team1" name="team1" value="${data.team1 || ''}" required>
           </div>
           <div class="form-group">
-            <label for="content">Contenu</label>
-            <textarea id="content" name="content" rows="10" required>${data.content || ''}</textarea>
+            <label for="team2">Équipe 2</label>
+            <input type="text" id="team2" name="team2" value="${data.team2 || ''}" required>
           </div>
           <div class="form-group">
-            <label for="date">Date</label>
-            <input type="date" id="date" name="date" value="${data.date ? new Date(data.date).toISOString().split('T')[0] : ''}" required>
+            <label for="homeDate">Date du match à domicile</label>
+            <input type="text" id="homeDate" name="homeDate" value="${data.homeDate || ''}" required placeholder="JJ mois AAAA à HH:mm">
+          </div>
+          <div class="form-group">
+            <label for="awayDate">Date du match à l'extérieur</label>
+            <input type="text" id="awayDate" name="awayDate" value="${data.awayDate || ''}" required placeholder="JJ mois AAAA à HH:mm">
+          </div>
+          <div class="form-group">
+            <label for="homeLocation">Lieu du match à domicile</label>
+            <input type="text" id="homeLocation" name="homeLocation" value="${data.homeLocation || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="awayLocation">Lieu du match à l'extérieur</label>
+            <input type="text" id="awayLocation" name="awayLocation" value="${data.awayLocation || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="group">Groupe</label>
+            <input type="text" id="group" name="group" value="${data.group || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="session">Session</label>
+            <input type="number" id="session" name="session" value="${data.session || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="matchStatus">Statut du match</label>
+            <select id="matchStatus" name="matchStatus">
+              <option value="scheduled" ${data.matchStatus === 'scheduled' ? 'selected' : ''}>Planifié</option>
+              <option value="in_progress" ${data.matchStatus === 'in_progress' ? 'selected' : ''}>En cours</option>
+              <option value="completed" ${data.matchStatus === 'completed' ? 'selected' : ''}>Terminé</option>
+              <option value="cancelled" ${data.matchStatus === 'cancelled' ? 'selected' : ''}>Annulé</option>
+            </select>
           </div>
           <button type="submit">Enregistrer</button>
         </form>
@@ -1363,9 +1412,16 @@ class DataEditor {
       e.preventDefault();
       const formData = new FormData(form);
       const data = {
-        title: formData.get('title'),
-        content: formData.get('content'),
-        date: formData.get('date')
+        team1: formData.get('team1'),
+        team2: formData.get('team2'),
+        homeDate: formData.get('homeDate'),
+        awayDate: formData.get('awayDate'),
+        homeLocation: formData.get('homeLocation'),
+        awayLocation: formData.get('awayLocation'),
+        group: formData.get('group'),
+        session: parseInt(formData.get('session')),
+        matchStatus: formData.get('matchStatus'),
+        title: `${formData.get('team1')} vs ${formData.get('team2')}`
       };
 
       try {
