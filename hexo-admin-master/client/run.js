@@ -1278,6 +1278,31 @@ class ResultEditor {
     this.node.innerHTML = html;
 
     const form = document.getElementById('result-form');
+    const matchTypeSelect = document.getElementById('matchType');
+    const dateInput = document.getElementById('date');
+
+    // Fonction pour mettre à jour la date en fonction du type de match
+    const updateDate = () => {
+      const currentDate = dateInput.value;
+      if (!currentDate) return;
+      
+      const [datePart, timePart] = currentDate.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hour, minute] = timePart.split(':');
+      
+      // Ajouter 2 heures pour les matchs à l'extérieur
+      if (matchTypeSelect.value === 'away') {
+        const date = new Date(year, month - 1, day, parseInt(hour) + 2, minute);
+        dateInput.value = this.formatDate(date);
+      } else {
+        const date = new Date(year, month - 1, day, hour, minute);
+        dateInput.value = this.formatDate(date);
+      }
+    };
+
+    // Écouter les changements du type de match
+    matchTypeSelect.addEventListener('change', updateDate);
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
@@ -1285,10 +1310,10 @@ class ResultEditor {
       
       const data = {
         matchType,
-        team: formData.get('team'),
-        opponent: formData.get('opponent'),
-        teamScore: parseInt(formData.get('teamScore')),
-        opponentScore: parseInt(formData.get('opponentScore')),
+        team1: formData.get('team'),
+        team2: formData.get('opponent'),
+        team1Score: parseInt(formData.get('teamScore')),
+        team2Score: parseInt(formData.get('opponentScore')),
         date: this.parseDate(formData.get('date')),
         stadium: formData.get('stadium'),
         competition: formData.get('competition')
@@ -1296,15 +1321,15 @@ class ResultEditor {
 
       // Ajout des champs home/away selon le type de match
       if (matchType === 'home') {
-        data.homeTeam = data.team;
-        data.awayTeam = data.opponent;
-        data.homeScore = data.teamScore;
-        data.awayScore = data.opponentScore;
+        data.homeTeam = data.team1;
+        data.awayTeam = data.team2;
+        data.homeScore = data.team1Score;
+        data.awayScore = data.team2Score;
       } else {
-        data.homeTeam = data.opponent;
-        data.awayTeam = data.team;
-        data.homeScore = data.opponentScore;
-        data.awayScore = data.teamScore;
+        data.homeTeam = data.team2;
+        data.awayTeam = data.team1;
+        data.homeScore = data.team2Score;
+        data.awayScore = data.team1Score;
       }
 
       try {
