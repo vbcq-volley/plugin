@@ -1042,6 +1042,7 @@ class TeamEditor {
     this.node = node;
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchTeam.bind(this));
+    this.editor = null;
   }
 
   async fetchTeam() {
@@ -1093,11 +1094,35 @@ class TeamEditor {
               <option value="3" ${team.group === '3' ? 'selected' : ''}>Groupe 3</option>
             </select>
           </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="10">${team.description || ''}</textarea>
+            <div id="description-preview" class="preview"></div>
+          </div>
           <button type="submit">Enregistrer</button>
         </form>
       </div>
     `;
     this.node.innerHTML = html;
+
+    // Initialisation de CodeMirror
+    this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      autofocus: true
+    });
+
+    // Mise à jour de la prévisualisation
+    const updatePreview = () => {
+      const preview = document.getElementById('description-preview');
+      const content = this.editor.getValue();
+      preview.innerHTML = marked(content);
+    };
+
+    this.editor.on('change', updatePreview);
+    updatePreview();
 
     const form = document.getElementById('team-form');
     form.addEventListener('submit', async (e) => {
@@ -1108,7 +1133,8 @@ class TeamEditor {
         coach: formData.get('coach'),
         coachContact: formData.get('coachContact'),
         coachEmail: formData.get('coachEmail'),
-        group: formData.get('group')
+        group: formData.get('group'),
+        description: this.editor.getValue()
       };
 
       try {
@@ -1125,6 +1151,9 @@ class TeamEditor {
   }
 
   destroy() {
+    if (this.editor) {
+      this.editor.toTextArea();
+    }
     this.node.innerHTML = '';
   }
 }
@@ -1134,6 +1163,7 @@ class StadeEditor {
     this.node = node;
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchStade.bind(this));
+    this.editor = null;
   }
 
   async fetchStade() {
@@ -1168,11 +1198,35 @@ class StadeEditor {
             <label for="address">Adresse</label>
             <input type="text" id="address" name="address" value="${stade.address || ''}" required>
           </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="10">${stade.description || ''}</textarea>
+            <div id="description-preview" class="preview"></div>
+          </div>
           <button type="submit">Enregistrer</button>
         </form>
       </div>
     `;
     this.node.innerHTML = html;
+
+    // Initialisation de CodeMirror
+    this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      autofocus: true
+    });
+
+    // Mise à jour de la prévisualisation
+    const updatePreview = () => {
+      const preview = document.getElementById('description-preview');
+      const content = this.editor.getValue();
+      preview.innerHTML = marked(content);
+    };
+
+    this.editor.on('change', updatePreview);
+    updatePreview();
 
     const form = document.getElementById('stade-form');
     form.addEventListener('submit', async (e) => {
@@ -1180,7 +1234,8 @@ class StadeEditor {
       const formData = new FormData(form);
       const data = {
         stadeName: formData.get('stadeName'),
-        address: formData.get('address')
+        address: formData.get('address'),
+        description: this.editor.getValue()
       };
 
       try {
@@ -1197,6 +1252,9 @@ class StadeEditor {
   }
 
   destroy() {
+    if (this.editor) {
+      this.editor.toTextArea();
+    }
     this.node.innerHTML = '';
   }
 }
@@ -1940,6 +1998,26 @@ document.head.innerHTML += `
       margin-bottom: 20px;
     }
   </style>
+`;
+
+// Ajout des styles CSS pour l'éditeur Markdown
+document.head.innerHTML += `
+  <style>
+    .preview {
+      margin-top: 10px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background-color: #fff;
+    }
+
+    .CodeMirror {
+      height: 300px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 `;
 
 // Création de la div et initialisation de l'application
