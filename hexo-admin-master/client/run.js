@@ -1777,7 +1777,7 @@ class App {
   async handleImageUpload() {
     const fileInput = this.imageModal.querySelector('#image-upload');
     const files = fileInput.files;
-
+    
     if (files.length === 0) {
       alert('Veuillez sélectionner au moins une image');
       return;
