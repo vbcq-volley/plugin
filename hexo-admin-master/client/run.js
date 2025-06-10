@@ -621,7 +621,7 @@ class Post {
     const html = `
       <div class="post">
         <h2>${post.title}</h2>
-        <div class="content">${post.content}</div>
+        <div class="content">${post._content}</div>
         <div class="meta">
           <span class="date">${new Date(post.date).toLocaleDateString()}</span>
           <span class="author">${post.author || 'Anonyme'}</span>
