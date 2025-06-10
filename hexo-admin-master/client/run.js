@@ -1790,7 +1790,7 @@ class App {
 
     try {
       for (let i = 0; i < files.length; i++) {
-        await api.uploadMultiFiles([files[i]]);
+        await api.uploadImage([files[i]]);
       }
       await this.loadImages();
     } catch (error) {
