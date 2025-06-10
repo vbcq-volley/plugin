@@ -1922,7 +1922,7 @@ const rootPath = url.slice(0, url.indexOf('admin')).join('/');
 
 api.init('rest', rootPath + '/admin/api');
 
-// Ajout de CodeMirror dans le head
+// Ajout de CodeMirror et Marked dans le head
 document.head.innerHTML += `
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/monokai.min.css">
@@ -1932,7 +1932,20 @@ document.head.innerHTML += `
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/edit/closebrackets.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/selection/active-line.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/display/placeholder.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 `;
+
+// Configuration de marked
+window.addEventListener('load', () => {
+  if (typeof marked !== 'undefined') {
+    marked.setOptions({
+      breaks: true,
+      gfm: true,
+      headerIds: true,
+      mangle: false
+    });
+  }
+});
 
 // Initialisation de CodeMirror après le chargement des scripts
 window.addEventListener('load', () => {
@@ -2059,7 +2072,6 @@ document.head.innerHTML += `
       border-radius: 4px;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 `;
 
 // Ajout des styles CSS pour la barre de progression
