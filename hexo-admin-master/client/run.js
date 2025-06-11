@@ -2652,18 +2652,14 @@ class App {
         view = new About(this.main);
         break;
       case 'tournament-matches':
-        if (id === 'new') {
-          view = new TournamentMatch(this.main);
-        } else if (id) {
+        if (id) {
           view = new TournamentMatch(this.main, id);
         } else {
           view = new TournamentMatches(this.main);
         }
         break;
       case 'tournament-results':
-        if (id === 'new') {
-          view = new TournamentResult(this.main);
-        } else if (id) {
+        if (id) {
           view = new TournamentResult(this.main, id);
         } else {
           view = new TournamentResults(this.main);
