@@ -2079,7 +2079,7 @@ class TournamentMatch {
 
   render() {
     this.node.innerHTML = this.template();
-    this.
+    this.fetchMatch().then()
     this.updateView();
   }
 
