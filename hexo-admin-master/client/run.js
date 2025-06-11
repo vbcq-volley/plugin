@@ -1310,7 +1310,7 @@ class ResultEditor {
     const [datePart, timePart] = dateStr.split(' ');
     const [day, month, year] = datePart.split('/');
     const [hour, minute] = timePart.split(':');
-    return new Date(year, month - 1, day, hour, minute).toISOString();
+    return new Date(year, month , day, hour, minute).toISOString();
   }
 
   render() {
