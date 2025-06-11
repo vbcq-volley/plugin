@@ -176,7 +176,47 @@ class API {
   }
 
   async getMatch() {
-    return this.getEntries("match");
+    return this.getEntries('matches');
+  }
+
+  async getTournamentMatches() {
+    return this.getEntries('tournament_matches');
+  }
+
+  async getTournamentMatch(id) {
+    return this.getEntry('tournament_matches', id);
+  }
+
+  async createTournamentMatch(data) {
+    return this.createEntry('tournament_matches', data);
+  }
+
+  async updateTournamentMatch(id, data) {
+    return this.updateEntry('tournament_matches', id, data);
+  }
+
+  async deleteTournamentMatch(id) {
+    return this.deleteEntry('tournament_matches', id);
+  }
+
+  async getTournamentResults() {
+    return this.getEntries('tournament_results');
+  }
+
+  async getTournamentResult(id) {
+    return this.getEntry('tournament_results', id);
+  }
+
+  async createTournamentResult(data) {
+    return this.createEntry('tournament_results', data);
+  }
+
+  async updateTournamentResult(id, data) {
+    return this.updateEntry('tournament_results', id, data);
+  }
+
+  async deleteTournamentResult(id) {
+    return this.deleteEntry('tournament_results', id);
   }
 }
 
