@@ -897,6 +897,7 @@ class PostEditor {
             <label for="content">Contenu</label>
             <textarea id="content" name="content" rows="10" required>${post._content || ''}</textarea>
           </div>
+          <div id="description-preview" class="preview"></div>
           <div class="form-group">
             <label for="date">Date</label>
             <input type="date" id="date" name="date" value="${post.date ? new Date(post.date).toISOString().split('T')[0] : ''}">
@@ -1010,6 +1011,14 @@ class PageEditor {
       const content = this.editor.getValue();
       preview.innerHTML = marked.parse(content);
     };
+    const updatePreview = () => {
+      const preview = document.getElementById('description-preview');
+      const content = this.editor.getValue();
+      preview.innerHTML = marked.parse(content);
+    };
+
+    this.editor.on('change', updatePreview);
+    updatePreview();
     const form = document.getElementById('page-form');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
