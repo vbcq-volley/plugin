@@ -2174,10 +2174,18 @@ class TournamentResult {
     this.node = node;
     this.id = id;
     this.data = null;
+    this.match = null;
   }
 
   async fetchResult() {
     this.data = await api.getEntry('tournament_results', this.id);
+    if (this.data) {
+      await this.fetchMatch();
+    }
+  }
+
+  async fetchMatch() {
+    this.match = await api.getEntry('tournament_matches', this.data.matchId);
   }
 
   render() {
@@ -2189,22 +2197,77 @@ class TournamentResult {
     if (!this.data) return;
 
     const form = this.node.querySelector('form');
+    const matchSelect = form.querySelector('[name="matchId"]');
+
+    // Charger les matchs disponibles
+    this.loadMatches(matchSelect);
+
+    // Si on modifie un résultat existant, pré-remplir les champs
+    if (this.data) {
+      matchSelect.value = this.data.matchId;
+      form.querySelector('[name="score1"]').value = this.data.score1;
+      form.querySelector('[name="score2"]').value = this.data.score2;
+      form.querySelector('[name="stats"]').value = this.data.stats || '';
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-      
+      const data = {
+        matchId: formData.get('matchId'),
+        score1: parseInt(formData.get('score1')),
+        score2: parseInt(formData.get('score2')),
+        stats: formData.get('stats')
+      };
+
+      // Déterminer le gagnant
+      const score1 = parseInt(formData.get('score1'));
+      const score2 = parseInt(formData.get('score2'));
+      let winner = null;
+      if (score1 > score2) {
+        winner = this.match.team1Name;
+      } else if (score2 > score1) {
+        winner = this.match.team2Name;
+      }
+
       try {
+        // Mettre à jour le résultat
         if (this.id) {
           await api.updateEntry('tournament_results', this.id, data);
         } else {
           await api.createEntry('tournament_results', data);
         }
+
+        // Mettre à jour le match avec le gagnant
+        if (winner) {
+          await api.updateEntry('tournament_matches', data.matchId, {
+            ...this.match,
+            winner: winner
+          });
+        }
+
         window.location.hash = '#/tournament-results';
       } catch (error) {
         console.error('Erreur lors de la sauvegarde:', error);
       }
     });
+  }
+
+  async loadMatches(select) {
+    try {
+      const matches = await api.getTournamentMatches();
+      const options = matches
+        .filter(match => !match.winner || match.id === this.data?.matchId)
+        .map(match => `
+          <option value="${match.id}" ${this.data?.matchId === match.id ? 'selected' : ''}>
+            ${match.team1Name} vs ${match.team2Name} (${match.round})
+          </option>
+        `).join('');
+      
+      select.innerHTML = '<option value="">Sélectionner un match</option>' + options;
+    } catch (error) {
+      console.error('Erreur lors du chargement des matchs:', error);
+    }
   }
 
   template() {
