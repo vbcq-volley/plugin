@@ -1410,6 +1410,31 @@ class TeamEditor {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
     });
+
+    // Ajout de l'événement pour le bouton Continuer
+    const continueButton = form.querySelector('.continue-button');
+    continueButton.addEventListener('click', async () => {
+      const formData = new FormData(form);
+      const data = {
+        teamName: formData.get('teamName'),
+        coach: formData.get('coach'),
+        coachContact: formData.get('coachContact'),
+        coachEmail: formData.get('coachEmail'),
+        group: formData.get('group'),
+        description: this.editor.getValue()
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('team', this.id, data);
+        } else {
+          await api.createEntry('team', data);
+        }
+        alert('Enregistrement réussi ! Vous pouvez continuer à éditer.');
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
   }
 
   destroy() {
@@ -1465,7 +1490,10 @@ class StadeEditor {
             <textarea id="description" name="description" rows="10">${stade.description || ''}</textarea>
             <div id="description-preview" class="preview"></div>
           </div>
-          <button type="submit">Enregistrer</button>
+          <div class="form-buttons">
+            <button type="submit">Enregistrer</button>
+            <button type="button" class="continue-button">Continuer</button>
+          </div>
         </form>
       </div>
     `;
@@ -1507,6 +1535,28 @@ class StadeEditor {
           await api.createEntry('stade', data);
         }
         window.location.hash = '#/stades';
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+
+    // Ajout de l'événement pour le bouton Continuer
+    const continueButton = form.querySelector('.continue-button');
+    continueButton.addEventListener('click', async () => {
+      const formData = new FormData(form);
+      const data = {
+        stadeName: formData.get('stadeName'),
+        address: formData.get('address'),
+        description: this.editor.getValue()
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('stade', this.id, data);
+        } else {
+          await api.createEntry('stade', data);
+        }
+        alert('Enregistrement réussi ! Vous pouvez continuer à éditer.');
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1631,7 +1681,10 @@ class ResultEditor {
             <label for="postponedTeam">Équipe reportée</label>
             <input type="text" id="postponedTeam" name="postponedTeam" value="${result.postponedTeam || ''}">
           </div>
-          <button type="submit">Enregistrer</button>
+          <div class="form-buttons">
+            <button type="submit">Enregistrer</button>
+            <button type="button" class="continue-button">Continuer</button>
+          </div>
         </form>
       </div>
     `;
@@ -1708,214 +1761,37 @@ class ResultEditor {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
     });
-  }
 
-  destroy() {
-    this.node.innerHTML = '';
-  }
-}
-
-class DataEditor {
-  constructor(node, id = null) {
-    this.node = node;
-    this.id = id;
-    this.dataFetcher = new DataFetcher(this.fetchData.bind(this));
-    this.teamsFetcher = new DataFetcher(this.fetchTeams.bind(this));
-    this.stadesFetcher = new DataFetcher(this.fetchStades.bind(this));
-  }
-
-  async fetchData() {
-    return this.id ? api.getEntry('match', this.id) : null;
-  }
-
-  async fetchTeams() {
-    return api.getEntries('team');
-  }
-
-  async fetchStades() {
-    return api.getEntries('stade');
-  }
-  formatDate(date) {
-    if (!date) return '';
-    const d = new Date(date);
-    return d.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  }
-
-  parseDate(dateStr) {
-    if (!dateStr) return null;
-    const [datePart, timePart] = dateStr.split(' ');
-    const [day, month, year] = datePart.split('/');
-    const [hour, minute] = timePart.split(':');
-    return new Date(year, month , day, hour, minute).toISOString();
-  }
-  render() {
-    Promise.all([
-      this.dataFetcher.getData(),
-      this.teamsFetcher.getData(),
-      this.stadesFetcher.getData()
-    ]).then(() => this.updateView());
-  }
-
-  updateView() {
-    if (this.dataFetcher.loading || this.teamsFetcher.loading || this.stadesFetcher.loading) {
-      this.node.innerHTML = '<div class="loading">Chargement...</div>';
-      return;
-    }
-
-    if (this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error) {
-      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error}</div>`;
-      return;
-    }
-
-    const data = this.dataFetcher.data || {};
-    const teams = this.teamsFetcher.data || [];
-    const stades = this.stadesFetcher.data || [];
-
-    const html = `
-      <div class="data-editor">
-        <h2>${this.id ? 'Modifier le match' : 'Nouveau match'}</h2>
-        <form id="data-form">
-          <div class="form-group">
-            <label for="team1">Équipe 1</label>
-            <select id="team1" name="team1" required>
-              <option value="">Sélectionner une équipe</option>
-              ${teams.map(team => `
-                <option value="${team.teamName}" 
-                  ${data.team1 === team.teamName ? 'selected' : ''}
-                  data-group="${team.group}">
-                  ${team.teamName} (${team.coach})
-                </option>
-              `).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="team2">Équipe 2</label>
-            <select id="team2" name="team2" required>
-              <option value="">Sélectionner une équipe</option>
-              ${teams.map(team => `
-                <option value="${team.teamName}" 
-                  ${data.team2 === team.teamName ? 'selected' : ''}
-                  data-group="${team.group}">
-                  ${team.teamName} (${team.coach})
-                </option>
-              `).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="homeDate">Date du match à domicile</label>
-            <input type="date" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate)  || ''}" required placeholder="JJ mois AAAA à HH:mm">
-          </div>
-          <div class="form-group">
-            <label for="awayDate">Date du match à l'extérieur</label>
-            <input type="date" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required placeholder="JJ mois AAAA à HH:mm">
-          </div>
-          <div class="form-group">
-            <label for="homeLocation">Lieu du match à domicile</label>
-            <select id="homeLocation" name="homeLocation" required>
-              <option value="">Sélectionner un stade</option>
-              ${stades.map(stade => `
-                <option value="${stade.stadeName}" 
-                  ${data.homeLocation === stade.stadeName ? 'selected' : ''}>
-                  ${stade.stadeName} (${stade.address})
-                </option>
-              `).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="awayLocation">Lieu du match à l'extérieur</label>
-            <select id="awayLocation" name="awayLocation" required>
-              <option value="">Sélectionner un stade</option>
-              ${stades.map(stade => `
-                <option value="${stade.stadeName}" 
-                  ${data.awayLocation === stade.stadeName ? 'selected' : ''}>
-                  ${stade.stadeName} (${stade.address})
-                </option>
-              `).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="group">Groupe</label>
-            <select id="group" name="group" required>
-              <option value="">Sélectionner un groupe</option>
-              <option value="1" ${data.group === '1' ? 'selected' : ''}>Groupe 1</option>
-              <option value="2" ${data.group === '2' ? 'selected' : ''}>Groupe 2</option>
-              <option value="3" ${data.group === '3' ? 'selected' : ''}>Groupe 3</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="session">Session</label>
-            <input type="number" id="session" name="session" value="${data.session || ''}" required>
-          </div>
-          <div class="form-group">
-            <label for="matchStatus">Statut du match</label>
-            <select id="matchStatus" name="matchStatus">
-              <option value="scheduled" ${data.matchStatus === 'scheduled' ? 'selected' : ''}>Planifié</option>
-              <option value="in_progress" ${data.matchStatus === 'in_progress' ? 'selected' : ''}>En cours</option>
-              <option value="completed" ${data.matchStatus === 'completed' ? 'selected' : ''}>Terminé</option>
-              <option value="cancelled" ${data.matchStatus === 'cancelled' ? 'selected' : ''}>Annulé</option>
-            </select>
-          </div>
-          <button type="submit">Enregistrer</button>
-        </form>
-      </div>
-    `;
-    this.node.innerHTML = html;
-
-    const form = document.getElementById('data-form');
-    const team1Select = document.getElementById('team1');
-    const team2Select = document.getElementById('team2');
-    const groupSelect = document.getElementById('group');
-
-    // Mise à jour automatique du groupe en fonction de l'équipe sélectionnée
-    const updateGroup = () => {
-      const team1Option = team1Select.options[team1Select.selectedIndex];
-      const team2Option = team2Select.options[team2Select.selectedIndex];
-      
-      if (team1Option.value && team2Option.value) {
-        const team1Group = team1Option.dataset.group;
-        const team2Group = team2Option.dataset.group;
-        
-        if (team1Group === team2Group) {
-          groupSelect.value = team1Group;
-        } else {
-          alert('Les équipes sélectionnées doivent appartenir au même groupe');
-          groupSelect.value = '';
-        }
-      }
-    };
-
-    team1Select.addEventListener('change', updateGroup);
-    team2Select.addEventListener('change', updateGroup);
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Ajout de l'événement pour le bouton Continuer
+    const continueButton = form.querySelector('.continue-button');
+    continueButton.addEventListener('click', async () => {
       const formData = new FormData(form);
+      const matchType = formData.get('matchType');
+      const selectedMatch = matches.find(m => m._id === formData.get('matchId'));
+      
       const data = {
-        team1: formData.get('team1'),
-        team2: formData.get('team2'),
-        homeDate: this.formatDate(formData.get('homeDate')) ,
-        awayDate: this.formatDate(formData.get('awayDate')),
-        homeLocation: formData.get('homeLocation'),
-        awayLocation: formData.get('awayLocation'),
-        group: formData.get('group'),
-        session: parseInt(formData.get('session')),
-        matchStatus: formData.get('matchStatus'),
-        title: `${formData.get('team1')} vs ${formData.get('team2')}`
+        matchType,
+        team1: selectedMatch.team1,
+        team2: selectedMatch.team2,
+        team1Score: formData.get('team1Score'),
+        team2Score: formData.get('team2Score'),
+        isForfeit: formData.get('isForfeit') === 'on',
+        forfeitTeam: formData.get('forfeitTeam'),
+        isPostponed: formData.get('isPostponed') === 'on',
+        postponedTeam: formData.get('postponedTeam'),
+        matchId: formData.get('matchId'),
+        group: selectedMatch.group,
+        session: parseInt(selectedMatch.session),
+        date: matchType === 'home' ? selectedMatch.homeDate : selectedMatch.awayDate
       };
 
       try {
         if (this.id) {
-          await api.updateEntry('match', this.id, data);
+          await api.updateEntry('result', this.id, data);
         } else {
-          await api.createEntry('match', data);
+          await api.createEntry('result', data);
         }
-        window.location.hash = '#/datas';
+        alert('Enregistrement réussi ! Vous pouvez continuer à éditer.');
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1927,6 +1803,7 @@ class DataEditor {
   }
 }
 
+class DataEditor {
 class App {
   constructor(node) {
     this.node = node;
