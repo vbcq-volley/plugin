@@ -2052,10 +2052,28 @@ class TournamentMatch {
     this.node = node;
     this.id = id;
     this.data = null;
+    this.teams = [];
+    this.tournamentTeams = [];
   }
 
   async fetchMatch() {
     this.data = await api.getEntry('tournament_matches', this.id);
+    await this.fetchTeams();
+    await this.fetchTournamentTeams();
+  }
+
+  async fetchTeams() {
+    this.teams = await api.getEntries('teams');
+  }
+
+  async fetchTournamentTeams() {
+    const matches = await api.getTournamentMatches();
+    this.tournamentTeams = matches
+      .filter(match => match.id !== this.id && match.winner)
+      .map(match => ({
+        id: `winner_${match.id}`,
+        name: match.winner
+      }));
   }
 
   render() {
@@ -2067,10 +2085,35 @@ class TournamentMatch {
     if (!this.data) return;
 
     const form = this.node.querySelector('form');
+    const team1Select = form.querySelector('[name="team1"]');
+    const team2Select = form.querySelector('[name="team2"]');
+
+    // Remplir les options des équipes
+    const allTeams = [...this.teams, ...this.tournamentTeams];
+    const teamOptions = allTeams.map(team => 
+      `<option value="${team.id}" ${this.data.team1 === team.id ? 'selected' : ''}>${team.name}</option>`
+    ).join('');
+    
+    team1Select.innerHTML = '<option value="">Sélectionner une équipe</option>' + teamOptions;
+    team2Select.innerHTML = '<option value="">Sélectionner une équipe</option>' + teamOptions;
+
+    // Si on modifie un match existant, pré-remplir les champs
+    if (this.data) {
+      form.querySelector('[name="matchDate"]').value = this.data.matchDate;
+      form.querySelector('[name="round"]').value = this.data.round;
+    }
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
+      const data = {
+        team1: formData.get('team1'),
+        team2: formData.get('team2'),
+        matchDate: formData.get('matchDate'),
+        round: formData.get('round'),
+        team1Name: allTeams.find(t => t.id === formData.get('team1'))?.name,
+        team2Name: allTeams.find(t => t.id === formData.get('team2'))?.name
+      };
       
       try {
         if (this.id) {
