@@ -2198,6 +2198,126 @@ class TournamentResult {
   }
 }
 
+class TournamentMatches {
+  constructor(node) {
+    this.node = node;
+    this.data = null;
+  }
+
+  async fetchMatches() {
+    this.data = await api.getTournamentMatches();
+  }
+
+  render() {
+    this.node.innerHTML = this.template();
+    this.updateView();
+  }
+
+  updateView() {
+    if (!this.data) return;
+
+    const tbody = this.node.querySelector('tbody');
+    tbody.innerHTML = this.data.map(match => `
+      <tr>
+        <td>${match.team1}</td>
+        <td>${match.team2}</td>
+        <td>${this.formatDate(match.matchDate)}</td>
+        <td>${match.round}</td>
+        <td>
+          <a href="#/tournament-matches/${match.id}" class="btn btn-primary">Modifier</a>
+          <button class="btn btn-danger" onclick="deleteMatch('${match.id}')">Supprimer</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  template() {
+    return `
+      <div class="tournament-matches">
+        <h2>Matchs de Tournoi</h2>
+        <a href="#/tournament-matches/new" class="btn btn-success">Nouveau Match</a>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Équipe 1</th>
+              <th>Équipe 2</th>
+              <th>Date</th>
+              <th>Tour</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+
+  formatDate(date) {
+    return new Date(date).toLocaleString('fr-FR');
+  }
+}
+
+class TournamentResults {
+  constructor(node) {
+    this.node = node;
+    this.data = null;
+  }
+
+  async fetchResults() {
+    this.data = await api.getTournamentResults();
+  }
+
+  render() {
+    this.node.innerHTML = this.template();
+    this.updateView();
+  }
+
+  updateView() {
+    if (!this.data) return;
+
+    const tbody = this.node.querySelector('tbody');
+    tbody.innerHTML = this.data.map(result => `
+      <tr>
+        <td>${result.matchId}</td>
+        <td>${result.score1}</td>
+        <td>${result.score2}</td>
+        <td>
+          <a href="#/tournament-results/${result.id}" class="btn btn-primary">Modifier</a>
+          <button class="btn btn-danger" onclick="deleteResult('${result.id}')">Supprimer</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  template() {
+    return `
+      <div class="tournament-results">
+        <h2>Résultats de Tournoi</h2>
+        <a href="#/tournament-results/new" class="btn btn-success">Nouveau Résultat</a>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Match</th>
+              <th>Score Équipe 1</th>
+              <th>Score Équipe 2</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
 class App {
   constructor(node) {
     this.node = node;
