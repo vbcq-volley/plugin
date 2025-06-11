@@ -576,6 +576,7 @@ class About {
   }
 
   render() {
+    
     const html = `
       <div class="about">
         <h2>À propos</h2>
