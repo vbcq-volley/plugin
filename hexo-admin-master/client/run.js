@@ -1479,6 +1479,15 @@ class ResultEditor {
 
   formatDate(date) {
     if (!date) return '';
+    
+    // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
+    if (typeof date === 'string' && date.includes('/')) {
+      const [datePart, timePart] = date.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hours, minutes] = timePart.split(':');
+      date = new Date(year, month - 1, day, hours, minutes);
+    }
+    
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -1545,11 +1554,11 @@ class ResultEditor {
                   ${result.matchId === match._id ? 'selected' : ''}
                   data-team1="${match.team1}"
                   data-team2="${match.team2}"
-                  data-home-date="${match.homeDate}"
-                  data-away-date="${match.awayDate}"
+                  data-home-date="${this.formatDate(match.homeDate)}"
+                  data-away-date="${this.formatDate(match.awayDate)}"
                   data-group="${match.group}"
                   data-session="${match.session}">
-                  ${match.team1} vs ${match.team2} (${match.homeDate})
+                  ${match.team1} vs ${match.team2} (${this.formatDate(match.homeDate)})
                 </option>
               `).join('')}
             </select>
@@ -1714,6 +1723,15 @@ class DataEditor {
 
   formatDate(date) {
     if (!date) return '';
+    
+    // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
+    if (typeof date === 'string' && date.includes('/')) {
+      const [datePart, timePart] = date.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hours, minutes] = timePart.split(':');
+      date = new Date(year, month - 1, day, hours, minutes);
+    }
+    
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
