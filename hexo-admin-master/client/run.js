@@ -1854,6 +1854,10 @@ class DataEditor {
         <h2>${this.id ? 'Modifier le match' : 'Nouveau match'}</h2>
         <form id="data-form">
           <div class="form-group">
+            <label for="matchType">Type de match</label>
+            <select id="matchType" name="matchType" required>
+              <option value="regular" ${data.matchType === 'regular' ? 'selected' : ''}>Match régulier</option>
+              <option value="tournament" ${data.matchType === 'tournament' ? 'selected' : ''}>Tournoi</option>
             <label for="group">Groupe</label>
             <select id="group" name="group" required>
               <option value="">Sélectionner un groupe</option>
