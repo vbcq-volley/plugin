@@ -1656,6 +1656,12 @@ class DataEditor {
               <option value="cancelled" ${data.matchStatus === 'cancelled' ? 'selected' : ''}>Annulé</option>
             </select>
           </div>
+          <div class="form-group">
+            <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing">
+              Continuer l'édition
+            </label>
+          </div>
           <button type="submit">Enregistrer</button>
         </form>
       </div>
@@ -1710,7 +1716,9 @@ class DataEditor {
         } else {
           await api.createEntry('match', data);
         }
-        window.location.hash = '#/datas';
+        if (!formData.get('continueEditing')) {
+          window.location.hash = '#/datas';
+        }
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
