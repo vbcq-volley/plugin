@@ -518,14 +518,29 @@ class Datas {
         <ul>
           ${datas.map(data => `
             <li>
-              <a href="#/data/${data._id}">${data.title}</a>
+              <a href="#/data/${data._id}">
+                ${data.title}
+                ${data.matchType === 'tournament' ? `<span class="tournament-badge">Tournoi - ${this.getTournamentRoundLabel(data.tournamentRound)}</span>` : ''}
+              </a>
               <span class="date">${this.formatDate(data.homeDate)}</span>
+              <span class="match-type">${data.matchType === 'tournament' ? 'Tournoi' : 'Match régulier'}</span>
             </li>
           `).join('')}
         </ul>
       </div>
     `;
     this.node.innerHTML = html;
+  }
+
+  getTournamentRoundLabel(round) {
+    const rounds = {
+      '1': 'Premier tour',
+      '2': 'Deuxième tour',
+      '3': 'Troisième tour',
+      '4': 'Quatrième tour',
+      'final': 'Finale'
+    };
+    return rounds[round] || round;
   }
 
   destroy() {
@@ -1994,6 +2009,40 @@ class DataEditor {
 
     // Ajout de l'écouteur pour le checkbox "Continuer l'édition"
     continueEditingCheckbox.addEventListener('change', (e) => {
+      localStorage.setItem('continueEditing', e.target.checked);
+      this.continueEditing = e.target.checked;
+    });
+
+    // Ajout des écouteurs d'événements pour le filtrage
+    groupSelect.addEventListener('change', () => this.updateTeamOptions());
+    sessionInput.addEventListener('change', () => this.updateTeamOptions());
+    team1Select.addEventListener('change', () => this.updateTeamOptions());
+
+    // Initialisation du filtrage
+    this.updateTeamOptions();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        team1: formData.get('team1'),
+        team2: formData.get('team2'),
+        homeDate: this.formatDate(formData.get('homeDate')),
+        awayDate: this.formatDate(formData.get('awayDate')),
+        homeLocation: formData.get('homeLocation'),
+        awayLocation: formData.get('awayLocation'),
+        group: formData.get('group'),
+        session: parseInt(formData.get('session')),
+        matchStatus: formData.get('matchStatus'),
+        matchType: formData.get('matchType'),
+        tournamentRound: formData.get('matchType') === 'tournament' ? formData.get('tournamentRound') : null,
+        title: `${formData.get('team1')} vs ${formData.get('team2')}`
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('match', this.id, data);
+        } else {
           await api.createEntry('match', data);
         }
         if (!this.continueEditing) {
