@@ -576,7 +576,28 @@ class About {
   }
 
   render() {
-    
+    const fetchReadme = async (username, repo) => {
+      try {
+        const response = await fetch(`https://raw.githubusercontent.com/${username}/${repo}/master/README.md`);
+        if (!response.ok) {
+          throw new Error('Erreur lors de la récupération du README');
+        }
+        const readmeContent = await response.text();
+        return readmeContent;
+      } catch (error) {
+        console.error('Erreur:', error);
+        return null;
+      }
+    };
+
+    const renderReadme = async (username, repo) => {
+      const readmeContent = await fetchReadme(username, repo);
+      if (readmeContent) {
+        
+        return readmeContent;
+      }
+      return 'Impossible de charger le README';
+    };
     const html = `
       <div class="about">
         <h2>À propos</h2>
