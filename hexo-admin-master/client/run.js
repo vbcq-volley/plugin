@@ -593,7 +593,7 @@ class About {
     const renderReadme = async (username, repo) => {
       const readmeContent = await fetchReadme(username, repo);
       if (readmeContent) {
-        
+        this.node.innerHTML=marked.parse()
         return readmeContent;
       }
       return 'Impossible de charger le README';
