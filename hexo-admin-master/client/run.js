@@ -2345,7 +2345,7 @@ class TournamentMatches {
     return `
       <div class="tournament-matches">
         <h2>Matchs de Tournoi</h2>
-        <a href="#/tournament-matches/new" class="btn btn-success">Nouveau Match</a>
+        <a href="#/tournament-matches" class="btn btn-success">Nouveau Match</a>
         <table class="table">
           <thead>
             <tr>
