@@ -916,7 +916,14 @@ class PostEditor {
       lineWrapping: true,
       autofocus: true
     });
+    const updatePreview = () => {
+      const preview = document.getElementById('description-preview');
+      const content = this.editor.getValue();
+      preview.innerHTML = marked.parse(content);
+    };
 
+    this.editor.on('change', updatePreview);
+    updatePreview();
     const form = document.getElementById('post-form');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1011,11 +1018,7 @@ class PageEditor {
       const content = this.editor.getValue();
       preview.innerHTML = marked.parse(content);
     };
-    const updatePreview = () => {
-      const preview = document.getElementById('description-preview');
-      const content = this.editor.getValue();
-      preview.innerHTML = marked.parse(content);
-    };
+   
 
     this.editor.on('change', updatePreview);
     updatePreview();
