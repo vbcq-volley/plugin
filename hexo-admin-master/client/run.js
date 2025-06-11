@@ -1888,9 +1888,10 @@ class DataEditor {
             <label for="session">Session</label>
             <input type="number" id="session" name="session" value="${data.session || ''}" required>
           </div>
-          <div class="form-group">
-            <label for="tournamentRound" id="tournamentRoundLabel" style="display: none;">Tour du tournoi</label>
-            <select id="tournamentRound" name="tournamentRound" style="display: none;">
+          <div class="form-group tournament-fields" style="display: none;">
+            <label for="tournamentRound">Tour du tournoi (optionnel)</label>
+            <select id="tournamentRound" name="tournamentRound">
+              <option value="">Non spécifié</option>
               <option value="1" ${data.tournamentRound === '1' ? 'selected' : ''}>Premier tour</option>
               <option value="2" ${data.tournamentRound === '2' ? 'selected' : ''}>Deuxième tour</option>
               <option value="3" ${data.tournamentRound === '3' ? 'selected' : ''}>Troisième tour</option>
