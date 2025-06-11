@@ -990,6 +990,7 @@ class PageEditor {
             <label for="content">Contenu</label>
             <textarea id="content" name="content" rows="10" required>${page.content || ''}</textarea>
           </div>
+          <div id="description-preview" class="preview"></div>
           <button type="submit">Enregistrer</button>
         </form>
       </div>
@@ -1004,7 +1005,11 @@ class PageEditor {
       lineWrapping: true,
       autofocus: true
     });
-
+    const updatePreview = () => {
+      const preview = document.getElementById('description-preview');
+      const content = this.editor.getValue();
+      preview.innerHTML = marked.parse(content);
+    };
     const form = document.getElementById('page-form');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
