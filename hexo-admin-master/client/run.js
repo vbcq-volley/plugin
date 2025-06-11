@@ -2487,115 +2487,84 @@ class App {
 
   handleRoute() {
     const hash = window.location.hash.slice(1);
-    const [bin,route, id] = hash.split('/');
-    this.state.currentRoute = route;
-    
-    if (this.state.currentView) {
-      this.state.currentView.destroy();
-    }
-    
+    const [route, id] = hash.split('/');
     let view;
+
     switch (route) {
       case 'posts':
-        view = new Posts(this.main);
-        break;
-      case 'post':
         if (id) {
-          view = new PostEditor(this.main, id);
+          view = new Post(this.main, id);
         } else {
-          view = new PostEditor(this.main);
+          view = new Posts(this.main);
         }
-        break;
-      case 'post-edit':
-        view = new PostEditor(this.main, id);
         break;
       case 'pages':
-        view = new Pages(this.main);
-        break;
-      case 'page':
         if (id) {
-          view = new PageEditor(this.main, id);
+          view = new Page(this.main, id);
         } else {
-          view = new PageEditor(this.main);
+          view = new Pages(this.main);
         }
-        break;
-      case 'page-edit':
-        view = new PageEditor(this.main, id);
         break;
       case 'teams':
-        view = new Teams(this.main);
-        break;
-      case 'team':
         if (id) {
-          view = new TeamEditor(this.main, id);
+          view = new Team(this.main, id);
         } else {
-          view = new TeamEditor(this.main);
+          view = new Teams(this.main);
         }
-        break;
-      case 'team-edit':
-        view = new TeamEditor(this.main, id);
         break;
       case 'stades':
-        view = new Stades(this.main);
-        break;
-      case 'stade':
         if (id) {
-          view = new StadeEditor(this.main, id);
+          view = new Stade(this.main, id);
         } else {
-          view = new StadeEditor(this.main);
+          view = new Stades(this.main);
         }
-        break;
-      case 'stade-edit':
-        view = new StadeEditor(this.main, id);
         break;
       case 'results':
-        view = new Results(this.main);
-        break;
-      case 'result':
         if (id) {
-          view = new ResultEditor(this.main, id);
+          view = new Result(this.main, id);
         } else {
-          view = new ResultEditor(this.main);
+          view = new Results(this.main);
         }
-        break;
-      case 'result-edit':
-        view = new ResultEditor(this.main, id);
         break;
       case 'datas':
-        view = new Datas(this.main);
-        break;
-      case 'data':
         if (id) {
-          view = new DataEditor(this.main, id);
+          view = new Data(this.main, id);
         } else {
-          view = new DataEditor(this.main);
+          view = new Datas(this.main);
         }
         break;
-      case 'data-edit':
-        view = new DataEditor(this.main, id);
+      case 'settings':
+        view = new Settings(this.main);
         break;
       case 'about':
         view = new About(this.main);
         break;
       case 'tournament-matches':
-        if (id) {
+        if (id === 'new') {
+          view = new TournamentMatch(this.main);
+        } else if (id) {
           view = new TournamentMatch(this.main, id);
         } else {
-          view = new TournamentMatch(this.main);
+          view = new TournamentMatches(this.main);
         }
         break;
       case 'tournament-results':
-        if (id) {
+        if (id === 'new') {
+          view = new TournamentResult(this.main);
+        } else if (id) {
           view = new TournamentResult(this.main, id);
         } else {
-          view = new TournamentResult(this.main);
+          view = new TournamentResults(this.main);
         }
         break;
       default:
         view = new Posts(this.main);
     }
-    
-    this.state.currentView = view;
+
+    if (this.currentView) {
+      this.currentView.destroy();
+    }
+    this.currentView = view;
     view.render();
   }
 }
