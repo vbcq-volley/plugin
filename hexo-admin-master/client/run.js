@@ -1566,6 +1566,57 @@ class DataEditor {
     return new Date(year, month , day, hour, minute).toISOString();
   }
 
+  isTeamAvailable(teamName, session=1, currentMatchId = null) {
+    return !this.matchesFetcher.data.some(match => 
+      match._id !== currentMatchId && 
+      match.session === session && 
+      (match.team1 === teamName || match.team2 === teamName)
+    );
+  }
+
+  updateTeamOptions() {
+    const groupSelect = document.getElementById('group');
+    const sessionInput = document.getElementById('session');
+    const team1Select = document.getElementById('team1');
+    const team2Select = document.getElementById('team2');
+
+    const selectedGroup = groupSelect.value;
+    const session = parseInt(sessionInput.value);
+    const currentMatchId = this.id;
+
+    // Mise à jour des options pour team1
+    Array.from(team1Select.options).forEach(option => {
+      if (option.value === '') return;
+      const teamGroup = option.dataset.group;
+      const teamName = option.dataset.team;
+      const isAvailable = this.isTeamAvailable(teamName, session, currentMatchId);
+      
+      if (teamGroup === selectedGroup && isAvailable) {
+        option.style.display = '';
+        option.disabled = false;
+      } else {
+        option.style.display = 'none';
+        option.disabled = true;
+      }
+    });
+
+    // Mise à jour des options pour team2
+    Array.from(team2Select.options).forEach(option => {
+      if (option.value === '') return;
+      const teamGroup = option.dataset.group;
+      const teamName = option.dataset.team;
+      const isAvailable = this.isTeamAvailable(teamName, session, currentMatchId);
+      
+      if (teamGroup === selectedGroup && isAvailable && teamName !== team1Select.value) {
+        option.style.display = '';
+        option.disabled = false;
+      } else {
+        option.style.display = 'none';
+        option.disabled = true;
+      }
+    });
+  }
+
   render() {
     Promise.all([
       this.dataFetcher.getData(),
@@ -1590,15 +1641,6 @@ class DataEditor {
     const teams = this.teamsFetcher.data || [];
     const stades = this.stadesFetcher.data || [];
     const matches = this.matchesFetcher.data || [];
-
-    // Fonction pour vérifier si une équipe a déjà un match dans la session
-    const isTeamAvailable = (teamName, session, currentMatchId = null) => {
-      return !matches.some(match => 
-        match._id !== currentMatchId && 
-        match.session === session && 
-        (match.team1 === teamName || match.team2 === teamName)
-      );
-    };
 
     const html = `
       <div class="data-editor">
@@ -1701,57 +1743,17 @@ class DataEditor {
     this.node.innerHTML = html;
 
     const form = document.getElementById('data-form');
-    const team1Select = document.getElementById('team1');
-    const team2Select = document.getElementById('team2');
     const groupSelect = document.getElementById('group');
     const sessionInput = document.getElementById('session');
+    const team1Select = document.getElementById('team1');
 
-    // Fonction pour mettre à jour les options des équipes
-    const updateTeamOptions = () => {
-      const selectedGroup = groupSelect.value;
-      const session = parseInt(sessionInput.value);
-      const currentMatchId = this.id;
-
-      // Mise à jour des options pour team1
-      Array.from(team1Select.options).forEach(option => {
-        if (option.value === '') return; // Garder l'option vide
-        const teamGroup = option.dataset.group;
-        const teamName = option.dataset.team;
-        const isAvailable = isTeamAvailable(teamName, session, currentMatchId);
-        
-        if (teamGroup === selectedGroup && isAvailable) {
-          option.style.display = '';
-          option.disabled = false;
-        } else {
-          option.style.display = 'none';
-          option.disabled = true;
-        }
-      });
-
-      // Mise à jour des options pour team2
-      Array.from(team2Select.options).forEach(option => {
-        if (option.value === '') return; // Garder l'option vide
-        const teamGroup = option.dataset.group;
-        const teamName = option.dataset.team;
-        const isAvailable = isTeamAvailable(teamName, session, currentMatchId);
-        
-        if (teamGroup === selectedGroup && isAvailable && teamName !== team1Select.value) {
-          option.style.display = '';
-          option.disabled = false;
-        } else {
-          option.style.display = 'none';
-          option.disabled = true;
-        }
-      });
-    };
-
-    // Écouteurs d'événements pour le filtrage
-    groupSelect.addEventListener('change', updateTeamOptions);
-    sessionInput.addEventListener('change', updateTeamOptions);
-    team1Select.addEventListener('change', updateTeamOptions);
+    // Ajout des écouteurs d'événements pour le filtrage
+    groupSelect.addEventListener('change', () => this.updateTeamOptions());
+    sessionInput.addEventListener('change', () => this.updateTeamOptions());
+    team1Select.addEventListener('change', () => this.updateTeamOptions());
 
     // Initialisation du filtrage
-    updateTeamOptions();
+    this.updateTeamOptions();
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
