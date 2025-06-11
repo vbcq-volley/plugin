@@ -1655,7 +1655,7 @@ class DataEditor {
       const data = {
         team1: formData.get('team1'),
         team2: formData.get('team2'),
-        homeDate:  formData.get('homeDate'),
+        homeDate: this.formatDate(formData.get('homeDate')) ,
         awayDate: formData.get('awayDate'),
         homeLocation: formData.get('homeLocation'),
         awayLocation: formData.get('awayLocation'),
