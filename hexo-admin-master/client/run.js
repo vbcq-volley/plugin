@@ -946,11 +946,9 @@ class PostEditor {
           const newPost = await api.getPost(this.id);
           await api.getPost(newPost._id, data);
         }
-        if (!formData.get('continueEditing')) {
+        
           window.location.hash = '#/posts';
-        } else {
-          window.location.reload();
-        }
+        
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1049,11 +1047,9 @@ class PageEditor {
           const newPage = await api.getPage(this.id);
           await api.getPage(newPage._id, data);
         }
-        if (!formData.get('continueEditing')) {
+        
           window.location.hash = '#/pages';
-        } else {
-          window.location.reload();
-        }
+        
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
