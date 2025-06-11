@@ -1,6 +1,4 @@
 // index.js
-
-// index.js
 class API {
   constructor() {
     this.baseUrl = '';
