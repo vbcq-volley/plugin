@@ -2079,12 +2079,12 @@ class TournamentMatch {
 
   render() {
     this.node.innerHTML = this.template();
-
+    this.
     this.updateView();
   }
 
   updateView() {
-    
+
     if (!this.data) return;
 
     const form = this.node.querySelector('form');
