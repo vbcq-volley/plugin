@@ -1,4 +1,4 @@
-  
+
 // index.js
 class API {
   constructor() {
@@ -2094,7 +2094,7 @@ class TournamentMatch {
     const teamOptions = allTeams.map(team => 
       `<option value="${team.id}" ${this.data.team1 === team.id ? 'selected' : ''}>${team.name}</option>`
     ).join('');
-    
+    console
     team1Select.innerHTML = '<option value="">Sélectionner une équipe</option>' + teamOptions;
     team2Select.innerHTML = '<option value="">Sélectionner une équipe</option>' + teamOptions;
 
