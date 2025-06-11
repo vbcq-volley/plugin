@@ -1703,11 +1703,11 @@ class DataEditor {
           </div>
           <div class="form-group">
             <label for="homeDate">Date du match à domicile</label>
-            <input type="date" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate) || ''}" required>
+            <input type="datetime-local" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate) || ''}" required>
           </div>
           <div class="form-group">
             <label for="awayDate">Date du match à l'extérieur</label>
-            <input type="date" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required>
+            <input type="datetime-local" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required>
           </div>
           <div class="form-group">
             <label for="homeLocation">Lieu du match à domicile</label>
