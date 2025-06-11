@@ -1491,7 +1491,7 @@ class DataEditor {
   async fetchStades() {
     return api.getEntries('stade');
   }
-
+  
   render() {
     Promise.all([
       this.dataFetcher.getData(),
