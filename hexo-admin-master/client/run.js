@@ -1322,6 +1322,7 @@ class ResultEditor {
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchResult.bind(this));
     this.matchesFetcher = new DataFetcher(this.fetchMatches.bind(this));
+    this.continueEditing = localStorage.getItem('continueEditing') === 'true';
   }
 
   async fetchResult() {
