@@ -1491,7 +1491,25 @@ class DataEditor {
   async fetchStades() {
     return api.getEntries('stade');
   }
-  
+  formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  parseDate(dateStr) {
+    if (!dateStr) return null;
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    const [hour, minute] = timePart.split(':');
+    return new Date(year, month , day, hour, minute).toISOString();
+  }
   render() {
     Promise.all([
       this.dataFetcher.getData(),
@@ -1547,7 +1565,7 @@ class DataEditor {
           </div>
           <div class="form-group">
             <label for="homeDate">Date du match à domicile</label>
-            <input type="text" id="homeDate" name="homeDate" value="${data.homeDate || ''}" required placeholder="JJ mois AAAA à HH:mm">
+            <input type="text" id="homeDate" name="homeDate" value="${this.parseDate data.homeDate || ''}" required placeholder="JJ mois AAAA à HH:mm">
           </div>
           <div class="form-group">
             <label for="awayDate">Date du match à l'extérieur</label>
