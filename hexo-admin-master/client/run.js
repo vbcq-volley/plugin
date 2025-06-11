@@ -2517,6 +2517,26 @@ document.head.innerHTML += `
       font-size: 14px;
       color: #666;
     }
+
+    .tournament-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      margin-left: 8px;
+      background-color: #ff9800;
+      color: white;
+      border-radius: 12px;
+      font-size: 0.8em;
+      font-weight: bold;
+    }
+
+    .match-type {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 8px;
+      background-color: #e0e0e0;
+      border-radius: 12px;
+      font-size: 0.8em;
+    }
   </style>
 `;
 
