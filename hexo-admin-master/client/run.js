@@ -1138,7 +1138,7 @@ class TeamEditor {
       </div>
     `;
     this.node.innerHTML = html;
-
+    
     // Initialisation de CodeMirror
     this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
       mode: 'markdown',
