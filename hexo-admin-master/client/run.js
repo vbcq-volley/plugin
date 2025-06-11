@@ -1080,6 +1080,7 @@ class TeamEditor {
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchTeam.bind(this));
     this.editor = null;
+    this.continueEditing = localStorage.getItem('continueEditing') === 'true';
   }
 
   async fetchTeam() {
@@ -1211,6 +1212,7 @@ class StadeEditor {
     this.id = id;
     this.dataFetcher = new DataFetcher(this.fetchStade.bind(this));
     this.editor = null;
+    this.continueEditing = localStorage.getItem('continueEditing') === 'true';
   }
 
   async fetchStade() {
