@@ -1355,21 +1355,35 @@ class ResultEditor {
   formatDate(date) {
     if (!date) return '';
     const d = new Date(date);
-    return d.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 
   parseDate(dateStr) {
     if (!dateStr) return null;
-    const [datePart, timePart] = dateStr.split(' ');
-    const [day, month, year] = datePart.split('/');
-    const [hour, minute] = timePart.split(':');
-    return new Date(year, month , day, hour, minute).toISOString();
+    const months = {
+      'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+      'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
+    };
+    
+    const parts = dateStr.split(' ');
+    const day = parseInt(parts[0]);
+    const month = months[parts[1].toLowerCase()];
+    const year = parseInt(parts[2]);
+    const time = parts[4].split(':');
+    const hours = parseInt(time[0]);
+    const minutes = parseInt(time[1]);
+    
+    return new Date(year, month, day, hours, minutes).toISOString();
   }
 
   render() {
@@ -1576,21 +1590,35 @@ class DataEditor {
   formatDate(date) {
     if (!date) return '';
     const d = new Date(date);
-    return d.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 
   parseDate(dateStr) {
     if (!dateStr) return null;
-    const [datePart, timePart] = dateStr.split(' ');
-    const [day, month, year] = datePart.split('/');
-    const [hour, minute] = timePart.split(':');
-    return new Date(year, month , day, hour, minute).toISOString();
+    const months = {
+      'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+      'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
+    };
+    
+    const parts = dateStr.split(' ');
+    const day = parseInt(parts[0]);
+    const month = months[parts[1].toLowerCase()];
+    const year = parseInt(parts[2]);
+    const time = parts[4].split(':');
+    const hours = parseInt(time[0]);
+    const minutes = parseInt(time[1]);
+    
+    return new Date(year, month, day, hours, minutes).toISOString();
   }
 
   isTeamAvailable(teamName, session=1, currentMatchId = null) {
