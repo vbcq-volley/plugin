@@ -2363,6 +2363,45 @@ document.head.innerHTML += `
   </style>
 `;
 
+// Ajout des styles CSS pour les champs de formulaire
+document.head.innerHTML += `
+  <style>
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .form-group input[type="checkbox"] {
+      margin: 0;
+      width: 18px;
+      height: 18px;
+    }
+
+    .form-buttons {
+      margin-top: 20px;
+    }
+
+    button[type="submit"] {
+      background-color: #2196F3;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #1976D2;
+    }
+  </style>
+`;
+
 // Création de la div et initialisation de l'application
 document.addEventListener('DOMContentLoaded', () => {
   const node = document.createElement('div');
