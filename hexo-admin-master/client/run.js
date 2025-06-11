@@ -2078,7 +2078,7 @@ class TournamentMatch {
   }
 
   render() {
-    this.node.innerHTML = this.template();
+    this.node.innerHTML = this.template();7
     this.updateView();
   }
 
