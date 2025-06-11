@@ -951,6 +951,8 @@ class PostEditor {
         }
         if (!formData.get('continueEditing')) {
           window.location.hash = '#/posts';
+        } else {
+          window.location.reload();
         }
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
@@ -1055,6 +1057,8 @@ class PageEditor {
         }
         if (!formData.get('continueEditing')) {
           window.location.hash = '#/pages';
+        } else {
+          window.location.reload();
         }
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
@@ -1184,115 +1188,8 @@ class TeamEditor {
         }
         if (!formData.get('continueEditing')) {
           window.location.hash = '#/teams';
-        }
-      } catch (error) {
-        alert('Erreur lors de l\'enregistrement: ' + error.message);
-      }
-    });
-  }
-
-  destroy() {
-    if (this.editor) {
-      this.editor.toTextArea();
-    }
-    this.node.innerHTML = '';
-  }
-}
-
-class StadeEditor {
-  constructor(node, id = null) {
-    this.node = node;
-    this.id = id;
-    this.dataFetcher = new DataFetcher(this.fetchStade.bind(this));
-    this.editor = null;
-  }
-
-  async fetchStade() {
-    return this.id ? api.getEntry('stade', this.id) : null;
-  }
-
-  render() {
-    this.dataFetcher.getData().then(() => this.updateView());
-  }
-
-  updateView() {
-    if (this.dataFetcher.loading) {
-      this.node.innerHTML = '<div class="loading">Chargement...</div>';
-      return;
-    }
-
-    if (this.dataFetcher.error) {
-      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
-      return;
-    }
-
-    const stade = this.dataFetcher.data || {};
-    const html = `
-      <div class="stade-editor">
-        <h2>${this.id ? 'Modifier le stade' : 'Nouveau stade'}</h2>
-        <form id="stade-form">
-          <div class="form-group">
-            <label for="stadeName">Nom du stade</label>
-            <input type="text" id="stadeName" name="stadeName" value="${stade.stadeName || ''}" required>
-          </div>
-          <div class="form-group">
-            <label for="address">Adresse</label>
-            <input type="text" id="address" name="address" value="${stade.address || ''}" required>
-          </div>
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" rows="10">${stade.description || ''}</textarea>
-            <div id="description-preview" class="preview"></div>
-          </div>
-          <div class="form-group">
-            <label for="continueEditing">
-              <input type="checkbox" id="continueEditing" name="continueEditing">
-              Continuer l'édition
-            </label>
-          </div>
-          <button type="submit">Enregistrer</button>
-        </form>
-      </div>
-    `;
-    this.node.innerHTML = html;
-
-    // Initialisation de CodeMirror
-    this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
-      mode: 'markdown',
-      theme: 'monokai',
-      lineNumbers: true,
-      lineWrapping: true,
-      autofocus: true
-    });
-
-    // Mise à jour de la prévisualisation
-    const updatePreview = () => {
-      const preview = document.getElementById('description-preview');
-      const content = this.editor.getValue();
-      preview.innerHTML = marked.parse(content);
-    };
-
-    this.editor.on('change', updatePreview);
-    updatePreview();
-
-    const form = document.getElementById('stade-form');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const data = {
-        stadeName: formData.get('stadeName'),
-        address: formData.get('address'),
-        description: this.editor.getValue()
-      };
-
-      try {
-        if (this.id) {
-          await api.updateEntry('stade', this.id, data);
         } else {
-          await api.createEntry('stade', data);
-        }
-        if (!formData.get('continueEditing')) {
-          window.location.hash = '#/stades';
+          window.location.reload();
         }
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
