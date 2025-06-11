@@ -1134,7 +1134,6 @@ class PostEditor {
           await api.getPost(this.id, data);
         } else {
           await api.createPost(data.title);
-          // Mise à jour du contenu après création
           const newPost = await api.getPost(this.id);
           await api.getPost(newPost._id, data);
         }
@@ -1244,7 +1243,6 @@ class PageEditor {
           await api.getPage(this.id, data);
         } else {
           await api.createPage(data.title);
-          // Mise à jour du contenu après création
           const newPage = await api.getPage(this.id);
           await api.getPage(newPage._id, data);
         }
