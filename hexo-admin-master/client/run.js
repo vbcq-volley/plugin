@@ -271,262 +271,14 @@ class Posts {
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
       'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
-// index.js
-class API {
-  constructor() {
-    this.baseUrl = '';
-  }
-
-  init(type, baseUrl) {
-    this.baseUrl = baseUrl;
-  }
-
-  async request(endpoint, options = {}) {
-    const url = `${this.baseUrl}${endpoint}`;
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erreur API: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  async getEntries(type) {
-    return this.request(`/db/${type}`);
-  }
-
-  async getEntry(type, id) {
-    return this.request(`/db/${type}/${id}`);
-  }
-
-  async createEntry(type, data) {
-    return this.request(`/db/${type}`, {
-      method: 'POST',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async updateEntry(type, id, data) {
-    return this.request(`/db/${type}/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data)
-    });
-  }
-
-  async deleteEntry(type, id) {
-    return this.request(`/db/${type}/${id}`, {
-      method: 'DELETE'
-    });
-  }
-
-  async getPosts() {
-    return this.request('/posts/list');
-  }
-
-  async getPost(id, data) {
-    if (data) {
-      return this.request(`/posts/${id}`, {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
-    }
-    return this.request(`/posts/${id}`);
-  }
-
-  async createPost(title) {
-    return this.request('/posts/new', {
-      method: 'POST',
-      body: JSON.stringify({ title })
-    });
-  }
-
-  async getPages() {
-    return this.request('/pages/list');
-  }
-
-  async getPage(id, data) {
-    if (data) {
-      return this.request(`/pages/${id}`, {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
-    }
-    return this.request(`/pages/${id}`);
-  }
-
-  async createPage(title) {
-    return this.request('/pages/new', {
-      method: 'POST',
-      body: JSON.stringify({ title })
-    });
-  }
-
-  async deploy(message) {
-    return this.request('/deploy', {
-      method: 'POST',
-      body: JSON.stringify({ message })
-    });
-  }
-
-  async uploadImage(data, filename) {
-    return this.request('/images/upload', {
-      method: 'POST',
-      body: JSON.stringify({ data, filename })
-    });
-  }
-
-  async removePost(id) {
-    return this.request(`/posts/${id}/remove`, {
-      method: 'POST'
-    });
-  }
-
-  async publishPost(id) {
-    return this.request(`/posts/${id}/publish`, {
-      method: 'POST'
-    });
-  }
-
-  async unpublishPost(id) {
-    return this.request(`/posts/${id}/unpublish`, {
-      method: 'POST'
-    });
-  }
-
-  async renamePost(id, filename) {
-    return this.request(`/posts/${id}/rename`, {
-      method: 'POST',
-      body: JSON.stringify({ filename })
-    });
-  }
-
-  async getTagsCategoriesAndMetadata() {
-    return this.request('/tags-categories-and-metadata');
-  }
-
-  async getSettings() {
-    return this.request('/settings/list');
-  }
-
-  async setSetting(name, value, addedOptions) {
-    return this.request('/settings/set', {
-      method: 'POST',
-      body: JSON.stringify({ name, value, addedOptions })
-    });
-  }
-
-  async getGallery() {
-    return this.request('/gallery/list');
-  }
-
-  async setGallery(name, createAt) {
-    return this.request('/gallery/set', {
-      method: 'POST',
-      body: JSON.stringify({ name, createAt })
-    });
-  }
-
-  async uploadMultiFiles(files) {
-    console.log(files)
-    const formData = new FormData();
-    files.forEach(file => {
-      formData.append(file.name, file);
-    });
-    return this.request('/upload', {
-      method: 'POST',
-      body: formData,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      }
-    });
-  }
-
-  async getMatch() {
-    return this.getEntries("match");
-  }
-}
-
-const api = new API();
-
-class DataFetcher {
-  constructor(fetchMethod) {
-    this.fetchMethod = fetchMethod;
-    this.data = null;
-    this.loading = false;
-    this.error = null;
-  }
-
-  async getData() {
-    this.loading = true;
-    this.error = null;
-    try {
-      this.data = await this.fetchMethod();
-    } catch (error) {
-      this.error = error.message;
-    } finally {
-      this.loading = false;
-    }
-    return this.data;
-  }
-}
-
-class Posts {
-  constructor(node) {
-    this.node = node;
-    this.dataFetcher = new DataFetcher(this.fetchPosts.bind(this));
-  }
-
-  async fetchPosts() {
-    return api.getPosts();
-  }
-
-  render() {
-    this.dataFetcher.getData().then(() => this.updateView());
-  }
-
-  updateView() {
-    if (this.dataFetcher.loading) {
-      this.node.innerHTML = '<div class="loading">Chargement...</div>';
-      return;
-    }
-
-    if (this.dataFetcher.error) {
-      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
-      return;
-    }
-
-    const posts = this.dataFetcher.data;
-    const html = `
-      <div class="posts">
-        <div class="header-actions">
-          <h2>Posts</h2>
-          <button class="create-button" onclick="window.location.hash='#/post'">Créer un nouveau post</button>
-        </div>
-        <ul>
-          ${posts.map(post => `
-            <li>
-              <a href="#/post/${post._id}">${post.title}</a>
-              <div class="post-details">
-                <span class="date">${new Date(post.date).toLocaleDateString()}</span>
-                <span class="author">${post.author || 'Anonyme'}</span>
-              </div>
-            </li>
-          `).join('')}
-        </ul>
-      </div>
-    `;
-    this.node.innerHTML = html;
-  }
-
-  destroy() {
-    this.node.innerHTML = '';
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
 
@@ -767,7 +519,7 @@ class Datas {
           ${datas.map(data => `
             <li>
               <a href="#/data/${data._id}">${data.title}</a>
-              <span class="date">${data.homeDate}</span>
+              <span class="date">${this.formatDate(data.homeDate)}</span>
             </li>
           `).join('')}
         </ul>
@@ -778,6 +530,31 @@ class Datas {
 
   destroy() {
     this.node.innerHTML = '';
+  }
+
+  formatDate(date) {
+    if (!date) return '';
+    
+    // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
+    if (typeof date === 'string' && date.includes('/')) {
+      const [datePart, timePart] = date.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hours, minutes] = timePart.split(':');
+      date = new Date(year, month - 1, day, hours, minutes);
+    }
+    
+    const d = new Date(date);
+    const months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
 
@@ -911,7 +688,7 @@ class Post {
         <h2>${post.title}</h2>
         <div class="content">${post._content}</div>
         <div class="meta">
-          <span class="date">${new Date(post.date).toLocaleDateString()}</span>
+          <span class="date">${this.formatDate(post.date)}</span>
           <span class="author">${post.author || 'Anonyme'}</span>
         </div>
       </div>
@@ -921,6 +698,31 @@ class Post {
 
   destroy() {
     this.node.innerHTML = '';
+  }
+
+  formatDate(date) {
+    if (!date) return '';
+    
+    // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
+    if (typeof date === 'string' && date.includes('/')) {
+      const [datePart, timePart] = date.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hours, minutes] = timePart.split(':');
+      date = new Date(year, month - 1, day, hours, minutes);
+    }
+    
+    const d = new Date(date);
+    const months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
 
@@ -1087,7 +889,7 @@ class Result {
       <div class="result">
         <h2>${result.homeTeam} ${result.homeScore} - ${result.awayScore} ${result.awayTeam}</h2>
         <div class="details">
-          <p><strong>Date:</strong> ${new Date(result.date).toLocaleDateString()}</p>
+          <p><strong>Date:</strong> ${this.formatDate(result.date)}</p>
           <p><strong>Stade:</strong> ${result.stadium}</p>
           <p><strong>Compétition:</strong> ${result.competition}</p>
         </div>
@@ -1098,6 +900,31 @@ class Result {
 
   destroy() {
     this.node.innerHTML = '';
+  }
+
+  formatDate(date) {
+    if (!date) return '';
+    
+    // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
+    if (typeof date === 'string' && date.includes('/')) {
+      const [datePart, timePart] = date.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hours, minutes] = timePart.split(':');
+      date = new Date(year, month - 1, day, hours, minutes);
+    }
+    
+    const d = new Date(date);
+    const months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
 
@@ -1133,7 +960,7 @@ class Data {
         <h2>${data.title}</h2>
         <div class="content">${data.content}</div>
         <div class="meta">
-          <span class="date">${new Date(data.date).toLocaleDateString()}</span>
+          <span class="date">${this.formatDate(data.date)}</span>
         </div>
       </div>
     `;
@@ -1142,6 +969,31 @@ class Data {
 
   destroy() {
     this.node.innerHTML = '';
+  }
+
+  formatDate(date) {
+    if (!date) return '';
+    
+    // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
+    if (typeof date === 'string' && date.includes('/')) {
+      const [datePart, timePart] = date.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hours, minutes] = timePart.split(':');
+      date = new Date(year, month - 1, day, hours, minutes);
+    }
+    
+    const d = new Date(date);
+    const months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
 
