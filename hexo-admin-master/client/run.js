@@ -1527,6 +1527,7 @@ class DataEditor {
     this.dataFetcher = new DataFetcher(this.fetchData.bind(this));
     this.teamsFetcher = new DataFetcher(this.fetchTeams.bind(this));
     this.stadesFetcher = new DataFetcher(this.fetchStades.bind(this));
+    this.matchesFetcher = new DataFetcher(this.fetchMatches.bind(this));
   }
 
   async fetchData() {
@@ -1540,6 +1541,11 @@ class DataEditor {
   async fetchStades() {
     return api.getEntries('stade');
   }
+
+  async fetchMatches() {
+    return api.getEntries('match');
+  }
+
   formatDate(date) {
     if (!date) return '';
     const d = new Date(date);
@@ -1559,33 +1565,58 @@ class DataEditor {
     const [hour, minute] = timePart.split(':');
     return new Date(year, month , day, hour, minute).toISOString();
   }
+
   render() {
     Promise.all([
       this.dataFetcher.getData(),
       this.teamsFetcher.getData(),
-      this.stadesFetcher.getData()
+      this.stadesFetcher.getData(),
+      this.matchesFetcher.getData()
     ]).then(() => this.updateView());
   }
 
   updateView() {
-    if (this.dataFetcher.loading || this.teamsFetcher.loading || this.stadesFetcher.loading) {
+    if (this.dataFetcher.loading || this.teamsFetcher.loading || this.stadesFetcher.loading || this.matchesFetcher.loading) {
       this.node.innerHTML = '<div class="loading">Chargement...</div>';
       return;
     }
 
-    if (this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error) {
-      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error}</div>`;
+    if (this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error || this.matchesFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error || this.matchesFetcher.error}</div>`;
       return;
     }
 
     const data = this.dataFetcher.data || {};
     const teams = this.teamsFetcher.data || [];
     const stades = this.stadesFetcher.data || [];
+    const matches = this.matchesFetcher.data || [];
+
+    // Fonction pour vérifier si une équipe a déjà un match dans la session
+    const isTeamAvailable = (teamName, session, currentMatchId = null) => {
+      return !matches.some(match => 
+        match._id !== currentMatchId && 
+        match.session === session && 
+        (match.team1 === teamName || match.team2 === teamName)
+      );
+    };
 
     const html = `
       <div class="data-editor">
         <h2>${this.id ? 'Modifier le match' : 'Nouveau match'}</h2>
         <form id="data-form">
+          <div class="form-group">
+            <label for="group">Groupe</label>
+            <select id="group" name="group" required>
+              <option value="">Sélectionner un groupe</option>
+              <option value="1" ${data.group === '1' ? 'selected' : ''}>Groupe 1</option>
+              <option value="2" ${data.group === '2' ? 'selected' : ''}>Groupe 2</option>
+              <option value="3" ${data.group === '3' ? 'selected' : ''}>Groupe 3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="session">Session</label>
+            <input type="number" id="session" name="session" value="${data.session || ''}" required>
+          </div>
           <div class="form-group">
             <label for="team1">Équipe 1</label>
             <select id="team1" name="team1" required>
@@ -1593,7 +1624,9 @@ class DataEditor {
               ${teams.map(team => `
                 <option value="${team.teamName}" 
                   ${data.team1 === team.teamName ? 'selected' : ''}
-                  data-group="${team.group}">
+                  data-group="${team.group}"
+                  class="team-option"
+                  data-team="${team.teamName}">
                   ${team.teamName} (${team.coach})
                 </option>
               `).join('')}
@@ -1606,7 +1639,9 @@ class DataEditor {
               ${teams.map(team => `
                 <option value="${team.teamName}" 
                   ${data.team2 === team.teamName ? 'selected' : ''}
-                  data-group="${team.group}">
+                  data-group="${team.group}"
+                  class="team-option"
+                  data-team="${team.teamName}">
                   ${team.teamName} (${team.coach})
                 </option>
               `).join('')}
@@ -1614,11 +1649,11 @@ class DataEditor {
           </div>
           <div class="form-group">
             <label for="homeDate">Date du match à domicile</label>
-            <input type="date" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate)  || ''}" required placeholder="JJ mois AAAA à HH:mm">
+            <input type="date" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate) || ''}" required>
           </div>
           <div class="form-group">
             <label for="awayDate">Date du match à l'extérieur</label>
-            <input type="date" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required placeholder="JJ mois AAAA à HH:mm">
+            <input type="date" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required>
           </div>
           <div class="form-group">
             <label for="homeLocation">Lieu du match à domicile</label>
@@ -1645,19 +1680,6 @@ class DataEditor {
             </select>
           </div>
           <div class="form-group">
-            <label for="group">Groupe</label>
-            <select id="group" name="group" required>
-              <option value="">Sélectionner un groupe</option>
-              <option value="1" ${data.group === '1' ? 'selected' : ''}>Groupe 1</option>
-              <option value="2" ${data.group === '2' ? 'selected' : ''}>Groupe 2</option>
-              <option value="3" ${data.group === '3' ? 'selected' : ''}>Groupe 3</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="session">Session</label>
-            <input type="number" id="session" name="session" value="${data.session || ''}" required>
-          </div>
-          <div class="form-group">
             <label for="matchStatus">Statut du match</label>
             <select id="matchStatus" name="matchStatus">
               <option value="scheduled" ${data.matchStatus === 'scheduled' ? 'selected' : ''}>Planifié</option>
@@ -1682,27 +1704,54 @@ class DataEditor {
     const team1Select = document.getElementById('team1');
     const team2Select = document.getElementById('team2');
     const groupSelect = document.getElementById('group');
+    const sessionInput = document.getElementById('session');
 
-    // Mise à jour automatique du groupe en fonction de l'équipe sélectionnée
-    const updateGroup = () => {
-      const team1Option = team1Select.options[team1Select.selectedIndex];
-      const team2Option = team2Select.options[team2Select.selectedIndex];
-      
-      if (team1Option.value && team2Option.value) {
-        const team1Group = team1Option.dataset.group;
-        const team2Group = team2Option.dataset.group;
+    // Fonction pour mettre à jour les options des équipes
+    const updateTeamOptions = () => {
+      const selectedGroup = groupSelect.value;
+      const session = parseInt(sessionInput.value);
+      const currentMatchId = this.id;
+
+      // Mise à jour des options pour team1
+      Array.from(team1Select.options).forEach(option => {
+        if (option.value === '') return; // Garder l'option vide
+        const teamGroup = option.dataset.group;
+        const teamName = option.dataset.team;
+        const isAvailable = isTeamAvailable(teamName, session, currentMatchId);
         
-        if (team1Group === team2Group) {
-          groupSelect.value = team1Group;
+        if (teamGroup === selectedGroup && isAvailable) {
+          option.style.display = '';
+          option.disabled = false;
         } else {
-          alert('Les équipes sélectionnées doivent appartenir au même groupe');
-          groupSelect.value = '';
+          option.style.display = 'none';
+          option.disabled = true;
         }
-      }
+      });
+
+      // Mise à jour des options pour team2
+      Array.from(team2Select.options).forEach(option => {
+        if (option.value === '') return; // Garder l'option vide
+        const teamGroup = option.dataset.group;
+        const teamName = option.dataset.team;
+        const isAvailable = isTeamAvailable(teamName, session, currentMatchId);
+        
+        if (teamGroup === selectedGroup && isAvailable && teamName !== team1Select.value) {
+          option.style.display = '';
+          option.disabled = false;
+        } else {
+          option.style.display = 'none';
+          option.disabled = true;
+        }
+      });
     };
 
-    team1Select.addEventListener('change', updateGroup);
-    team2Select.addEventListener('change', updateGroup);
+    // Écouteurs d'événements pour le filtrage
+    groupSelect.addEventListener('change', updateTeamOptions);
+    sessionInput.addEventListener('change', updateTeamOptions);
+    team1Select.addEventListener('change', updateTeamOptions);
+
+    // Initialisation du filtrage
+    updateTeamOptions();
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1710,7 +1759,7 @@ class DataEditor {
       const data = {
         team1: formData.get('team1'),
         team2: formData.get('team2'),
-        homeDate: this.formatDate(formData.get('homeDate')) ,
+        homeDate: this.formatDate(formData.get('homeDate')),
         awayDate: this.formatDate(formData.get('awayDate')),
         homeLocation: formData.get('homeLocation'),
         awayLocation: formData.get('awayLocation'),
