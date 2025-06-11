@@ -1089,9 +1089,14 @@ class PostEditor {
             <label for="date">Date</label>
             <input type="date" id="date" name="date" value="${post.date ? new Date(post.date).toISOString().split('T')[0] : ''}">
           </div>
+          <div class="form-group">
+            <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing">
+              Continuer l'édition après l'enregistrement
+            </label>
+          </div>
           <div class="form-buttons">
             <button type="submit">Enregistrer</button>
-            <button type="button" class="continue-button">Continuer</button>
           </div>
         </form>
       </div>
@@ -1133,32 +1138,12 @@ class PostEditor {
           const newPost = await api.getPost(this.id);
           await api.getPost(newPost._id, data);
         }
-        window.location.hash = '#/posts';
-      } catch (error) {
-        alert('Erreur lors de l\'enregistrement: ' + error.message);
-      }
-    });
-
-    // Ajout de l'événement pour le bouton Continuer
-    const continueButton = form.querySelector('.continue-button');
-    continueButton.addEventListener('click', async () => {
-      const formData = new FormData(form);
-      const data = {
-        title: formData.get('title'),
-        _content: this.editor.getValue(),
-        date: formData.get('date') 
-      };
-
-      try {
-        if (this.id) {
-          await api.getPost(this.id, data);
+        
+        if (formData.get('continueEditing') === 'on') {
+          alert('Enregistrement réussi ! Vous pouvez continuer à éditer.');
         } else {
-          await api.createPost(data.title);
-          const newPost = await api.getPost(this.id);
-          await api.getPost(newPost._id, data);
+          window.location.hash = '#/posts';
         }
-        // Au lieu de rediriger, on reste sur la page
-        alert('Enregistrement réussi ! Vous pouvez continuer à éditer.');
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1214,9 +1199,14 @@ class PageEditor {
             <textarea id="content" name="content" rows="10" required>${page.content || ''}</textarea>
           </div>
           <div id="description-preview" class="preview"></div>
+          <div class="form-group">
+            <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing">
+              Continuer l'édition après l'enregistrement
+            </label>
+          </div>
           <div class="form-buttons">
             <button type="submit">Enregistrer</button>
-            <button type="button" class="continue-button">Continuer</button>
           </div>
         </form>
       </div>
@@ -1225,150 +1215,6 @@ class PageEditor {
 
     // Initialisation de CodeMirror
     this.editor = CodeMirror.fromTextArea(document.getElementById('content'), {
-      mode: 'markdown',
-      theme: 'monokai',
-      lineNumbers: true,
-      lineWrapping: true,
-      autofocus: true
-    });
-    const updatePreview = () => {
-      const preview = document.getElementById('description-preview');
-      const content = this.editor.getValue();
-      preview.innerHTML = marked.parse(content);
-    };
-   
-
-    this.editor.on('change', updatePreview);
-    updatePreview();
-    const form = document.getElementById('page-form');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const data = {
-        title: formData.get('title'),
-        content: this.editor.getValue()
-      };
-
-      try {
-        if (this.id) {
-          await api.getPage(this.id, data);
-        } else {
-          await api.createPage(data.title);
-          // Mise à jour du contenu après création
-          const newPage = await api.getPage(this.id);
-          await api.getPage(newPage._id, data);
-        }
-        window.location.hash = '#/pages';
-      } catch (error) {
-        alert('Erreur lors de l\'enregistrement: ' + error.message);
-      }
-    });
-
-    // Ajout de l'événement pour le bouton Continuer
-    const continueButton = form.querySelector('.continue-button');
-    continueButton.addEventListener('click', async () => {
-      const formData = new FormData(form);
-      const data = {
-        title: formData.get('title'),
-        content: this.editor.getValue()
-      };
-
-      try {
-        if (this.id) {
-          await api.getPage(this.id, data);
-        } else {
-          await api.createPage(data.title);
-          const newPage = await api.getPage(this.id);
-          await api.getPage(newPage._id, data);
-        }
-        alert('Enregistrement réussi ! Vous pouvez continuer à éditer.');
-      } catch (error) {
-        alert('Erreur lors de l\'enregistrement: ' + error.message);
-      }
-    });
-  }
-
-  destroy() {
-    if (this.editor) {
-      this.editor.toTextArea();
-    }
-    this.node.innerHTML = '';
-  }
-}
-
-class TeamEditor {
-  constructor(node, id = null) {
-    this.node = node;
-    this.id = id;
-    this.dataFetcher = new DataFetcher(this.fetchTeam.bind(this));
-    this.editor = null;
-  }
-
-  async fetchTeam() {
-    return this.id ? api.getEntry('team', this.id) : null;
-  }
-
-  render() {
-    this.dataFetcher.getData().then(() => this.updateView());
-  }
-
-  updateView() {
-    if (this.dataFetcher.loading) {
-      this.node.innerHTML = '<div class="loading">Chargement...</div>';
-      return;
-    }
-
-    if (this.dataFetcher.error) {
-      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
-      return;
-    }
-
-    const team = this.dataFetcher.data || {};
-    const html = `
-      <div class="team-editor">
-        <h2>${this.id ? 'Modifier l\'équipe' : 'Nouvelle équipe'}</h2>
-        <form id="team-form">
-          <div class="form-group">
-            <label for="teamName">Nom de l'équipe</label>
-            <input type="text" id="teamName" name="teamName" value="${team.teamName || ''}" required>
-          </div>
-          <div class="form-group">
-            <label for="coach">Entraîneur</label>
-            <input type="text" id="coach" name="coach" value="${team.coach || ''}" required>
-          </div>
-          <div class="form-group">
-            <label for="coachContact">Contact de l'entraîneur</label>
-            <input type="tel" id="coachContact" name="coachContact" value="${team.coachContact || ''}" required placeholder="06 XX XX XX XX">
-          </div>
-          <div class="form-group">
-            <label for="coachEmail">Email de l'entraîneur</label>
-            <input type="email" id="coachEmail" name="coachEmail" value="${team.coachEmail || ''}" required placeholder="coach@example.com">
-          </div>
-          <div class="form-group">
-            <label for="group">Groupe</label>
-            <select id="group" name="group" required>
-              <option value="">Sélectionner un groupe</option>
-              <option value="1" ${team.group === '1' ? 'selected' : ''}>Groupe 1</option>
-              <option value="2" ${team.group === '2' ? 'selected' : ''}>Groupe 2</option>
-              <option value="3" ${team.group === '3' ? 'selected' : ''}>Groupe 3</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="description">Description</label>
-            <textarea id="description" name="description" rows="10">${team.description || ''}</textarea>
-            <div id="description-preview" class="preview"></div>
-          </div>
-          <div class="form-buttons">
-            <button type="submit">Enregistrer</button>
-            <button type="button" class="continue-button">Continuer</button>
-          </div>
-        </form>
-      </div>
-    `;
-    this.node.innerHTML = html;
-
-    // Initialisation de CodeMirror
-    this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
       mode: 'markdown',
       theme: 'monokai',
       lineNumbers: true,
@@ -1804,161 +1650,254 @@ class ResultEditor {
 }
 
 class DataEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchData.bind(this));
+    this.teamsFetcher = new DataFetcher(this.fetchTeams.bind(this));
+    this.stadesFetcher = new DataFetcher(this.fetchStades.bind(this));
+  }
+
+  async fetchData() {
+    return this.id ? api.getEntry('match', this.id) : null;
+  }
+
+  async fetchTeams() {
+    return api.getEntries('team');
+  }
+
+  async fetchStades() {
+    return api.getEntries('stade');
+  }
+  formatDate(date) {
+    if (!date) return '';
+    const d = new Date(date);
+    return d.toLocaleDateString('fr-FR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  parseDate(dateStr) {
+    if (!dateStr) return null;
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    const [hour, minute] = timePart.split(':');
+    return new Date(year, month , day, hour, minute).toISOString();
+  }
+  render() {
+    Promise.all([
+      this.dataFetcher.getData(),
+      this.teamsFetcher.getData(),
+      this.stadesFetcher.getData()
+    ]).then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading || this.teamsFetcher.loading || this.stadesFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error}</div>`;
+      return;
+    }
+
+    const data = this.dataFetcher.data || {};
+    const teams = this.teamsFetcher.data || [];
+    const stades = this.stadesFetcher.data || [];
+
+    const html = `
+      <div class="data-editor">
+        <h2>${this.id ? 'Modifier le match' : 'Nouveau match'}</h2>
+        <form id="data-form">
+          <div class="form-group">
+            <label for="team1">Équipe 1</label>
+            <select id="team1" name="team1" required>
+              <option value="">Sélectionner une équipe</option>
+              ${teams.map(team => `
+                <option value="${team.teamName}" 
+                  ${data.team1 === team.teamName ? 'selected' : ''}
+                  data-group="${team.group}">
+                  ${team.teamName} (${team.coach})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="team2">Équipe 2</label>
+            <select id="team2" name="team2" required>
+              <option value="">Sélectionner une équipe</option>
+              ${teams.map(team => `
+                <option value="${team.teamName}" 
+                  ${data.team2 === team.teamName ? 'selected' : ''}
+                  data-group="${team.group}">
+                  ${team.teamName} (${team.coach})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="homeDate">Date du match à domicile</label>
+            <input type="date" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate)  || ''}" required placeholder="JJ mois AAAA à HH:mm">
+          </div>
+          <div class="form-group">
+            <label for="awayDate">Date du match à l'extérieur</label>
+            <input type="date" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required placeholder="JJ mois AAAA à HH:mm">
+          </div>
+          <div class="form-group">
+            <label for="homeLocation">Lieu du match à domicile</label>
+            <select id="homeLocation" name="homeLocation" required>
+              <option value="">Sélectionner un stade</option>
+              ${stades.map(stade => `
+                <option value="${stade.stadeName}" 
+                  ${data.homeLocation === stade.stadeName ? 'selected' : ''}>
+                  ${stade.stadeName} (${stade.address})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="awayLocation">Lieu du match à l'extérieur</label>
+            <select id="awayLocation" name="awayLocation" required>
+              <option value="">Sélectionner un stade</option>
+              ${stades.map(stade => `
+                <option value="${stade.stadeName}" 
+                  ${data.awayLocation === stade.stadeName ? 'selected' : ''}>
+                  ${stade.stadeName} (${stade.address})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="group">Groupe</label>
+            <select id="group" name="group" required>
+              <option value="">Sélectionner un groupe</option>
+              <option value="1" ${data.group === '1' ? 'selected' : ''}>Groupe 1</option>
+              <option value="2" ${data.group === '2' ? 'selected' : ''}>Groupe 2</option>
+              <option value="3" ${data.group === '3' ? 'selected' : ''}>Groupe 3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="session">Session</label>
+            <input type="number" id="session" name="session" value="${data.session || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="matchStatus">Statut du match</label>
+            <select id="matchStatus" name="matchStatus">
+              <option value="scheduled" ${data.matchStatus === 'scheduled' ? 'selected' : ''}>Planifié</option>
+              <option value="in_progress" ${data.matchStatus === 'in_progress' ? 'selected' : ''}>En cours</option>
+              <option value="completed" ${data.matchStatus === 'completed' ? 'selected' : ''}>Terminé</option>
+              <option value="cancelled" ${data.matchStatus === 'cancelled' ? 'selected' : ''}>Annulé</option>
+            </select>
+          </div>
+          <div class="form-buttons">
+            <button type="submit">Enregistrer</button>
+            <button type="button" class="continue-button">Continuer</button>
+          </div>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    const form = document.getElementById('data-form');
+    const team1Select = document.getElementById('team1');
+    const team2Select = document.getElementById('team2');
+    const groupSelect = document.getElementById('group');
+
+    // Mise à jour automatique du groupe en fonction de l'équipe sélectionnée
+    const updateGroup = () => {
+      const team1Option = team1Select.options[team1Select.selectedIndex];
+      const team2Option = team2Select.options[team2Select.selectedIndex];
+      
+      if (team1Option.value && team2Option.value) {
+        const team1Group = team1Option.dataset.group;
+        const team2Group = team2Option.dataset.group;
+        
+        if (team1Group === team2Group) {
+          groupSelect.value = team1Group;
+        } else {
+          alert('Les équipes sélectionnées doivent appartenir au même groupe');
+          groupSelect.value = '';
+        }
+      }
+    };
+
+    team1Select.addEventListener('change', updateGroup);
+    team2Select.addEventListener('change', updateGroup);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        team1: formData.get('team1'),
+        team2: formData.get('team2'),
+        homeDate: this.formatDate(formData.get('homeDate')) ,
+        awayDate: this.formatDate(formData.get('awayDate')),
+        homeLocation: formData.get('homeLocation'),
+        awayLocation: formData.get('awayLocation'),
+        group: formData.get('group'),
+        session: parseInt(formData.get('session')),
+        matchStatus: formData.get('matchStatus'),
+        title: `${formData.get('team1')} vs ${formData.get('team2')}`
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('match', this.id, data);
+        } else {
+          await api.createEntry('match', data);
+        }
+        window.location.hash = '#/datas';
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+
+    // Ajout de l'événement pour le bouton Continuer
+    const continueButton = form.querySelector('.continue-button');
+    continueButton.addEventListener('click', async () => {
+      const formData = new FormData(form);
+      const data = {
+        team1: formData.get('team1'),
+        team2: formData.get('team2'),
+        homeDate: this.formatDate(formData.get('homeDate')),
+        awayDate: this.formatDate(formData.get('awayDate')),
+        homeLocation: formData.get('homeLocation'),
+        awayLocation: formData.get('awayLocation'),
+        group: formData.get('group'),
+        session: parseInt(formData.get('session')),
+        matchStatus: formData.get('matchStatus'),
+        title: `${formData.get('team1')} vs ${formData.get('team2')}`
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('match', this.id, data);
+        } else {
+          await api.createEntry('match', data);
+        }
+        alert('Enregistrement réussi ! Vous pouvez continuer à éditer.');
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
 class App {
   constructor(node) {
     this.node = node;
     this.state = {
       currentRoute: '',
-      currentView: null
-    };
-    this.init();
-  }
-
-  init() {
-    this.initializeApp();
-    this.setupEventListeners();
-    this.handleRoute();
-  }
-
-  initializeApp() {
-    const app = document.createElement('div');
-    app.className = 'app';
-    this.node.appendChild(app);
-    
-    const header = document.createElement('div');
-    header.className = 'app_header';
-    app.appendChild(header);
-    
-    const nav = document.createElement('ul');
-    nav.className = 'app_nav';
-    header.appendChild(nav);
-    
-    const menuItems = [
-      { text: 'Posts', route: 'posts' },
-      { text: 'Pages', route: 'pages' },
-      { text: 'Équipes', route: 'teams' },
-      { text: 'Stades', route: 'stades' },
-      { text: 'Résultats', route: 'results' },
-      { text: 'Matchs', route: 'datas' },
-      { text: 'À propos', route: 'about' }
-    ];
-    
-    menuItems.forEach(item => {
-      const li = document.createElement('li');
-      const a = document.createElement('a');
-      a.href = `#/${item.route}`;
-      a.textContent = item.text;
-      li.appendChild(a);
-      nav.appendChild(li);
-    });
-
-    // Ajout du bouton de gestion des images
-    const imageButton = document.createElement('button');
-    imageButton.className = 'image-manager-button';
-    imageButton.innerHTML = '📷 Images';
-    imageButton.onclick = () => this.showImageModal();
-    header.appendChild(imageButton);
-    
-    const main = document.createElement('div');
-    main.className = 'app_main';
-    main.id = 'app_main';
-    app.appendChild(main);
-    
-    this.main = main;
-
-    // Création de la modale des images
-    this.createImageModal();
-  }
-
-  createImageModal() {
-    const modal = document.createElement('div');
-    modal.className = 'image-modal';
-    modal.style.display = 'none';
-    modal.innerHTML = `
-      <div class="image-modal-content">
-        <div class="image-modal-header">
-          <h2>Gestionnaire d'images</h2>
-          <button class="close-button">&times;</button>
-        </div>
-        <div class="image-modal-body">
-          <div class="image-upload-section">
-            <input type="file" id="image-upload" accept="image/*" multiple>
-            <button id="upload-button">Uploader</button>
-          </div>
-          <div class="image-gallery"></div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    this.imageModal = modal;
-
-    const closeButton = modal.querySelector('.close-button');
-    closeButton.onclick = () => this.hideImageModal();
-
-    const uploadButton = modal.querySelector('#upload-button');
-    uploadButton.onclick = () => this.handleImageUpload();
-
-    modal.onclick = (e) => {
-      if (e.target === modal) {
-        this.hideImageModal();
-      }
-    };
-  }
-
-  showImageModal() {
-    this.imageModal.style.display = 'block';
-    this.loadImages();
-  }
-
-  hideImageModal() {
-    this.imageModal.style.display = 'none';
-  }
-
-  async loadImages() {
-    try {
-      const images = await api.getGallery();
-      const gallery = this.imageModal.querySelector('.image-gallery');
-      gallery.innerHTML = images.map(image => `
-        <div class="image-item">
-          <img src="/images/${image.name}" alt="${image.name}">
-          <button onclick="navigator.clipboard.writeText('![${image.name}](/images/${image.name})')" class="copy-button">
-            Copier le code Markdown
-          </button>
-        </div>
-      `).join('');
-    } catch (error) {
-      console.error('Erreur lors du chargement des images:', error);
-    }
-  }
-
-  async handleImageUpload() {
-    const fileInput = this.imageModal.querySelector('#image-upload');
-    const files = Array.from(fileInput.files);
-    const uploadButton = this.imageModal.querySelector('#upload-button');
-
-    if (files.length === 0) {
-      alert('Veuillez sélectionner au moins une image');
-      return;
-    }
-
-    uploadButton.disabled = true;
-    uploadButton.textContent = 'Upload en cours...';
-
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        
-        const imageData = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        
-        await api.uploadImage(imageData, file.name);
-      }
-      await this.loadImages();
-    } catch (error) {
       alert('Erreur lors de l\'upload: ' + error.message);
     } finally {
       uploadButton.disabled = false;
