@@ -1119,7 +1119,7 @@ class TeamEditor {
     const updatePreview = () => {
       const preview = document.getElementById('description-preview');
       const content = this.editor.getValue();
-      preview.innerHTML = marked(content);
+      preview.innerHTML = marked.parse(content);
     };
 
     this.editor.on('change', updatePreview);
@@ -1223,7 +1223,7 @@ class StadeEditor {
     const updatePreview = () => {
       const preview = document.getElementById('description-preview');
       const content = this.editor.getValue();
-      preview.innerHTML = marked(content);
+      preview.innerHTML = marked.parse(content);
     };
 
     this.editor.on('change', updatePreview);
