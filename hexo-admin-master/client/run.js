@@ -1858,6 +1858,9 @@ class DataEditor {
             <select id="matchType" name="matchType" required>
               <option value="regular" ${data.matchType === 'regular' ? 'selected' : ''}>Match régulier</option>
               <option value="tournament" ${data.matchType === 'tournament' ? 'selected' : ''}>Tournoi</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label for="group">Groupe</label>
             <select id="group" name="group" required>
               <option value="">Sélectionner un groupe</option>
@@ -1869,6 +1872,16 @@ class DataEditor {
           <div class="form-group">
             <label for="session">Session</label>
             <input type="number" id="session" name="session" value="${data.session || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="tournamentRound" id="tournamentRoundLabel" style="display: none;">Tour du tournoi</label>
+            <select id="tournamentRound" name="tournamentRound" style="display: none;">
+              <option value="1" ${data.tournamentRound === '1' ? 'selected' : ''}>Premier tour</option>
+              <option value="2" ${data.tournamentRound === '2' ? 'selected' : ''}>Deuxième tour</option>
+              <option value="3" ${data.tournamentRound === '3' ? 'selected' : ''}>Troisième tour</option>
+              <option value="4" ${data.tournamentRound === '4' ? 'selected' : ''}>Quatrième tour</option>
+              <option value="final" ${data.tournamentRound === 'final' ? 'selected' : ''}>Finale</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="team1">Équipe 1</label>
@@ -1957,42 +1970,30 @@ class DataEditor {
     const groupSelect = document.getElementById('group');
     const sessionInput = document.getElementById('session');
     const team1Select = document.getElementById('team1');
+    const matchTypeSelect = document.getElementById('matchType');
+    const tournamentRoundLabel = document.getElementById('tournamentRoundLabel');
+    const tournamentRoundSelect = document.getElementById('tournamentRound');
     const continueEditingCheckbox = document.getElementById('continueEditing');
+
+    // Gestion de l'affichage des champs du tournoi
+    matchTypeSelect.addEventListener('change', () => {
+      if (matchTypeSelect.value === 'tournament') {
+        tournamentRoundLabel.style.display = 'block';
+        tournamentRoundSelect.style.display = 'block';
+      } else {
+        tournamentRoundLabel.style.display = 'none';
+        tournamentRoundSelect.style.display = 'none';
+      }
+    });
+
+    // Initialisation de l'affichage des champs du tournoi
+    if (data.matchType === 'tournament') {
+      tournamentRoundLabel.style.display = 'block';
+      tournamentRoundSelect.style.display = 'block';
+    }
 
     // Ajout de l'écouteur pour le checkbox "Continuer l'édition"
     continueEditingCheckbox.addEventListener('change', (e) => {
-      localStorage.setItem('continueEditing', e.target.checked);
-      this.continueEditing = e.target.checked;
-    });
-
-    // Ajout des écouteurs d'événements pour le filtrage
-    groupSelect.addEventListener('change', () => this.updateTeamOptions());
-    sessionInput.addEventListener('change', () => this.updateTeamOptions());
-    team1Select.addEventListener('change', () => this.updateTeamOptions());
-
-    // Initialisation du filtrage
-    this.updateTeamOptions();
-
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(form);
-      const data = {
-        team1: formData.get('team1'),
-        team2: formData.get('team2'),
-        homeDate: this.formatDate(formData.get('homeDate')),
-        awayDate: this.formatDate(formData.get('awayDate')),
-        homeLocation: formData.get('homeLocation'),
-        awayLocation: formData.get('awayLocation'),
-        group: formData.get('group'),
-        session: parseInt(formData.get('session')),
-        matchStatus: formData.get('matchStatus'),
-        title: `${formData.get('team1')} vs ${formData.get('team2')}`
-      };
-
-      try {
-        if (this.id) {
-          await api.updateEntry('match', this.id, data);
-        } else {
           await api.createEntry('match', data);
         }
         if (!this.continueEditing) {
