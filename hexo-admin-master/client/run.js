@@ -1565,11 +1565,11 @@ class DataEditor {
           </div>
           <div class="form-group">
             <label for="homeDate">Date du match à domicile</label>
-            <input type="text" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate)  || ''}" required placeholder="JJ mois AAAA à HH:mm">
+            <input type="date" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate)  || ''}" required placeholder="JJ mois AAAA à HH:mm">
           </div>
           <div class="form-group">
             <label for="awayDate">Date du match à l'extérieur</label>
-            <input type="text" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required placeholder="JJ mois AAAA à HH:mm">
+            <input type="date" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required placeholder="JJ mois AAAA à HH:mm">
           </div>
           <div class="form-group">
             <label for="homeLocation">Lieu du match à domicile</label>
