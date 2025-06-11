@@ -598,7 +598,7 @@ class About {
       }
       return 'Impossible de charger le README';
     };
-  renderReadme()
+  renderReadme("vbcq-volley")
   }
 
   destroy() {
