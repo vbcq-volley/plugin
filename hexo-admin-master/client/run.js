@@ -2874,6 +2874,29 @@ document.head.innerHTML += `
   </style>
 `;
 
+// Ajout des styles CSS pour les boutons d'action
+document.head.innerHTML += `
+  <style>
+    .actions {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+    }
+    .btn-info {
+      background-color: #17a2b8;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn-info:hover {
+      background-color: #138496;
+    }
+  </style>
+`;
+
 // Création de la div et initialisation de l'application
 document.addEventListener('DOMContentLoaded', () => {
   const node = document.createElement('div');
