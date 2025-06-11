@@ -1128,8 +1128,8 @@ class TeamEditor {
             <div id="description-preview" class="preview"></div>
           </div>
           <div class="form-group">
-            <label for="continueEditing">
-              <input type="checkbox" id="continueEditing" name="continueEditing">
+          <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing" ${this.continueEditing ? 'checked' : ''}>
               Continuer l'édition
             </label>
           </div>
@@ -1243,8 +1243,8 @@ class StadeEditor {
             <div id="description-preview" class="preview"></div>
           </div>
           <div class="form-group">
-            <label for="continueEditing">
-              <input type="checkbox" id="continueEditing" name="continueEditing">
+          <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing" ${this.continueEditing ? 'checked' : ''}>
               Continuer l'édition
             </label>
           </div>
@@ -1253,7 +1253,13 @@ class StadeEditor {
       </div>
     `;
     this.node.innerHTML = html;
+    const continueEditingCheckbox = document.getElementById('continueEditing');
 
+    // Ajout de l'écouteur pour le checkbox "Continuer l'édition"
+    continueEditingCheckbox.addEventListener('change', (e) => {
+      localStorage.setItem('continueEditing', e.target.checked);
+      this.continueEditing = e.target.checked;
+    });
     // Initialisation de CodeMirror
     this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
       mode: 'markdown',
