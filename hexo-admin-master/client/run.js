@@ -1177,7 +1177,7 @@ class TeamEditor {
         } else {
           await api.createEntry('team', data);
         }
-        if (!formData.get('continueEditing')) {
+        if (!this.continueEditing) {
           window.location.hash = '#/teams';
         } else {
           window.location.reload();
@@ -1289,7 +1289,7 @@ class StadeEditor {
         } else {
           await api.createEntry('stade', data);
         }
-        if (!formData.get('continueEditing')) {
+        if (!this.continueEditing) {
           window.location.hash = '#/stades';
         } else {
           window.location.reload();
@@ -1497,7 +1497,7 @@ class ResultEditor {
         } else {
           await api.createEntry('result', data);
         }
-        if (!formData.get('continueEditing')) {
+        if (!this.continueEditing) {
           window.location.hash = '#/results';
         } else {
           window.location.reload();
