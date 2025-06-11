@@ -1430,7 +1430,13 @@ class ResultEditor {
       </div>
     `;
     this.node.innerHTML = html;
+    const continueEditingCheckbox = document.getElementById('continueEditing');
 
+    // Ajout de l'écouteur pour le checkbox "Continuer l'édition"
+    continueEditingCheckbox.addEventListener('change', (e) => {
+      localStorage.setItem('continueEditing', e.target.checked);
+      this.continueEditing = e.target.checked;
+    });
     // Gestion de l'affichage des champs conditionnels
     const isForfeitCheckbox = document.getElementById('isForfeit');
     const forfeitTeamGroup = document.getElementById('forfeitTeamGroup');
