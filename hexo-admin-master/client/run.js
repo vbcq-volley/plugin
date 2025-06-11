@@ -1289,6 +1289,678 @@ class TeamEditor {
     });
 
     // Ajout de l'écouteur pour sauvegarder le groupe sélectionné
+    groupSelect.addEventListener('change', (e) => {
+      localStorage.setItem('lastGroup', e.target.value);
+      this.lastGroup = e.target.value;
+    });
+
+    // Initialisation de CodeMirror
+    this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      autofocus: true
+    });
+
+    // Mise à jour de la prévisualisation
+    const updatePreview = () => {
+      const preview = document.getElementById('description-preview');
+      const content = this.editor.getValue();
+      preview.innerHTML = marked.parse(content);
+    };
+
+    this.editor.on('change', updatePreview);
+    updatePreview();
+
+    const form = document.getElementById('team-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        teamName: formData.get('teamName'),
+        coach: formData.get('coach'),
+        coachContact: formData.get('coachContact'),
+        coachEmail: formData.get('coachEmail'),
+        group: formData.get('group'),
+        description: this.editor.getValue()
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('team', this.id, data);
+        } else {
+          await api.createEntry('team', data);
+        }
+        if (!this.continueEditing) {
+          window.location.hash = '#/teams';
+        } else {
+          window.location.reload();
+        }
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    if (this.editor) {
+      this.editor.toTextArea();
+    }
+    this.node.innerHTML = '';
+  }
+}
+
+class StadeEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchStade.bind(this));
+    this.editor = null;
+    this.continueEditing = localStorage.getItem('continueEditing') === 'true';
+  }
+
+  async fetchStade() {
+    return this.id ? api.getEntry('stade', this.id) : null;
+  }
+
+  render() {
+    this.dataFetcher.getData().then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+      return;
+    }
+
+    const stade = this.dataFetcher.data || {};
+    const html = `
+      <div class="stade-editor">
+        <h2>${this.id ? 'Modifier le stade' : 'Nouveau stade'}</h2>
+        <form id="stade-form">
+          <div class="form-group">
+            <label for="stadeName">Nom du stade</label>
+            <input type="text" id="stadeName" name="stadeName" value="${stade.stadeName || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="address">Adresse</label>
+            <input type="text" id="address" name="address" value="${stade.address || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="10">${stade.description || ''}</textarea>
+            <div id="description-preview" class="preview"></div>
+          </div>
+          <div class="form-group">
+          <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing" ${this.continueEditing ? 'checked' : ''}>
+              Continuer l'édition
+            </label>
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+    const continueEditingCheckbox = document.getElementById('continueEditing');
+
+    // Ajout de l'écouteur pour le checkbox "Continuer l'édition"
+    continueEditingCheckbox.addEventListener('change', (e) => {
+      localStorage.setItem('continueEditing', e.target.checked);
+      this.continueEditing = e.target.checked;
+    });
+    // Initialisation de CodeMirror
+    this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      autofocus: true
+    });
+
+    // Mise à jour de la prévisualisation
+    const updatePreview = () => {
+      const preview = document.getElementById('description-preview');
+      const content = this.editor.getValue();
+      preview.innerHTML = marked.parse(content);
+    };
+
+    this.editor.on('change', updatePreview);
+    updatePreview();
+
+    const form = document.getElementById('stade-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        stadeName: formData.get('stadeName'),
+        address: formData.get('address'),
+        description: this.editor.getValue()
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('stade', this.id, data);
+        } else {
+          await api.createEntry('stade', data);
+        }
+        if (!this.continueEditing) {
+          window.location.hash = '#/stades';
+        } else {
+          window.location.reload();
+        }
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    if (this.editor) {
+      this.editor.toTextArea();
+    }
+    this.node.innerHTML = '';
+  }
+}
+
+class ResultEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchResult.bind(this));
+    this.matchesFetcher = new DataFetcher(this.fetchMatches.bind(this));
+    this.continueEditing = localStorage.getItem('continueEditing') === 'true';
+  }
+
+  async fetchResult() {
+    return this.id ? api.getEntry('result', this.id) : null;
+  }
+
+  async fetchMatches() {
+    return api.getEntries('match');
+  }
+
+  formatDate(date) {
+    if (!date) return '';
+    
+    // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
+    if (typeof date === 'string' && date.includes('/')) {
+      const [datePart, timePart] = date.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hours, minutes] = timePart.split(':');
+      date = new Date(year, month - 1, day, hours, minutes);
+    }
+    
+    const d = new Date(date);
+    const months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
+  }
+
+  parseDate(dateStr) {
+    if (!dateStr) return null;
+    const months = {
+      'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+      'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
+    };
+    
+    const parts = dateStr.split(' ');
+    const dayNum = parseInt(parts[0]);
+    const monthNum = months[parts[1].toLowerCase()];
+    const yearNum = parseInt(parts[2]);
+    const time = parts[4].split(':');
+    const hours = parseInt(time[0]);
+    const minutes = parseInt(time[1]);
+    
+    return new Date(yearNum, monthNum, dayNum, hours, minutes).toISOString();
+  }
+
+  render() {
+    Promise.all([
+      this.dataFetcher.getData(),
+      this.matchesFetcher.getData()
+    ]).then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading || this.matchesFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error || this.matchesFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.matchesFetcher.error}</div>`;
+      return;
+    }
+
+    const result = this.dataFetcher.data || {};
+    const matches = this.matchesFetcher.data || [];
+
+    const html = `
+      <div class="result-editor">
+        <h2>${this.id ? 'Modifier le résultat' : 'Nouveau résultat'}</h2>
+        <form id="result-form">
+          <div class="form-group">
+            <label for="matchId">Match</label>
+            <select id="matchId" name="matchId" required>
+              <option value="">Sélectionner un match</option>
+              ${matches.map(match => `
+                <option value="${match._id}" 
+                  ${result.matchId === match._id ? 'selected' : ''}
+                  data-team1="${match.team1}"
+                  data-team2="${match.team2}"
+                  data-home-date="${this.formatDate(match.homeDate)}"
+                  data-away-date="${this.formatDate(match.awayDate)}"
+                  data-group="${match.group}"
+                  data-session="${match.session}">
+                  ${match.team1} vs ${match.team2} (${this.formatDate(match.homeDate)})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="matchType">Type de match</label>
+            <select id="matchType" name="matchType" required>
+              <option value="home" ${result.matchType === 'home' ? 'selected' : ''}>Match à domicile</option>
+              <option value="away" ${result.matchType === 'away' ? 'selected' : ''}>Match à l'extérieur</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="team1Score">Score équipe 1</label>
+            <input type="number" id="team1Score" name="team1Score" value="${result.team1Score || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="team2Score">Score équipe 2</label>
+            <input type="number" id="team2Score" name="team2Score" value="${result.team2Score || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="isForfeit">Forfait</label>
+            <input type="checkbox" id="isForfeit" name="isForfeit" ${result.isForfeit ? 'checked' : ''}>
+          </div>
+          <div class="form-group" id="forfeitTeamGroup" style="display: ${result.isForfeit ? 'block' : 'none'}">
+            <label for="forfeitTeam">Équipe en forfait</label>
+            <input type="text" id="forfeitTeam" name="forfeitTeam" value="${result.forfeitTeam || ''}">
+          </div>
+          <div class="form-group">
+            <label for="isPostponed">Reporté</label>
+            <input type="checkbox" id="isPostponed" name="isPostponed" ${result.isPostponed ? 'checked' : ''}>
+          </div>
+          <div class="form-group" id="postponedTeamGroup" style="display: ${result.isPostponed ? 'block' : 'none'}">
+            <label for="postponedTeam">Équipe reportée</label>
+            <input type="text" id="postponedTeam" name="postponedTeam" value="${result.postponedTeam || ''}">
+          </div>
+          <div class="form-group">
+          <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing" ${this.continueEditing ? 'checked' : ''}>
+              Continuer l'édition
+            </label>
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+    const continueEditingCheckbox = document.getElementById('continueEditing');
+
+    // Ajout de l'écouteur pour le checkbox "Continuer l'édition"
+    continueEditingCheckbox.addEventListener('change', (e) => {
+      localStorage.setItem('continueEditing', e.target.checked);
+      this.continueEditing = e.target.checked;
+    });
+    // Gestion de l'affichage des champs conditionnels
+    const isForfeitCheckbox = document.getElementById('isForfeit');
+    const forfeitTeamGroup = document.getElementById('forfeitTeamGroup');
+    const isPostponedCheckbox = document.getElementById('isPostponed');
+    const postponedTeamGroup = document.getElementById('postponedTeamGroup');
+    const matchSelect = document.getElementById('matchId');
+
+    isForfeitCheckbox.addEventListener('change', () => {
+      forfeitTeamGroup.style.display = isForfeitCheckbox.checked ? 'block' : 'none';
+    });
+
+    isPostponedCheckbox.addEventListener('change', () => {
+      postponedTeamGroup.style.display = isPostponedCheckbox.checked ? 'block' : 'none';
+    });
+
+    // Mise à jour des équipes et dates en fonction du match sélectionné
+    matchSelect.addEventListener('change', () => {
+      const selectedOption = matchSelect.options[matchSelect.selectedIndex];
+      if (selectedOption.value) {
+        const team1 = selectedOption.dataset.team1;
+        const team2 = selectedOption.dataset.team2;
+        const homeDate = selectedOption.dataset.homeDate;
+        const awayDate = selectedOption.dataset.awayDate;
+        const group = selectedOption.dataset.group;
+        const session = selectedOption.dataset.session;
+
+        // Mise à jour des champs cachés
+        const form = document.getElementById('result-form');
+        form.dataset.team1 = team1;
+        form.dataset.team2 = team2;
+        form.dataset.homeDate = homeDate;
+        form.dataset.awayDate = awayDate;
+        form.dataset.group = group;
+        form.dataset.session = session;
+      }
+    });
+
+    const form = document.getElementById('result-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const matchType = formData.get('matchType');
+      const selectedMatch = matches.find(m => m._id === formData.get('matchId'));
+      
+      const data = {
+        matchType,
+        team1: selectedMatch.team1,
+        team2: selectedMatch.team2,
+        team1Score: formData.get('team1Score'),
+        team2Score: formData.get('team2Score'),
+        isForfeit: formData.get('isForfeit') === 'on',
+        forfeitTeam: formData.get('forfeitTeam'),
+        isPostponed: formData.get('isPostponed') === 'on',
+        postponedTeam: formData.get('postponedTeam'),
+        matchId: formData.get('matchId'),
+        group: selectedMatch.group,
+        session: parseInt(selectedMatch.session),
+        date: matchType === 'home' ? selectedMatch.homeDate : selectedMatch.awayDate
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('result', this.id, data);
+        } else {
+          await api.createEntry('result', data);
+        }
+        if (!this.continueEditing) {
+          window.location.hash = '#/results';
+        } else {
+          window.location.reload();
+        }
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+}
+
+class DataEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchData.bind(this));
+    this.teamsFetcher = new DataFetcher(this.fetchTeams.bind(this));
+    this.stadesFetcher = new DataFetcher(this.fetchStades.bind(this));
+    this.matchesFetcher = new DataFetcher(this.fetchMatches.bind(this));
+    this.continueEditing = localStorage.getItem('continueEditing') === 'true';
+  }
+
+  async fetchData() {
+    return this.id ? api.getEntry('match', this.id) : null;
+  }
+
+  async fetchTeams() {
+    return api.getEntries('team');
+  }
+
+  async fetchStades() {
+    return api.getEntries('stade');
+  }
+
+  async fetchMatches() {
+    return api.getEntries('match');
+  }
+
+  formatDate(date) {
+    if (!date) return '';
+    
+    // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
+    if (typeof date === 'string' && date.includes('/')) {
+      const [datePart, timePart] = date.split(' ');
+      const [day, month, year] = datePart.split('/');
+      const [hours, minutes] = timePart.split(':');
+      date = new Date(year, month - 1, day, hours, minutes);
+    }
+    
+    const d = new Date(date);
+    const months = [
+      'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+      'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    
+    return `${day} ${month} ${year} à ${hours}:${minutes}`;
+  }
+
+  parseDate(dateStr) {
+    if (!dateStr) return null;
+    const months = {
+      'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
+      'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
+    };
+    
+    const parts = dateStr.split(' ');
+    const dayNum = parseInt(parts[0]);
+    const monthNum = months[parts[1].toLowerCase()];
+    const yearNum = parseInt(parts[2]);
+    const time = parts[4].split(':');
+    const hours = parseInt(time[0]);
+    const minutes = parseInt(time[1]);
+    
+    return new Date(yearNum, monthNum, dayNum, hours, minutes).toISOString();
+  }
+
+  isTeamAvailable(teamName, session=1, currentMatchId = null) {
+    return !this.matchesFetcher.data.some(match => 
+      match._id !== currentMatchId && 
+      match.session === session && 
+      (match.team1 === teamName || match.team2 === teamName)
+    );
+  }
+
+  updateTeamOptions() {
+    const groupSelect = document.getElementById('group');
+    const sessionInput = document.getElementById('session');
+    const team1Select = document.getElementById('team1');
+    const team2Select = document.getElementById('team2');
+
+    const selectedGroup = groupSelect.value;
+    const session = parseInt(sessionInput.value);
+    const currentMatchId = this.id;
+
+    // Mise à jour des options pour team1
+    Array.from(team1Select.options).forEach(option => {
+      if (option.value === '') return;
+      const teamGroup = option.dataset.group;
+      const teamName = option.dataset.team;
+      const isAvailable = this.isTeamAvailable(teamName, session, currentMatchId);
+      
+      if (teamGroup === selectedGroup && isAvailable) {
+        option.style.display = '';
+        option.disabled = false;
+      } else {
+        option.style.display = 'none';
+        option.disabled = true;
+      }
+    });
+
+    // Mise à jour des options pour team2
+    Array.from(team2Select.options).forEach(option => {
+      if (option.value === '') return;
+      const teamGroup = option.dataset.group;
+      const teamName = option.dataset.team;
+      const isAvailable = this.isTeamAvailable(teamName, session, currentMatchId);
+      
+      if (teamGroup === selectedGroup && isAvailable && teamName !== team1Select.value) {
+        option.style.display = '';
+        option.disabled = false;
+      } else {
+        option.style.display = 'none';
+        option.disabled = true;
+      }
+    });
+  }
+
+  render() {
+    Promise.all([
+      this.dataFetcher.getData(),
+      this.teamsFetcher.getData(),
+      this.stadesFetcher.getData(),
+      this.matchesFetcher.getData()
+    ]).then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading || this.teamsFetcher.loading || this.stadesFetcher.loading || this.matchesFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error || this.matchesFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error || this.teamsFetcher.error || this.stadesFetcher.error || this.matchesFetcher.error}</div>`;
+      return;
+    }
+
+    const data = this.dataFetcher.data || {};
+    const teams = this.teamsFetcher.data || [];
+    const stades = this.stadesFetcher.data || [];
+    const matches = this.matchesFetcher.data || [];
+
+    const html = `
+      <div class="data-editor">
+        <h2>${this.id ? 'Modifier le match' : 'Nouveau match'}</h2>
+        <form id="data-form">
+          <div class="form-group">
+            <label for="group">Groupe</label>
+            <select id="group" name="group" required>
+              <option value="">Sélectionner un groupe</option>
+              <option value="1" ${data.group === '1' ? 'selected' : ''}>Groupe 1</option>
+              <option value="2" ${data.group === '2' ? 'selected' : ''}>Groupe 2</option>
+              <option value="3" ${data.group === '3' ? 'selected' : ''}>Groupe 3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="session">Session</label>
+            <input type="number" id="session" name="session" value="${data.session || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="team1">Équipe 1</label>
+            <select id="team1" name="team1" required>
+              <option value="">Sélectionner une équipe</option>
+              ${teams.map(team => `
+                <option value="${team.teamName}" 
+                  ${data.team1 === team.teamName ? 'selected' : ''}
+                  data-group="${team.group}"
+                  class="team-option"
+                  data-team="${team.teamName}">
+                  ${team.teamName} (${team.coach})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="team2">Équipe 2</label>
+            <select id="team2" name="team2" required>
+              <option value="">Sélectionner une équipe</option>
+              ${teams.map(team => `
+                <option value="${team.teamName}" 
+                  ${data.team2 === team.teamName ? 'selected' : ''}
+                  data-group="${team.group}"
+                  class="team-option"
+                  data-team="${team.teamName}">
+                  ${team.teamName} (${team.coach})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="homeDate">Date du match à domicile</label>
+            <input type="datetime-local" id="homeDate" name="homeDate" value="${this.parseDate(data.homeDate) || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="awayDate">Date du match à l'extérieur</label>
+            <input type="datetime-local" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="homeLocation">Lieu du match à domicile</label>
+            <select id="homeLocation" name="homeLocation" required>
+              <option value="">Sélectionner un stade</option>
+              ${stades.map(stade => `
+                <option value="${stade.stadeName}" 
+                  ${data.homeLocation === stade.stadeName ? 'selected' : ''}>
+                  ${stade.stadeName} (${stade.address})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="awayLocation">Lieu du match à l'extérieur</label>
+            <select id="awayLocation" name="awayLocation" required>
+              <option value="">Sélectionner un stade</option>
+              ${stades.map(stade => `
+                <option value="${stade.stadeName}" 
+                  ${data.awayLocation === stade.stadeName ? 'selected' : ''}>
+                  ${stade.stadeName} (${stade.address})
+                </option>
+              `).join('')}
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="matchStatus">Statut du match</label>
+            <select id="matchStatus" name="matchStatus">
+              <option value="scheduled" ${data.matchStatus === 'scheduled' ? 'selected' : ''}>Planifié</option>
+              <option value="in_progress" ${data.matchStatus === 'in_progress' ? 'selected' : ''}>En cours</option>
+              <option value="completed" ${data.matchStatus === 'completed' ? 'selected' : ''}>Terminé</option>
+              <option value="cancelled" ${data.matchStatus === 'cancelled' ? 'selected' : ''}>Annulé</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing" ${this.continueEditing ? 'checked' : ''}>
+              Continuer l'édition
+            </label>
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    const form = document.getElementById('data-form');
+    const groupSelect = document.getElementById('group');
+    const sessionInput = document.getElementById('session');
+    const team1Select = document.getElementById('team1');
+    const continueEditingCheckbox = document.getElementById('continueEditing');
+
+    // Ajout de l'écouteur pour le checkbox "Continuer l'édition"
+    continueEditingCheckbox.addEventListener('change', (e) => {
+      localStorage.setItem('continueEditing', e.target.checked);
+      this.continueEditing = e.target.checked;
+    });
+
     // Ajout des écouteurs d'événements pour le filtrage
     groupSelect.addEventListener('change', () => this.updateTeamOptions());
     sessionInput.addEventListener('change', () => this.updateTeamOptions());
