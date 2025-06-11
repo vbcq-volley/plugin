@@ -2407,7 +2407,7 @@ class TournamentResults {
     return `
       <div class="tournament-results">
         <h2>Résultats de Tournoi</h2>
-        <a href="#/tournament-results/new" class="btn btn-success">Nouveau Résultat</a>
+        <a href="#/tournament-results" class="btn btn-success">Nouveau Résultat</a>
         <table class="table">
           <thead>
             <tr>
