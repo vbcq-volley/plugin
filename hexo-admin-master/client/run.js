@@ -1070,6 +1070,135 @@ class PageEditor {
   }
 }
 
+class TeamEditor {
+  constructor(node, id = null) {
+    this.node = node;
+    this.id = id;
+    this.dataFetcher = new DataFetcher(this.fetchTeam.bind(this));
+    this.editor = null;
+  }
+
+  async fetchTeam() {
+    return this.id ? api.getEntry('team', this.id) : null;
+  }
+
+  render() {
+    this.dataFetcher.getData().then(() => this.updateView());
+  }
+
+  updateView() {
+    if (this.dataFetcher.loading) {
+      this.node.innerHTML = '<div class="loading">Chargement...</div>';
+      return;
+    }
+
+    if (this.dataFetcher.error) {
+      this.node.innerHTML = `<div class="error">${this.dataFetcher.error}</div>`;
+      return;
+    }
+
+    const team = this.dataFetcher.data || {};
+    const html = `
+      <div class="team-editor">
+        <h2>${this.id ? 'Modifier l\'équipe' : 'Nouvelle équipe'}</h2>
+        <form id="team-form">
+          <div class="form-group">
+            <label for="teamName">Nom de l'équipe</label>
+            <input type="text" id="teamName" name="teamName" value="${team.teamName || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="coach">Entraîneur</label>
+            <input type="text" id="coach" name="coach" value="${team.coach || ''}" required>
+          </div>
+          <div class="form-group">
+            <label for="coachContact">Contact de l'entraîneur</label>
+            <input type="tel" id="coachContact" name="coachContact" value="${team.coachContact || ''}" required placeholder="06 XX XX XX XX">
+          </div>
+          <div class="form-group">
+            <label for="coachEmail">Email de l'entraîneur</label>
+            <input type="email" id="coachEmail" name="coachEmail" value="${team.coachEmail || ''}" required placeholder="coach@example.com">
+          </div>
+          <div class="form-group">
+            <label for="group">Groupe</label>
+            <select id="group" name="group" required>
+              <option value="">Sélectionner un groupe</option>
+              <option value="1" ${team.group === '1' ? 'selected' : ''}>Groupe 1</option>
+              <option value="2" ${team.group === '2' ? 'selected' : ''}>Groupe 2</option>
+              <option value="3" ${team.group === '3' ? 'selected' : ''}>Groupe 3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="10">${team.description || ''}</textarea>
+            <div id="description-preview" class="preview"></div>
+          </div>
+          <div class="form-group">
+            <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing">
+              Continuer l'édition
+            </label>
+          </div>
+          <button type="submit">Enregistrer</button>
+        </form>
+      </div>
+    `;
+    this.node.innerHTML = html;
+
+    // Initialisation de CodeMirror
+    this.editor = CodeMirror.fromTextArea(document.getElementById('description'), {
+      mode: 'markdown',
+      theme: 'monokai',
+      lineNumbers: true,
+      lineWrapping: true,
+      autofocus: true
+    });
+
+    // Mise à jour de la prévisualisation
+    const updatePreview = () => {
+      const preview = document.getElementById('description-preview');
+      const content = this.editor.getValue();
+      preview.innerHTML = marked.parse(content);
+    };
+
+    this.editor.on('change', updatePreview);
+    updatePreview();
+
+    const form = document.getElementById('team-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const data = {
+        teamName: formData.get('teamName'),
+        coach: formData.get('coach'),
+        coachContact: formData.get('coachContact'),
+        coachEmail: formData.get('coachEmail'),
+        group: formData.get('group'),
+        description: this.editor.getValue()
+      };
+
+      try {
+        if (this.id) {
+          await api.updateEntry('team', this.id, data);
+        } else {
+          await api.createEntry('team', data);
+        }
+        if (!formData.get('continueEditing')) {
+          window.location.hash = '#/teams';
+        }
+      } catch (error) {
+        alert('Erreur lors de l\'enregistrement: ' + error.message);
+      }
+    });
+  }
+
+  destroy() {
+    if (this.editor) {
+      this.editor.toTextArea();
+    }
+    this.node.innerHTML = '';
+  }
+}
+
 class StadeEditor {
   constructor(node, id = null) {
     this.node = node;
@@ -1115,6 +1244,12 @@ class StadeEditor {
             <textarea id="description" name="description" rows="10">${stade.description || ''}</textarea>
             <div id="description-preview" class="preview"></div>
           </div>
+          <div class="form-group">
+            <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing">
+              Continuer l'édition
+            </label>
+          </div>
           <button type="submit">Enregistrer</button>
         </form>
       </div>
@@ -1156,7 +1291,9 @@ class StadeEditor {
         } else {
           await api.createEntry('stade', data);
         }
-        window.location.hash = '#/stades';
+        if (!formData.get('continueEditing')) {
+          window.location.hash = '#/stades';
+        }
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1281,6 +1418,12 @@ class ResultEditor {
             <label for="postponedTeam">Équipe reportée</label>
             <input type="text" id="postponedTeam" name="postponedTeam" value="${result.postponedTeam || ''}">
           </div>
+          <div class="form-group">
+            <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing">
+              Continuer l'édition
+            </label>
+          </div>
           <button type="submit">Enregistrer</button>
         </form>
       </div>
@@ -1353,7 +1496,9 @@ class ResultEditor {
         } else {
           await api.createEntry('result', data);
         }
-        window.location.hash = '#/results';
+        if (!formData.get('continueEditing')) {
+          window.location.hash = '#/results';
+        }
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
