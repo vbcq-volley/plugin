@@ -593,19 +593,12 @@ class About {
     const renderReadme = async (username, repo) => {
       const readmeContent = await fetchReadme(username, repo);
       if (readmeContent) {
-        this.node.innerHTML=marked.parse()
+        this.node.innerHTML=marked.parse(readmeContent)
         return readmeContent;
       }
       return 'Impossible de charger le README';
     };
-    const html = `
-      <div class="about">
-        <h2>À propos</h2>
-        <p>Version: 1.0.0</p>
-        <p>Un panneau d'administration pour Hexo</p>
-      </div>
-    `;
-    this.node.innerHTML = html;
+  
   }
 
   destroy() {
