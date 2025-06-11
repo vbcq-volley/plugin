@@ -1420,8 +1420,8 @@ class ResultEditor {
             <input type="text" id="postponedTeam" name="postponedTeam" value="${result.postponedTeam || ''}">
           </div>
           <div class="form-group">
-            <label for="continueEditing">
-              <input type="checkbox" id="continueEditing" name="continueEditing">
+          <label for="continueEditing">
+              <input type="checkbox" id="continueEditing" name="continueEditing" ${this.continueEditing ? 'checked' : ''}>
               Continuer l'édition
             </label>
           </div>
