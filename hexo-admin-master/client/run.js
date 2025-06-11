@@ -1569,7 +1569,7 @@ class DataEditor {
           </div>
           <div class="form-group">
             <label for="awayDate">Date du match à l'extérieur</label>
-            <input type="text" id="awayDate" name="awayDate" value="${(data.awayDate) || ''}" required placeholder="JJ mois AAAA à HH:mm">
+            <input type="text" id="awayDate" name="awayDate" value="${this.parseDate(data.awayDate) || ''}" required placeholder="JJ mois AAAA à HH:mm">
           </div>
           <div class="form-group">
             <label for="homeLocation">Lieu du match à domicile</label>
@@ -1655,7 +1655,7 @@ class DataEditor {
       const data = {
         team1: formData.get('team1'),
         team2: formData.get('team2'),
-        homeDate: formData.get('homeDate'),
+        homeDate:  formData.get('homeDate'),
         awayDate: formData.get('awayDate'),
         homeLocation: formData.get('homeLocation'),
         awayLocation: formData.get('awayLocation'),
