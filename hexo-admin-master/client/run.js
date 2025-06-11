@@ -520,7 +520,10 @@ class Datas {
             <li>
               <a href="#/data/${data._id}">
                 ${data.title}
-                ${data.matchType === 'tournament' ? `<span class="tournament-badge">Tournoi - ${this.getTournamentRoundLabel(data.tournamentRound)}</span>` : ''}
+                ${data.matchType === 'tournament' ? 
+                  `<span class="tournament-badge">
+                    Tournoi${data.tournamentRound ? ` - ${this.getTournamentRoundLabel(data.tournamentRound)}` : ''}
+                  </span>` : ''}
               </a>
               <span class="date">${this.formatDate(data.homeDate)}</span>
               <span class="match-type">${data.matchType === 'tournament' ? 'Tournoi' : 'Match régulier'}</span>
@@ -533,6 +536,7 @@ class Datas {
   }
 
   getTournamentRoundLabel(round) {
+    if (!round) return '';
     const rounds = {
       '1': 'Premier tour',
       '2': 'Deuxième tour',
