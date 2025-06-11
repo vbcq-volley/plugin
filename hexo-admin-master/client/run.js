@@ -2079,8 +2079,10 @@ class TournamentMatch {
 
   render() {
     this.node.innerHTML = this.template();
-    this.fetchMatch().then()
-    this.updateView();
+    this.fetchMatch().then((data)=>{
+
+    })
+    
   }
 
   updateView() {
