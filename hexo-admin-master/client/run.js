@@ -1376,14 +1376,14 @@ class ResultEditor {
     };
     
     const parts = dateStr.split(' ');
-    const day = parseInt(parts[0]);
-    const month = months[parts[1].toLowerCase()];
-    const year = parseInt(parts[2]);
+    const dayNum = parseInt(parts[0]);
+    const monthNum = months[parts[1].toLowerCase()];
+    const yearNum = parseInt(parts[2]);
     const time = parts[4].split(':');
     const hours = parseInt(time[0]);
     const minutes = parseInt(time[1]);
     
-    return new Date(year, month, day, hours, minutes).toISOString();
+    return new Date(yearNum, monthNum, dayNum, hours, minutes).toISOString();
   }
 
   render() {
@@ -1611,14 +1611,14 @@ class DataEditor {
     };
     
     const parts = dateStr.split(' ');
-    const day = parseInt(parts[0]);
-    const month = months[parts[1].toLowerCase()];
-    const year = parseInt(parts[2]);
+    const dayNum = parseInt(parts[0]);
+    const monthNum = months[parts[1].toLowerCase()];
+    const yearNum = parseInt(parts[2]);
     const time = parts[4].split(':');
     const hours = parseInt(time[0]);
     const minutes = parseInt(time[1]);
     
-    return new Date(year, month, day, hours, minutes).toISOString();
+    return new Date(yearNum, monthNum, dayNum, hours, minutes).toISOString();
   }
 
   isTeamAvailable(teamName, session=1, currentMatchId = null) {
