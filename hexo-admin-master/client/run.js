@@ -2413,6 +2413,7 @@ class TournamentResults {
         <div class="actions">
           <a href="#/tournament-results" class="btn btn-success">Nouveau Résultat</a>
           <a href="#/tournament-results/view" class="btn btn-info">Visualiser</a>
+        </div>
         <table class="table">
           <thead>
             <tr>
