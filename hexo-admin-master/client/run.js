@@ -2228,6 +2228,11 @@ class TournamentResult {
 
   render() {
     this.node.innerHTML = this.template();
+    const form = this.node.querySelector('form');
+    const matchSelect = form.querySelector('[name="matchId"]');
+
+    // Charger les matchs disponibles
+    this.loadMatches(matchSelect);
     this.fetchResult().then(()=>{
       this.updateView();
     })
