@@ -2266,6 +2266,7 @@ class TournamentResult {
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+      this.id
       const formData = new FormData(form);
       const data = {
         matchId: formData.get('matchId'),
@@ -2984,6 +2985,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const node = document.createElement('div');
   document.body.appendChild(node);
   new App(node);
-});
-
-
+})
