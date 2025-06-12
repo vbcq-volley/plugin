@@ -2102,7 +2102,7 @@ class TournamentMatch {
         `<option value="${team.id}" ${this.data.team1 === team.id ? 'selected' : ''}>${team.name}</option>`
       ).join('');
     }else{
-      const teamOptions = allTeams.map(team => 
+       teamOptions = allTeams.map(team => 
         `<option value="${team.id}"  ''>${team.name}</option>`
       ).join('');
     }
