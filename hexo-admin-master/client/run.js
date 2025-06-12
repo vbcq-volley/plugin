@@ -2453,7 +2453,7 @@ class TournamentResults {
         <td>${result.score1}</td>
         <td>${result.score2}</td>
         <td>
-          <a href="#/tournament-result/${result.id}" class="btn btn-primary">Modifier</a>
+          <a href="#/tournament-result/${result._id}" class="btn btn-primary">Modifier</a>
           <button class="btn btn-danger" onclick="deleteResult('${result.id}')">Supprimer</button>
         </td>
       </tr>
