@@ -236,6 +236,7 @@ module.exports = function (app, hexo) {
 
   function addIsDraft(post) {
   //  hexo.log.d(post)
+  console.log()
   if(post.source){
     post.isDraft = post.source.indexOf('_draft') === 0
     post.isDiscarded = post.source.indexOf('_discarded') === 0
