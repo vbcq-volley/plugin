@@ -2240,7 +2240,7 @@ class TournamentResult {
   }
 
   updateView() {
-    if (!this.data) return;
+    
 
     const form = this.node.querySelector('form');
     const matchSelect = form.querySelector('[name="matchId"]');
