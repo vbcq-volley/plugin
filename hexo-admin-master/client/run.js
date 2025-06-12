@@ -2440,7 +2440,7 @@ class TournamentResults {
 
   render() {
     this.node.innerHTML = this.template();
-    this.fetchResults().then
+    this.fetchResults().then(()=>#)
     this.updateView();
   }
 
@@ -2982,4 +2982,5 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.appendChild(node);
   new App(node);
 });
-
+
+
