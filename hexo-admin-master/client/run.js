@@ -2624,7 +2624,7 @@ class App {
         break;
       case 'page':
         if (id) {
-          view = new Page(this.main, id);
+          view = new PageEditor(this.main, id);
         } else {
           view = new PageEditor(this.main);
         }
@@ -2634,7 +2634,7 @@ class App {
         break;
       case 'team':
         if (id) {
-          view = new Team(this.main, id);
+          view = new TeamEditor(this.main, id);
         } else {
           view = new TeamEditor(this.main);
         }
