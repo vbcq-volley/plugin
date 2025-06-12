@@ -2074,7 +2074,7 @@ class TournamentMatch {
     this.tournamentTeams = matches
       .filter(match => match._id !== this.id && match.winner)
       .map(match => ({
-        _id: this.teams.find(t=>t.teamName===)._id,
+        _id: this.teams.find(t=>t.teamName===match.winner)._id,
         teamName: match.winner
       }));
   }
@@ -2987,5 +2987,3 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.appendChild(node);
   new App(node);
 });
-
-
