@@ -2268,7 +2268,7 @@ class TournamentResult {
       e.preventDefault();
       
       const formData = new FormData(form);
-      await this.fetchMatch()
+      await this.fetchMatch(formData.get('matchId'))
       const data = {
         matchId: formData.get('matchId'),
         score1: parseInt(formData.get('score1')),
