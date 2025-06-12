@@ -2223,6 +2223,7 @@ class TournamentResult {
       }
     }else{
       this.data=await api.getEntries('tournament_results')[0]
+      await this.fetchMatch();
     }
   
   }
