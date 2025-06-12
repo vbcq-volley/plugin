@@ -2094,11 +2094,11 @@ class TournamentMatch {
     const form = this.node.querySelector('form');
     const team1Select = form.querySelector('[name="team1"]');
     const team2Select = form.querySelector('[name="team2"]');
-    var 
+    var teamOptions=[]
     // Remplir les options des équipes
     const allTeams = [...this.teams, ...this.tournamentTeams];
     if(this.data){
-      const teamOptions = allTeams.map(team => 
+       teamOptions = allTeams.map(team => 
         `<option value="${team.id}" ${this.data.team1 === team.id ? 'selected' : ''}>${team.name}</option>`
       ).join('');
     }else{
