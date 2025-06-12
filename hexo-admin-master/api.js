@@ -600,6 +600,7 @@ use('db/', function(req, res) {
 
       hexo.source.process([source]).then(function () {
         var page = hexo.model('Page').findOne({source: source})
+        console.log()
         res.done(addIsDraft(page));
       });
     });
