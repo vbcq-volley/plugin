@@ -2091,7 +2091,7 @@ class TournamentMatch {
 
   updateView() {
 
-    if (!this.data) return;
+    //if (!this.data) return;
 
     const form = this.node.querySelector('form');
     const team1Select = form.querySelector('[name="team1"]');
