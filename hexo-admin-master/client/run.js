@@ -1199,7 +1199,7 @@ class PageEditor {
       theme: 'monokai',
       lineNumbers: true,
       lineWrapping: true,
-      autofocus: true
+      autofocus: false
     });
     const updatePreview = () => {
       const preview = document.getElementById('description-preview');
