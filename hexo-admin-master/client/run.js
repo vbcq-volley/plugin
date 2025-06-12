@@ -1123,7 +1123,7 @@ class PostEditor {
         } else {
           await api.createPost(data.title);
           // Mise à jour du contenu après création
-          const newPost = await api.getPost(this.id);
+          const newPost = await api.getPost(t.id);
           await api.getPost(newPost._id, data);
         }
         
