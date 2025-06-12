@@ -2300,7 +2300,7 @@ class TournamentResult {
       const options = matches
         .filter(match => !match.winner || match._id === this.data?.matchId)
         .map(match => `
-          <option value="${match.id}" ${this.data?.matchId === match.id ? 'selected' : ''}>
+          <option value="${match._id}" ${this.data?.matchId === match._id ? 'selected' : ''}>
             ${match.team1Name} vs ${match.team2Name} (${match.round})
           </option>
         `).join('');
