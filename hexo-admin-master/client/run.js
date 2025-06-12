@@ -2221,6 +2221,8 @@ class TournamentResult {
       if (this.data) {
         await this.fetchMatch();
       }
+    }else{
+      
     }
   
   }
