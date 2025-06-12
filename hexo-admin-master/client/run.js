@@ -2344,7 +2344,7 @@ class TournamentMatches {
         <td>${this.formatDate(match.matchDate)}</td>
         <td>${match.round}</td>
         <td>
-          <a href="#/tournament-matches/${match.id}" class="btn btn-primary">Modifier</a>
+          <a href="#/tournament-match/${match.id}" class="btn btn-primary">Modifier</a>
           <button class="btn btn-danger" onclick="deleteMatch('${match.id}')">Supprimer</button>
         </td>
       </tr>
