@@ -2392,7 +2392,7 @@ class TournamentMatches {
         <td>${match.round}</td>
         <td>
           <a href="#/tournament-match/${match._id}" class="btn btn-primary">Modifier</a>
-          <button class="btn btn-danger" onclick="deleteMatch('${match._id}')">Supprimer</button>
+          
         </td>
       </tr>
     `).join('');
