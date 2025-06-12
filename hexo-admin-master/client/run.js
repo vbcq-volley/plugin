@@ -2103,7 +2103,7 @@ class TournamentMatch {
       ).join('');
     }else{
        teamOptions = allTeams.map(team => 
-        `<option value="${team.id}"  ''>${team.teamName}</option>`
+        `<option value="${team._id}"  ''>${team.teamName}</option>`
       ).join('');
     }
     
@@ -2126,7 +2126,7 @@ class TournamentMatch {
         matchDate: formData.get('matchDate'),
         round: formData.get('round'),
         team1Name: allTeams.find(t => t._id === formData.get('team1'))?.teamName,
-        team2Name: allTeams.find(t => t.id === formData.get('team2'))?.teamName
+        team2Name: allTeams.find(t => t._id === formData.get('team2'))?.teamName
       };
       
       try {
