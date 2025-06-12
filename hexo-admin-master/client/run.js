@@ -2072,7 +2072,7 @@ class TournamentMatch {
   async fetchTournamentTeams() {
     const matches = await api.getTournamentMatches();
     this.tournamentTeams = matches
-      .filter(match => match.id !== this.id && match.winner)
+      .filter(match => match._id !== this.id && match.winner)
       .map(match => ({
         id: `winner_${match.id}`,
         teamName: match.winner
