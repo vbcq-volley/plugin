@@ -2074,7 +2074,7 @@ class TournamentMatch {
     this.tournamentTeams = matches
       .filter(match => match._id !== this.id && match.winner)
       .map(match => ({
-        id: this.teams.find()._id,
+        _id: this.teams.find(t=>t)._id,
         teamName: match.winner
       }));
   }
