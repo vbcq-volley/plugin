@@ -2366,9 +2366,9 @@ class TournamentMatches {
 
     const tbody = this.node.querySelector('tbody');
     tbody.innerHTML = this.data.map(match => `
-      <tr>
+      <tr> 
         <td>${match.team1Name}</td>
-        <td>${match.team2}</td>
+        <td>${match.team2Name}</td>
         <td>${this.formatDate(match.matchDate)}</td>
         <td>${match.round}</td>
         <td>
