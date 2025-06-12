@@ -2310,6 +2310,7 @@ class TournamentResult {
   async loadMatches(select) {
     try {
       const matches = await api.getTournamentMatches();
+      
       const options = matches
         .filter(match => !match.winner || match._id === this.data?.matchId)
         .map(match => `
