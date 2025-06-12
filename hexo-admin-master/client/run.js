@@ -2613,42 +2613,42 @@ class App {
         if (id) {
           view = new Post(this.main, id);
         } else {
-          view = new PostEditor(this.main);
+          view = new Posts(this.main);
         }
         break;
       case 'pages':
         if (id) {
           view = new Page(this.main, id);
         } else {
-          view = new PageEditor(this.main);
+          view = new Pages(this.main);
         }
         break;
       case 'teams':
         if (id) {
           view = new Team(this.main, id);
         } else {
-          view = new TeamEditor(this.main);
+          view = new Teams(this.main);
         }
         break;
       case 'stades':
         if (id) {
           view = new Stade(this.main, id);
         } else {
-          view = new StadeEditor(this.main);
+          view = new Stades(this.main);
         }
         break;
       case 'results':
         if (id) {
           view = new Result(this.main, id);
         } else {
-          view = new ResultEditor(this.main);
+          view = new Results(this.main);
         }
         break;
       case 'datas':
         if (id) {
           view = new Data(this.main, id);
         } else {
-          view = new DataEditor(this.main);
+          view = new Datas(this.main);
         }
         break;
       case 'settings':
