@@ -2233,9 +2233,9 @@ class TournamentResult {
 
     // Charger les matchs disponibles
     this.loadMatches(matchSelect);
-    this.fetchResult().then(()=>{
+    
       this.updateView();
-    })
+    
     
   }
 
