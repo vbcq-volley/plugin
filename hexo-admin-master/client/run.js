@@ -2334,6 +2334,7 @@ class TournamentMatches {
   }
 
   updateView() {
+    console.log(this.data)
     if (!this.data) return;
 
     const tbody = this.node.querySelector('tbody');
