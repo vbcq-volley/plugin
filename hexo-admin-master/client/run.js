@@ -2222,7 +2222,7 @@ class TournamentResult {
         await this.fetchMatch();
       }
     }else{
-      
+      this.data=await ap
     }
   
   }
