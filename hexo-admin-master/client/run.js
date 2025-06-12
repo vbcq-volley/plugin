@@ -2216,6 +2216,7 @@ class TournamentResult {
   }
 
   async fetchResult() {
+    
     this.data = await api.getEntry('tournament_results', this.id);
     if (this.data) {
       await this.fetchMatch();
@@ -2232,7 +2233,7 @@ class TournamentResult {
     const matchSelect = form.querySelector('[name="matchId"]');
 
     // Charger les matchs disponibles
-    this.loadMatches(matchSelect);
+ 
      
       this.updateView();
     
