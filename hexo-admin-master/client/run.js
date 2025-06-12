@@ -2125,7 +2125,7 @@ class TournamentMatch {
         team2: formData.get('team2'),
         matchDate: formData.get('matchDate'),
         round: formData.get('round'),
-        team1Name: allTeams.find(t => t.id === formData.get('team1'))?.teamName,
+        team1Name: allTeams.find(t => t._id === formData.get('team1'))?.teamName,
         team2Name: allTeams.find(t => t.id === formData.get('team2'))?.teamName
       };
       
