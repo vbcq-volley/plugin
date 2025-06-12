@@ -2676,17 +2676,23 @@ class App {
         view = new About(this.main);
         break;
       case 'tournament-matches':
+        view = new TournamentMatches(this.main);
+        break;
+      case 'tournament-match':
         if (id) {
           view = new TournamentMatch(this.main, id);
         } else {
-          view = new TournamentMatches(this.main);
+          view = new TournamentMatch(this.main);
         }
         break;
       case 'tournament-results':
+        view = new TournamentResults(this.main);
+        break;
+      case 'tournament-result':
         if (id) {
           view = new TournamentResult(this.main, id);
         } else {
-          view = new TournamentResults(this.main);
+          view = new TournamentResult(this.main);
         }
         break;
       default:
