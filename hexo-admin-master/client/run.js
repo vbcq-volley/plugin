@@ -2074,7 +2074,7 @@ class TournamentMatch {
     this.tournamentTeams = matches
       .filter(match => match._id !== this.id && match.winner)
       .map(match => ({
-        id: `winner_${match.id}`,
+        id: `winner_${match._id}`,
         teamName: match.winner
       }));
   }
@@ -2228,6 +2228,7 @@ class TournamentResult {
 
   render() {
     this.node.innerHTML = this.template();
+    
     this.updateView();
   }
 
