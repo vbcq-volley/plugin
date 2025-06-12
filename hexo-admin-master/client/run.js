@@ -2610,45 +2610,63 @@ class App {
 
     switch (route) {
       case 'posts':
+        view = new Posts(this.main);
+        break;
+      case 'post':
         if (id) {
           view = new Post(this.main, id);
         } else {
-          view = new Posts(this.main);
+          view = new PostEditor(this.main);
         }
         break;
       case 'pages':
+        view = new Pages(this.main);
+        break;
+      case 'page':
         if (id) {
           view = new Page(this.main, id);
         } else {
-          view = new Pages(this.main);
+          view = new PageEditor(this.main);
         }
         break;
       case 'teams':
+        view = new Teams(this.main);
+        break;
+      case 'team':
         if (id) {
           view = new Team(this.main, id);
         } else {
-          view = new Teams(this.main);
+          view = new TeamEditor(this.main);
         }
         break;
       case 'stades':
+        view = new Stades(this.main);
+        break;
+      case 'stade':
         if (id) {
           view = new Stade(this.main, id);
         } else {
-          view = new Stades(this.main);
+          view = new StadeEditor(this.main);
         }
         break;
       case 'results':
+        view = new Results(this.main);
+        break;
+      case 'result':
         if (id) {
           view = new Result(this.main, id);
         } else {
-          view = new Results(this.main);
+          view = new ResultEditor(this.main);
         }
         break;
       case 'datas':
+        view = new Datas(this.main);
+        break;
+      case 'data':
         if (id) {
           view = new Data(this.main, id);
         } else {
-          view = new Datas(this.main);
+          view = new DataEditor(this.main);
         }
         break;
       case 'settings':
