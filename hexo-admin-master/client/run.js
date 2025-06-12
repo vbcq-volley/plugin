@@ -1092,7 +1092,7 @@ class PostEditor {
     this.node.innerHTML = html;
 
     // Initialisation de CodeMirror
-    this.editor = CodeMirror.fromTextArea(document.getElementById('content'), {
+    this.editor = CodeMirror.fromTextArea(document.getElementById('contenue'), {
       mode: 'markdown',
       theme: 'monokai',
       lineNumbers: true,
@@ -1181,7 +1181,7 @@ class PageEditor {
           </div>
           <div class="form-group">
             <label for="content">Contenu</label>
-            <textarea id="content" name="content" rows="10" required>${page.content || ''}</textarea>
+            <textarea id="conten" name="content" rows="10" required>${page.content || ''}</textarea>
           </div>
           <div id="description-preview" class="preview"></div>
           <div class="form-group">
