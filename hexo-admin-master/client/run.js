@@ -2330,7 +2330,7 @@ class TournamentMatches {
 
   render() {
     this.node.innerHTML = this.template();
-    
+    this.fetchMatches()
     this.updateView();
   }
 
