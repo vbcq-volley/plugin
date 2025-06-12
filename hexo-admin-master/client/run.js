@@ -1194,7 +1194,7 @@ class PageEditor {
     this.node.innerHTML = html;
 
     // Initialisation de CodeMirror
-    this.editor = CodeMirror.fromTextArea(document.getElementById('content'), {
+    this.editor = CodeMirror.fromTextArea(document.getElementById('contenue'), {
       mode: 'markdown',
       theme: 'monokai',
       lineNumbers: true,
