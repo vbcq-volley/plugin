@@ -1222,9 +1222,9 @@ class PageEditor {
         if (this.id) {
           await api.getPage(this.id, data);
         } else {
-          await api.createPage(data.title);
+          const t=await api.createPage(data.title);
           // Mise à jour du contenu après création
-          const newPage = await api.getPage(this.id);
+          const newPage = await api.getPage(tthis.id);
           await api.getPage(newPage._id, data);
         }
         
