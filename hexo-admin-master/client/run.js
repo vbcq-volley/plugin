@@ -1180,8 +1180,8 @@ class PageEditor {
             <input type="text" id="title" name="title" value="${page.title || ''}" required>
           </div>
           <div class="form-group">
-            <label for="content">Contenu</label>
-            <textarea id="contenue" name="content" rows="10" required>${page.content || ''}</textarea>
+            <label for="contenue">Contenu</label>
+            <textarea id="contenue" name="contenue" rows="10" required>${page.content || ''}</textarea>
           </div>
           <div id="description-preview" class="preview"></div>
           <div class="form-group">
