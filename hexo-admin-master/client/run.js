@@ -2099,7 +2099,7 @@ class TournamentMatch {
     const allTeams = [...this.teams, ...this.tournamentTeams]; 
     if(this.data){
        teamOptions = allTeams.map(team => 
-        `<option value="${team._id}" ${this.data.team1 === team.id ? 'selected' : ''}>${team.teamName}</option>`
+        `<option value="${team._id}" ${this.data.team1 === team._id ? 'selected' : ''}>${team.teamName}</option>`
       ).join('');
     }else{
        teamOptions = allTeams.map(team => 
