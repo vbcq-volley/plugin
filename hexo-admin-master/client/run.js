@@ -2230,8 +2230,8 @@ class TournamentResult {
   
   }
 
-  async fetchMatch() {
-    this.match = await api.getEntry('tournament_matches', this.data.matchId);
+  async fetchMatch(id) {
+    this.match = await api.getEntry('tournament_matches', id);
   }
 
   render() {
@@ -2987,5 +2987,4 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.appendChild(node);
   new App(node);
 });
-
 
