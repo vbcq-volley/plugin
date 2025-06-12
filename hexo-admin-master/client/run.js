@@ -2356,8 +2356,8 @@ class TournamentMatches {
       <div class="tournament-matches">
         <h2>Matchs de Tournoi</h2>
         <div class="actions">
-          <a href="#/tournament-matches" class="btn btn-success">Nouveau Match</a>
-          <a href="#/tournament-matches/view" class="btn btn-info">Visualiser</a>
+          <a href="#/tournament-match" class="btn btn-success">Nouveau Match</a>
+
         </div>
         <table class="table">
           <thead>
