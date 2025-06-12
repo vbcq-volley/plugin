@@ -2455,7 +2455,7 @@ class TournamentResults {
     const tbody = this.node.querySelector('tbody');
     tbody.innerHTML = this.data.map(result => `
       <tr>
-        <td>${result.matchId}</td>
+        <td>${result.index}</td>
         <td>${result.score1}</td>
         <td>${result.score2}</td>
         <td>
