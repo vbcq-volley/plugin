@@ -2094,7 +2094,7 @@ class TournamentMatch {
     const form = this.node.querySelector('form');
     const team1Select = form.querySelector('[name="team1"]');
     const team2Select = form.querySelector('[name="team2"]');
-
+    var 
     // Remplir les options des équipes
     const allTeams = [...this.teams, ...this.tournamentTeams];
     if(this.data){
