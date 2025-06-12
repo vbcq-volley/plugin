@@ -2125,7 +2125,7 @@ class TournamentMatch {
         team2: formData.get('team2'),
         matchDate: formData.get('matchDate'),
         round: formData.get('round'),
-        team1Name: allTeams.find(t => t.id === formData.get('team1'))?.name,
+        team1Name: allTeams.find(t => t.id === formData.get('team1'))?.teamName,
         team2Name: allTeams.find(t => t.id === formData.get('team2'))?.teamName
       };
       
@@ -2416,7 +2416,7 @@ class TournamentResults {
     `).join('');
   }
 
-  template() {
+  template() { 
     return `
       <div class="tournament-results">
         <h2>Résultats de Tournoi</h2>
