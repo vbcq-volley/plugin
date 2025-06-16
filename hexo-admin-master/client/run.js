@@ -176,7 +176,7 @@ class API {
   }
 
   async getMatch() {
-    return this.getEntries('matches');
+    return this.getEntries('match');
   }
 
   async getTournamentMatches() {
@@ -351,6 +351,7 @@ class Pages {
     const html = `
       <div class="pages">
         <h2>Pages</h2>
+        <a href="#/page/${page._id}">crée une page </a>
         <ul>
           ${pages.map(page => `
             <li>
@@ -581,6 +582,8 @@ class Datas {
       const [day, month, year] = datePart.split('/');
       const [hours, minutes] = timePart.split(':');
       date = new Date(year, month - 1, day, hours, minutes);
+    }else{
+      return date
     }
     
     const d = new Date(date);
