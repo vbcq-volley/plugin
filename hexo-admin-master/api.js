@@ -236,7 +236,7 @@ module.exports = function (app, hexo) {
 
   function addIsDraft(post) {
   //  hexo.log.d(post)
-  console.log(post)
+ // console.log(post)
   if(!post){
     return{}
   }
@@ -256,8 +256,8 @@ module.exports = function (app, hexo) {
     hexo.model('Tag').forEach(function (tag) {
       tags[tag._id] = tag.name
     })
-    console.log(cats)
-    console.log(tags)
+   // console.log(cats)
+    //console.log(tags)
     if (Object.keys(cats).length === 0 ) {
       cats= null;
     }
