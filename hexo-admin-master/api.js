@@ -664,7 +664,7 @@ return res.done(db.read(req.body.data.type))  }
     if (!req.body) {
       return res.send(400, 'No page body given');
     }
-    console.log(req.body)
+    //console.log(req.body)
     updatePage(id, req.body, function (err, page) {
       if (err) {
         return res.send(400, err);
