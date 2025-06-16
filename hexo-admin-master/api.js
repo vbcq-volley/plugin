@@ -466,7 +466,7 @@ module.exports = function (app, hexo) {
 
   use('pages/list', function (req, res) {
    var page = hexo.model('Page')
-   console.log(page)
+   //console.log(page)
    res.done(page.map(addIsDraft));
   });
 
@@ -600,7 +600,7 @@ use('db/', function(req, res) {
 
       hexo.source.process([source]).then(function () {
         var page = hexo.model('Page').findOne({source: source})
-        console.log(source)
+        //console.log(source)
         res.done(addIsDraft(page));
       });
     });
