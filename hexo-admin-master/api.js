@@ -701,7 +701,7 @@ return res.done(db.read(req.body.data.type))  }
     })
     .then(function (file) {
       var source = postParameters.source
-      hexo.log.d(file)
+      console.log(file)
       res.done(addIsDraft(file))
     });
   });
