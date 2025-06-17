@@ -692,7 +692,7 @@ return res.done(db.read(req.body.data.type))  }
     }
 
     var postParameters = {title: req.body.title, layout: 'posts', date: new Date(), author: hexo.config.author,source:"_post"};
-    hexo.log.d(postParameters)
+    hexo.log(postParameters)
     hexo.post.create(postParameters)
     .error(function(err) {
       hexo.log.d("l'erreur est a la création du post")
@@ -701,8 +701,8 @@ return res.done(db.read(req.body.data.type))  }
     })
     .then(function (file) {
       var source = postParameters.source
-      hexo.log.d(file)
-      res.send(200,"succes")
+      hexo.log(file)
+      res.done(addIsDraft(file))
     });
   });
 
