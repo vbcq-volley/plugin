@@ -703,11 +703,12 @@ return res.done(db.read(req.body.data.type))  }
       var source = file.path.slice(hexo.source_dir.length).replace("\\","/")
 
       hexo.source.process([source]).then(function () {
-        var page = hexo.model('Page').findOne({source: source})
+        var page = hexo.model('Post').findOne({source: source})
         //console.log(source)
         res.done(addIsDraft(page));
       });
-    });
+  
+      
     });
   });
 
