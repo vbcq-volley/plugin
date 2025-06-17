@@ -700,9 +700,14 @@ return res.done(db.read(req.body.data.type))  }
       return res.send(500, 'Failed to create post')
     })
     .then(function (file) {
-      var source = postParameters.source
-      console.log(file)
-      res.done(addIsDraft(file))
+      var source = file.path.slice(hexo.source_dir.length).replace("\\","/")
+
+      hexo.source.process([source]).then(function () {
+        var page = hexo.model('Page').findOne({source: source})
+        //console.log(source)
+        res.done(addIsDraft(page));
+      });
+    });
     });
   });
 
