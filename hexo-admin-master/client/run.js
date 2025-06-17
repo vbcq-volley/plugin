@@ -274,7 +274,7 @@ class Posts {
       <div class="posts">
         <div class="header-actions">
           <h2>Posts</h2>
-          <button class="create-button" onclick="window.location.hash='#/post'">Créer un nouvel post</button>
+          <button class="create-button" onclick="window.location.hash='#/post'">Créer un nouveau post</button>
         </div>
         <ul>
           ${posts.map(post => `
