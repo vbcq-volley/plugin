@@ -2156,24 +2156,103 @@ class TournamentGenerator {
     return matches;
   }
 
+  async getTopTeamsFromPoule() {
+    try {
+      // Récupérer tous les matchs de la phase de poule
+      const pouleMatches = await this.api.getTournamentMatches({ round: 'poule' });
+      
+      // Créer un objet pour stocker les statistiques de chaque équipe
+      const teamStats = {};
+      
+      // Calculer les points pour chaque équipe
+      pouleMatches.forEach(match => {
+        const team1 = match.team1Name;
+        const team2 = match.team2Name;
+        
+        // Initialiser les statistiques si nécessaire
+        if (!teamStats[team1]) teamStats[team1] = { points: 0, wins: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 };
+        if (!teamStats[team2]) teamStats[team2] = { points: 0, wins: 0, losses: 0, goalsFor: 0, goalsAgainst: 0 };
+        
+        // Mettre à jour les statistiques
+        if (match.team1Score > match.team2Score) {
+          teamStats[team1].points += 3;
+          teamStats[team1].wins++;
+          teamStats[team2].losses++;
+        } else if (match.team1Score < match.team2Score) {
+          teamStats[team2].points += 3;
+          teamStats[team2].wins++;
+          teamStats[team1].losses++;
+        } else {
+          teamStats[team1].points += 1;
+          teamStats[team2].points += 1;
+        }
+        
+        // Mettre à jour les buts
+        teamStats[team1].goalsFor += match.team1Score;
+        teamStats[team1].goalsAgainst += match.team2Score;
+        teamStats[team2].goalsFor += match.team2Score;
+        teamStats[team2].goalsAgainst += match.team1Score;
+      });
+      
+      // Convertir l'objet en tableau et trier par points (et buts en cas d'égalité)
+      const sortedTeams = Object.entries(teamStats).map(([teamName, stats]) => ({
+        teamName,
+        points: stats.points,
+        wins: stats.wins,
+        goalsFor: stats.goalsFor,
+        goalsAgainst: stats.goalsAgainst
+      })).sort((a, b) => {
+        // Premier critère : points
+        if (a.points !== b.points) return b.points - a.points;
+        // Deuxième critère : différence de buts
+        const diffA = a.goalsFor - a.goalsAgainst;
+        const diffB = b.goalsFor - b.goalsAgainst;
+        if (diffA !== diffB) return diffB - diffA;
+        // Troisième critère : buts marqués
+        return b.goalsFor - a.goalsFor;
+      });
+      
+      // Récupérer les 16 meilleures équipes
+      const topTeams = sortedTeams.slice(0, 16);
+      
+      // Récupérer les détails complets des équipes
+      const teams = await this.api.getEntries('team');
+      return teams.filter(team => topTeams.some(t => t.teamName === team.teamName));
+    } catch (error) {
+      console.error('Erreur lors du classement des équipes:', error);
+      throw error;
+    }
+  }
+
   async generateAllMatches(node) {
     try {
-      // Récupérer les équipes disponibles
-      const teams = await this.api.getAvailableTeams();
-
       // Ouvrir la popup de sélection du type de tournoi
       const { type, startDate } = await this.showTournamentTypePopup(node);
       if (!type) return; // Si l'utilisateur a annulé
 
-      let matches = [];
+      let teams;
+      
+      // Sélectionner les équipes selon le type de tournoi
+      if (type === 'elimination') {
+        teams = await this.getTopTeamsFromPoule();
+        if (teams.length < 16) {
+          throw new Error('Il n\'y a pas assez d\'équipes qualifiées pour la phase d\'élimination');
+        }
+      } else {
+        // Pour la phase de poule, prendre toutes les équipes disponibles
+        teams = await this.api.getAvailableTeams();
+      }
 
       // Générer les matchs selon le type de tournoi
-      
+      let matches = [];
+      if (type === 'poule') {
+        matches = await this.generatePouleMatches(teams, startDate);
+      } else if (type === 'elimination') {
+        matches = await this.generateEliminationMatches(teams, startDate);
+      }
 
       // Créer les matchs via l'API
-      await this.api.generateMatches({
-        type,startDate,teams
-      });
+      await this.api.generateMatches(matches);
 
       return matches;
     } catch (error) {
