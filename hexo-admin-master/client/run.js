@@ -2287,11 +2287,11 @@ class TournamentGenerator {
           matches.push(await this.api.generateMatches({type:type,startDate:startDate   ,teams:team}));
         })
       }else{
-        m
+        matches.push()
       }
 
       // Créer les matchs via l'API
-      await this.api.generateMatches({type:type,startDate:startDate   ,teams:teams});
+
 
       return matches;
     } catch (error) {
