@@ -199,6 +199,21 @@ class API {
     return this.deleteEntry('tournament_matches', id);
   }
 
+  async generateMatches(data) {
+    return this.request('/db/tournament_matches/generate', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  }
+
+  async getAvailableTeams() {
+    return this.request('/db/team/available');
+  }
+
+  async getTournamentStructure() {
+    return this.request('/db/tournament/structure');
+  }
+
   async getTournamentResults() {
     return this.getEntries('tournament_results');
   }
@@ -2051,6 +2066,105 @@ class DataEditor {
   }
 }
 
+class TournamentGenerator {
+  constructor() {
+    this.api = api;
+  }
+
+  async generatePouleMatches(teams, startDate) {
+    const matches = [];
+    const teamCount = teams.length;
+    
+    // Générer tous les matchs possibles
+    for (let i = 0; i < teamCount; i++) {
+      for (let j = i + 1; j < teamCount; j++) {
+        const matchDate = new Date(startDate);
+        // Espacer les matchs de 2 jours
+        matchDate.setDate(matchDate.getDate() + matches.length * 2);
+        
+        matches.push({
+          team1: teams[i]._id,
+          team2: teams[j]._id,
+          matchDate: matchDate.toISOString(),
+          round: 'poule',
+          team1Name: teams[i].teamName,
+          team2Name: teams[j].teamName
+        });
+      }
+    }
+    
+    return matches;
+  }
+
+  async generateEliminationMatches(teams, startDate) {
+    const matches = [];
+    const teamCount = teams.length;
+    
+    // Générer les matchs en fonction du nombre d'équipes
+    let currentRound = 'quart';
+    let matchNumber = teamCount;
+    
+    while (matchNumber > 1) {
+      const roundMatches = [];
+      
+      for (let i = 0; i < matchNumber; i += 2) {
+        const matchDate = new Date(startDate);
+        // Espacer les matchs éliminatoires d'une semaine
+        matchDate.setDate(matchDate.getDate() + matches.length * 7);
+        
+        roundMatches.push({
+          team1: teams[i]._id,
+          team2: teams[i + 1]._id,
+          matchDate: matchDate.toISOString(),
+          round: currentRound,
+          team1Name: teams[i].teamName,
+          team2Name: teams[i + 1].teamName
+        });
+      }
+      
+      matches.push(...roundMatches);
+      teams = roundMatches; // Pour la prochaine ronde
+      matchNumber = Math.ceil(matchNumber / 2);
+      
+      // Passer au tour suivant
+      if (currentRound === 'quart') {
+        currentRound = 'semi';
+      } else if (currentRound === 'semi') {
+        currentRound = 'final';
+      }
+    }
+    
+    return matches;
+  }
+
+  async generateAllMatches() {
+    try {
+      // Récupérer les équipes disponibles
+      const teams = await this.api.getAvailableTeams();
+      
+      // Déterminer la structure du tournoi
+      const structure = await this.api.getTournamentStructure();
+      
+      let matches = [];
+      
+      // Générer les matchs selon le type de tournoi
+      if (structure.type === 'poule') {
+        matches = await this.generatePouleMatches(teams, structure.startDate);
+      } else if (structure.type === 'elimination') {
+        matches = await this.generateEliminationMatches(teams, structure.startDate);
+      }
+      
+      // Créer les matchs via l'API
+      await this.api.generateMatches(matches);
+      
+      return matches;
+    } catch (error) {
+      console.error('Erreur lors de la génération des matchs:', error);
+      throw error;
+    }
+  }
+}
+
 class TournamentMatch {
   constructor(node, id = null) {
     this.node = node;
@@ -2058,6 +2172,7 @@ class TournamentMatch {
     this.data = null;
     this.teams = [];
     this.tournamentTeams = [];
+    this.previousWinners = [];
   }
 
   async fetchMatch() {
@@ -2067,6 +2182,7 @@ class TournamentMatch {
     
     await this.fetchTeams();
     await this.fetchTournamentTeams();
+    await this.fetchPreviousWinners();
   }
 
   async fetchTeams() {
@@ -2081,6 +2197,20 @@ class TournamentMatch {
         _id: this.teams.find(t=>t.teamName===match.winner)._id,
         teamName: `gagnant ${match.index}`
       }));
+  }
+
+  async fetchPreviousWinners() {
+    if (!this.data?.round) return;
+    
+    const previousWinners = await api.request('/db/tournament/matches/winners', {
+      method: 'POST',
+      body: JSON.stringify({ round: this.data.round })
+    });
+    
+    this.previousWinners = previousWinners.map(winner => ({
+      _id: winner.winner,
+      teamName: `${winner.teamName} (gagnant du match ${winner._id})`
+    }));
   }
 
   render() {
@@ -2163,12 +2293,30 @@ class TournamentMatch {
             <label>Équipe 1</label>
             <select name="team1" required>
               <option value="">Sélectionner une équipe</option>
+              ${this.teams.map(team => 
+                `<option value="${team._id}" ${this.data?.team1 === team._id ? 'selected' : ''}>${team.teamName}</option>`
+              ).join('')}
+              ${this.tournamentTeams.map(team => 
+                `<option value="${team._id}" ${this.data?.team1 === team._id ? 'selected' : ''}>${team.teamName}</option>`
+              ).join('')}
+              ${this.previousWinners.map(winner => 
+                `<option value="${winner._id}" ${this.data?.team1 === winner._id ? 'selected' : ''}>${winner.teamName}</option>`
+              ).join('')}
             </select>
           </div>
           <div class="form-group">
             <label>Équipe 2</label>
             <select name="team2" required>
               <option value="">Sélectionner une équipe</option>
+              ${this.teams.map(team => 
+                `<option value="${team._id}" ${this.data?.team2 === team._id ? 'selected' : ''}>${team.teamName}</option>`
+              ).join('')}
+              ${this.tournamentTeams.map(team => 
+                `<option value="${team._id}" ${this.data?.team2 === team._id ? 'selected' : ''}>${team.teamName}</option>`
+              ).join('')}
+              ${this.previousWinners.map(winner => 
+                `<option value="${winner._id}" ${this.data?.team2 === winner._id ? 'selected' : ''}>${winner.teamName}</option>`
+              ).join('')}
             </select>
           </div>
           <div class="form-group">
@@ -2366,6 +2514,89 @@ class TournamentResult {
 }
 
 class TournamentMatches {
+  constructor(node) {
+    this.node = node;
+    this.data = null;
+    this.generator = new TournamentGenerator();
+  }
+
+  async generateMatches() {
+    try {
+      const matches = await this.generator.generateAllMatches();
+      alert('Matchs générés avec succès !');
+      window.location.hash = '#/tournament-matches';
+    } catch (error) {
+      console.error('Erreur lors de la génération des matchs:', error);
+      alert('Erreur lors de la génération des matchs');
+    }
+  }
+
+  template() {
+    return `
+      <div class="tournament-matches">
+        <h2>Matchs du Tournoi</h2>
+        <button class="btn btn-primary" onclick="app.currentView.generateMatches()">Générer les matchs</button>
+        <div class="matches-list">
+          ${this.data ? this.data.map(match => `
+            <div class="match-item">
+              <div class="match-info">
+                <span class="round">${match.round}</span>
+                <span class="teams">${match.team1Name} vs ${match.team2Name}</span>
+                <span class="date">${this.formatDate(new Date(match.matchDate))}</span>
+              </div>
+              <div class="match-actions">
+                <a href="#/tournament-match/${match._id}" class="btn btn-secondary">Modifier</a>
+                <button class="btn btn-danger" onclick="app.currentView.deleteMatch('${match._id}')">Supprimer</button>
+              </div>
+            </div>
+          `).join('') : '<p>Aucun match n\'a été généré</p>'}
+        </div>
+      </div>
+    `;
+  }
+
+  render() {
+    this.node.innerHTML = this.template();
+    this.fetchMatches().then((data) => {
+      this.updateView();
+    });
+  }
+
+  updateView() {
+    this.node.innerHTML = this.template();
+  }
+
+  async fetchMatches() {
+    this.data = await api.getTournamentMatches();
+  }
+
+  destroy() {
+    this.node.innerHTML = '';
+  }
+
+  formatDate(date) {
+    return date.toLocaleDateString('fr-FR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  async deleteMatch(id) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce match ?')) {
+      try {
+        await api.deleteTournamentMatch(id);
+        await this.fetchMatches();
+        this.updateView();
+      } catch (error) {
+        console.error('Erreur lors de la suppression du match:', error);
+        alert('Une erreur est survenue lors de la suppression du match');
+      }
+    }
+  }
+}
   constructor(node) {
     this.node = node;
     this.data = null;

@@ -496,6 +496,11 @@ use('db/', function(req, res) {
         const createdEntry = db.create(modelName, entry);
         hexo.log.d(`Created new entry in ${modelName}`);
         
+        // Mettre à jour le classement si c'est un résultat de tournoi
+        if (modelName === 'tournament_results') {
+          updateTournamentRanking();
+        }
+        
         return res.done(createdEntry);
       } catch (error) {
         hexo.log.e(`Error creating entry: ${error.message}`);
@@ -539,6 +544,11 @@ use('db/', function(req, res) {
         const updatedEntry = db.update(modelName, index, req.body);
         hexo.log.d(`Updated entry in ${modelName} at index ${index}`);
         
+        // Mettre à jour le classement si c'est un résultat de tournoi
+        if (modelName === 'tournament_results') {
+          updateTournamentRanking();
+        }
+        
         return res.done(updatedEntry);
       } catch (error) {
         hexo.log.e(`Error updating entry: ${error.message}`);
@@ -559,6 +569,11 @@ use('db/', function(req, res) {
         db.delete(modelName, index);
         hexo.log.d(`Deleted entry from ${modelName} at index ${index}`);
         
+        // Mettre à jour le classement si c'est un résultat de tournoi
+        if (modelName === 'tournament_results') {
+          updateTournamentRanking();
+        }
+        
         return res.done({ success: true });
       } catch (error) {
         hexo.log.e(`Error deleting entry: ${error.message}`);
@@ -569,6 +584,471 @@ use('db/', function(req, res) {
 
     default:
       return res.send(405, 'Method Not Allowed');
+  }
+});
+
+// Endpoint pour la génération des matchs
+use('db/tournament_matches/generate', function(req, res) {
+  try {
+    const { type, startDate, teams } = req.body;
+    if (!type || !startDate || !Array.isArray(teams)) {
+      return res.send(400, 'Missing required parameters');
+    }
+
+    const matches = generateTournamentMatches(type, startDate, teams);
+    
+    // Créer les matchs dans la base de données
+    matches.forEach(match => {
+      db.create('tournament_matches', match);
+    });
+
+    res.done(matches);
+  } catch (error) {
+    hexo.log.e(`Error generating matches: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
+  }
+});
+
+// Endpoint pour obtenir le classement du tournoi
+use('db/tournament/ranking', function(req, res) {
+  try {
+    const teams = db.read('team');
+    const results = db.read('tournament_results');
+    
+    const ranking = calculateTournamentRanking(teams, results);
+    res.done(ranking);
+  } catch (error) {
+    hexo.log.e(`Error getting tournament ranking: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
+  }
+});
+
+// Endpoint pour obtenir les statistiques du tournoi
+use('db/tournament/stats', function(req, res) {
+  try {
+    const matches = db.read('tournament_matches');
+    const results = db.read('tournament_results');
+    
+    const stats = calculateTournamentStats(matches, results);
+    res.done(stats);
+  } catch (error) {
+    hexo.log.e(`Error getting tournament stats: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
+  }
+});
+
+// Fonction utilitaire pour générer les matchs du tournoi
+function generateTournamentMatches(type, startDate, teams) {
+  const matches = [];
+  const teamCount = teams.length;
+  
+  if (type === 'poule') {
+    // Générer tous les matchs possibles
+    for (let i = 0; i < teamCount; i++) {
+      for (let j = i + 1; j < teamCount; j++) {
+        const matchDate = new Date(startDate);
+        matchDate.setDate(matchDate.getDate() + matches.length * 2);
+        
+        matches.push({
+          team1: teams[i]._id,
+          team2: teams[j]._id,
+          matchDate: matchDate.toISOString(),
+          round: 'poule',
+          team1Name: teams[i].teamName,
+          team2Name: teams[j].teamName
+        });
+      }
+    }
+  } else if (type === 'elimination') {
+    // Générer les matchs éliminatoires
+    let currentRound = 'quart';
+    let matchNumber = teamCount;
+    
+    while (matchNumber > 1) {
+      const roundMatches = [];
+      
+      for (let i = 0; i < matchNumber; i += 2) {
+        const matchDate = new Date(startDate);
+        matchDate.setDate(matchDate.getDate() + matches.length * 7);
+        
+        roundMatches.push({
+          team1: teams[i]._id,
+          team2: teams[i + 1]._id,
+          matchDate: matchDate.toISOString(),
+          round: currentRound,
+          team1Name: teams[i].teamName,
+          team2Name: teams[i + 1].teamName
+        });
+      }
+      
+      matches.push(...roundMatches);
+      teams = roundMatches;
+      matchNumber = Math.ceil(matchNumber / 2);
+      
+      if (currentRound === 'quart') {
+        currentRound = 'semi';
+      } else if (currentRound === 'semi') {
+        currentRound = 'final';
+      }
+    }
+  }
+  
+  return matches;
+}
+
+// Fonction utilitaire pour calculer le classement
+function calculateTournamentRanking(teams, results) {
+  const ranking = teams.map(team => ({
+    _id: team._id,
+    teamName: team.teamName,
+    points: 0,
+    wins: 0,
+    draws: 0,
+    losses: 0,
+    goalsFor: 0,
+    goalsAgainst: 0,
+    goalDifference: 0
+  }));
+
+  results.forEach(result => {
+    const team1 = ranking.find(t => t._id === result.team1);
+    const team2 = ranking.find(t => t._id === result.team2);
+    
+    if (!team1 || !team2) return;
+
+    const score1 = parseInt(result.score1) || 0;
+    const score2 = parseInt(result.score2) || 0;
+
+    // Mise à jour des statistiques
+    team1.goalsFor += score1;
+    team1.goalsAgainst += score2;
+    team2.goalsFor += score2;
+    team2.goalsAgainst += score1;
+
+    if (score1 > score2) {
+      team1.points += 3;
+      team1.wins++;
+      team2.losses++;
+    } else if (score2 > score1) {
+      team2.points += 3;
+      team2.wins++;
+      team1.losses++;
+    } else {
+      team1.points += 1;
+      team2.points += 1;
+      team1.draws++;
+      team2.draws++;
+    }
+
+    team1.goalDifference = team1.goalsFor - team1.goalsAgainst;
+    team2.goalDifference = team2.goalsFor - team2.goalsAgainst;
+  });
+
+  // Trier le classement
+  ranking.sort((a, b) => {
+    if (a.points !== b.points) {
+      return b.points - a.points;
+    }
+    if (a.goalDifference !== b.goalDifference) {
+      return b.goalDifference - a.goalDifference;
+    }
+    return b.goalsFor - a.goalsFor;
+  });
+
+  // Ajouter le classement
+  ranking.forEach((team, index) => {
+    team.rank = index + 1;
+  });
+
+  return ranking;
+}
+
+// Fonction utilitaire pour calculer les statistiques
+function calculateTournamentStats(matches, results) {
+  const stats = {
+    totalMatches: matches.length,
+    completedMatches: results.length,
+    topScorers: [],
+    mostGoalsFor: null,
+    mostGoalsAgainst: null,
+    cleanSheets: 0,
+    averageGoalsPerMatch: 0
+  };
+
+  // Calculer les buts totaux
+  let totalGoals = 0;
+  const goalsByPlayer = {};
+  
+  results.forEach(result => {
+    const score1 = parseInt(result.score1) || 0;
+    const score2 = parseInt(result.score2) || 0;
+    totalGoals += score1 + score2;
+
+    // Calculer les clean sheets
+    if (score1 === 0 || score2 === 0) {
+      stats.cleanSheets++;
+    }
+
+    // Calculer les buts par joueur
+    result.stats?.forEach(stat => {
+      if (stat.player && stat.goals) {
+        goalsByPlayer[stat.player] = (goalsByPlayer[stat.player] || 0) + stat.goals;
+      }
+    });
+  });
+
+  // Calculer les statistiques moyennes
+  stats.averageGoalsPerMatch = totalGoals / stats.completedMatches;
+
+  // Trouver les meilleurs buteurs
+  Object.entries(goalsByPlayer).forEach(([player, goals]) => {
+    stats.topScorers.push({ player, goals });
+  });
+  stats.topScorers.sort((a, b) => b.goals - a.goals);
+  stats.topScorers = stats.topScorers.slice(0, 3); // Top 3 buteurs
+
+  return stats;
+}
+
+// Fonction pour mettre à jour le classement après un résultat
+function updateTournamentRanking() {
+  const teams = db.read('team');
+  const results = db.read('tournament_results');
+  const ranking = calculateTournamentRanking(teams, results);
+
+  // Sauvegarder le classement mis à jour
+  db.create('tournament_ranking', ranking);
+
+  // Mettre à jour les matchs suivants basés sur les résultats
+  updateNextMatches();
+}
+
+// Fonction pour mettre à jour les matchs suivants
+function updateNextMatches() {
+  const matches = db.read('tournament_matches');
+  const results = db.read('tournament_results');
+  
+  matches.forEach(match => {
+    if (!match.winner && match.round !== 'final') {
+      // Trouver les matchs précédents
+      const previousMatches = matches.filter(m => 
+        m.round !== match.round && 
+        (m.team1 === match.team1 || m.team2 === match.team1)
+      );
+      
+      previousMatches.forEach(previousMatch => {
+        // Vérifier si le précédent a un gagnant
+        const previousResult = results.find(r => r.matchId === previousMatch._id);
+        if (previousResult && previousResult.winner) {
+          // Mettre à jour le match actuel avec le gagnant
+          const updatedMatch = {
+            ...match,
+            winner: previousResult.winner,
+            previousMatch: previousMatch._id
+          };
+          db.update('tournament_matches', db.findIndex('tournament_matches', match), updatedMatch);
+        }
+      });
+    }
+  });
+}
+
+// Endpoint pour obtenir les gagnants des matchs précédents
+use('db/tournament/matches/winners', function(req, res) {
+  try {
+    const { round } = req.body;
+    if (!round) {
+      return res.send(400, 'Round is required');
+    }
+
+    const matches = db.read('tournament_matches');
+    const results = db.read('tournament_results');
+    
+    // Trouver les matchs du round précédent
+    const previousRound = getPreviousRound(round);
+    const previousMatches = matches.filter(m => m.round === previousRound);
+    
+    // Trouver les gagnants
+    const winners = previousMatches.map(match => {
+      const result = results.find(r => r.matchId === match._id);
+      if (result && result.winner) {
+        return {
+          _id: match._id,
+          winner: result.winner,
+          teamName: match.team1Name,
+          matchDate: match.matchDate
+        };
+      }
+      return null;
+    }).filter(winner => winner !== null);
+
+    res.done(winners);
+  } catch (error) {
+    hexo.log.e(`Error getting match winners: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
+  }
+});
+
+// Fonction utilitaire pour obtenir le round précédent
+function getPreviousRound(round) {
+  const rounds = ['poule', 'quart', 'semi', 'final'];
+  const index = rounds.indexOf(round);
+  return index > 0 ? rounds[index - 1] : null;
+}
+
+// Endpoint pour mettre à jour un match avec un gagnant précédent
+use('db/tournament/matches/update-winner', function(req, res) {
+  try {
+    const { matchId, previousMatchId } = req.body;
+    if (!matchId || !previousMatchId) {
+      return res.send(400, 'Missing required parameters');
+    }
+
+    const match = db.read('tournament_matches').find(m => m._id === matchId);
+    if (!match) {
+      return res.send(404, 'Match not found');
+    }
+
+    // Mettre à jour le match avec le gagnant du match précédent
+    const previousResult = db.read('tournament_results').find(r => r.matchId === previousMatchId);
+    if (!previousResult || !previousResult.winner) {
+      return res.send(404, 'Previous match winner not found');
+    }
+
+    const updatedMatch = {
+      ...match,
+      winner: previousResult.winner,
+      previousMatch: previousMatchId
+    };
+
+    db.update('tournament_matches', db.findIndex('tournament_matches', match), updatedMatch);
+    
+    // Mettre à jour le classement
+    updateTournamentRanking();
+
+    res.done(updatedMatch);
+  } catch (error) {
+    hexo.log.e(`Error updating match winner: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
+  }
+});
+
+// Endpoint pour gérer les forfaits
+use('db/tournament/matches/forfeit', function(req, res) {
+  try {
+    const { matchId, teamId, reason } = req.body;
+    if (!matchId || !teamId) {
+      return res.send(400, 'Missing required parameters');
+    }
+
+    const match = db.read('tournament_matches').find(m => m._id === matchId);
+    if (!match) {
+      return res.send(404, 'Match not found');
+    }
+
+    // Créer un résultat avec forfait
+    const result = {
+      matchId: matchId,
+      team1: match.team1,
+      team2: match.team2,
+      score1: teamId === match.team1 ? 0 : 3,
+      score2: teamId === match.team1 ? 3 : 0,
+      winner: teamId === match.team1 ? match.team2 : match.team1,
+      forfeit: true,
+      forfeitTeam: teamId,
+      forfeitReason: reason || 'Forfait'
+    };
+
+    // Créer le résultat
+    db.create('tournament_results', result);
+    
+    // Mettre à jour le match
+    const updatedMatch = {
+      ...match,
+      winner: result.winner
+    };
+    db.update('tournament_matches', db.findIndex('tournament_matches', match), updatedMatch);
+
+    // Mettre à jour le classement
+    updateTournamentRanking();
+
+    res.done(result);
+  } catch (error) {
+    hexo.log.e(`Error handling forfeit: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
+  }
+});
+
+// Endpoint pour gérer les matchs nuls
+use('db/tournament/matches/draw', function(req, res) {
+  try {
+    const { matchId, score } = req.body;
+    if (!matchId || typeof score !== 'number') {
+      return res.send(400, 'Missing required parameters');
+    }
+
+    const match = db.read('tournament_matches').find(m => m._id === matchId);
+    if (!match) {
+      return res.send(404, 'Match not found');
+    }
+
+    // Créer un résultat avec match nul
+    const result = {
+      matchId: matchId,
+      team1: match.team1,
+      team2: match.team2,
+      score1: score,
+      score2: score,
+      draw: true
+    };
+
+    // Créer le résultat
+    db.create('tournament_results', result);
+
+    // Mettre à jour le classement
+    updateTournamentRanking();
+
+    res.done(result);
+  } catch (error) {
+    hexo.log.e(`Error handling draw: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
+  }
+});
+
+// Endpoint pour le tirage au sort des matchs
+use('db/tournament/matches/drawlots', function(req, res) {
+  try {
+    const { teams, round } = req.body;
+    if (!teams || !Array.isArray(teams) || !round) {
+      return res.send(400, 'Missing required parameters');
+    }
+
+    // Mélanger les équipes
+    const shuffledTeams = [...teams].sort(() => Math.random() - 0.5);
+    
+    // Créer les matchs
+    const matches = [];
+    for (let i = 0; i < shuffledTeams.length; i += 2) {
+      matches.push({
+        team1: shuffledTeams[i]._id,
+        team2: shuffledTeams[i + 1]?._id,
+        round: round,
+        team1Name: shuffledTeams[i].teamName,
+        team2Name: shuffledTeams[i + 1]?.teamName,
+        drawLots: true,
+        drawDate: new Date().toISOString()
+      });
+    }
+
+    // Créer les matchs dans la base de données
+    matches.forEach(match => {
+      db.create('tournament_matches', match);
+    });
+
+    res.done(matches);
+  } catch (error) {
+    hexo.log.e(`Error drawing lots: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
   }
 });
 
