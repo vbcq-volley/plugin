@@ -2602,7 +2602,7 @@ class TournamentMatches {
         });
     }
   }
-
+}
   // Cleanup event listeners when destroying
 
 
