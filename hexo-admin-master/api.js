@@ -588,7 +588,7 @@ use('db/', function(req, res) {
 });
 
 // Endpoint pour la génération des matchs
-use('db/tournament_matches/generate', function(req, res) {
+use('tournament_matches/generate', function(req, res) {
   try {
     const { type, startDate, teams } = req.body;
     if (!type || !startDate || !Array.isArray(teams)) {
@@ -610,7 +610,7 @@ use('db/tournament_matches/generate', function(req, res) {
 });
 
 // Endpoint pour obtenir le classement du tournoi
-use('db/tournament/ranking', function(req, res) {
+use('tournament/ranking', function(req, res) {
   try {
     const teams = db.read('team');
     const results = db.read('tournament_results');
@@ -624,7 +624,7 @@ use('db/tournament/ranking', function(req, res) {
 });
 
 // Endpoint pour obtenir les statistiques du tournoi
-use('db/tournament/stats', function(req, res) {
+use('tournament/stats', function(req, res) {
   try {
     const matches = db.read('tournament_matches');
     const results = db.read('tournament_results');
@@ -854,7 +854,7 @@ function updateNextMatches() {
 }
 
 // Endpoint pour obtenir les gagnants des matchs précédents
-use('db/tournament/matches/winners', function(req, res) {
+use('tournament/matches/winners', function(req, res) {
   try {
     const { round } = req.body;
     if (!round) {
@@ -897,7 +897,7 @@ function getPreviousRound(round) {
 }
 
 // Endpoint pour mettre à jour un match avec un gagnant précédent
-use('db/tournament/matches/update-winner', function(req, res) {
+use('tournament/matches/update-winner', function(req, res) {
   try {
     const { matchId, previousMatchId } = req.body;
     if (!matchId || !previousMatchId) {
@@ -934,7 +934,7 @@ use('db/tournament/matches/update-winner', function(req, res) {
 });
 
 // Endpoint pour gérer les forfaits
-use('db/tournament/matches/forfeit', function(req, res) {
+use('tournament/matches/forfeit', function(req, res) {
   try {
     const { matchId, teamId, reason } = req.body;
     if (!matchId || !teamId) {
@@ -980,7 +980,7 @@ use('db/tournament/matches/forfeit', function(req, res) {
 });
 
 // Endpoint pour gérer les matchs nuls
-use('db/tournament/matches/draw', function(req, res) {
+use('tournament/matches/draw', function(req, res) {
   try {
     const { matchId, score } = req.body;
     if (!matchId || typeof score !== 'number') {
@@ -1016,7 +1016,7 @@ use('db/tournament/matches/draw', function(req, res) {
 });
 
 // Endpoint pour le tirage au sort des matchs
-use('db/tournament/matches/drawlots', function(req, res) {
+use('tournament/matches/drawlots', function(req, res) {
   try {
     const { teams, round } = req.body;
     if (!teams || !Array.isArray(teams) || !round) {
