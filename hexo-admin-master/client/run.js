@@ -2627,7 +2627,7 @@ class TournamentMatches {
     try {
       // Créer le popup dans le DOM
       const popupHtml = `
-        <div class="tournament-type-popup" style="display: none;">
+        <div class="tournament-type-popup">
           <div class="popup-content">
             <h3>Sélectionnez le type de tournoi</h3>
             <div class="tournament-types">
