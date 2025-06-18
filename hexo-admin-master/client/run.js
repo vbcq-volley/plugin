@@ -2302,33 +2302,6 @@ class TournamentGenerator {
     });
   }
 
-  async generateAllMatches(node) {
-    try {
-      // Récupérer les équipes disponibles
-      const teams = await this.api.getAvailableTeams();
-
-      // Ouvrir la popup de sélection du type de tournoi
-      const { type, startDate } = await this.showTournamentTypePopup(node);
-      if (!type) return; // Si l'utilisateur a annulé
-
-      let matches = [];
-
-      // Générer les matchs selon le type de tournoi
-      if (type === 'poule') {
-        matches = await this.generatePouleMatches(teams, startDate);
-      } else if (type === 'elimination') {
-        matches = await this.generateEliminationMatches(teams, startDate);
-      }
-
-      // Créer les matchs via l'API
-      await this.api.generateMatches(matches);
-
-      return matches;
-    } catch (error) {
-      console.error('Erreur lors de la génération des matchs:', error);
-      throw error;
-    }
-  }
 
   template() {
     return `
