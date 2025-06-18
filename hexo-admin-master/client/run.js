@@ -2168,14 +2168,12 @@ class TournamentGenerator {
       let matches = [];
 
       // Générer les matchs selon le type de tournoi
-      if (type === 'poule') {
-        matches = await this.generatePouleMatches(teams, startDate);
-      } else if (type === 'elimination') {
-        matches = await this.generateEliminationMatches(teams, startDate);
-      }
+      
 
       // Créer les matchs via l'API
-      await this.api.generateMatches(matches);
+      await this.api.generateMatches({
+        type,startDate,teams
+      });
 
       return matches;
     } catch (error) {
