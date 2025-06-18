@@ -200,7 +200,7 @@ class API {
   }
 
   async generateMatches(data) {
-    return this.request('/db/tournament_matches/generate', {
+    return this.request('/tournament_matches/generate', {
       method: 'POST',
       body: JSON.stringify(data)
     });
@@ -224,7 +224,7 @@ class API {
   }
 
   async getTournamentStructure() {
-    return this.request('/db/tournament/structure');
+    return this.getEntries('tournament_structure');
   }
 
   async getTournamentResults() {
