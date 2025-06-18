@@ -2620,16 +2620,50 @@ class TournamentMatches {
     this.node = node;
     this.data = null;
     this.generator = new TournamentGenerator();
+    this.popupNode = null;
   }
 
   async generateMatches() {
     try {
-      const matches = await this.generator.generateAllMatches();
+      // Créer le popup dans le DOM
+      const popupHtml = `
+        <div class="tournament-type-popup" style="display: none;">
+          <div class="popup-content">
+            <h3>Sélectionnez le type de tournoi</h3>
+            <div class="tournament-types">
+              <button class="btn btn-secondary tournament-type" data-type="poule">Phase de Poules</button>
+              <button class="btn btn-secondary tournament-type" data-type="elimination">Élimination Directe</button>
+            </div>
+            <div class="tournament-date">
+              <label for="startDate">Date de début du tournoi:</label>
+              <input type="date" id="startDate" class="form-control" min="${new Date().toISOString().split('T')[0]}" required>
+            </div>
+            <div class="popup-buttons">
+              <button class="btn btn-secondary confirm">Confirmer</button>
+              <button class="btn btn-secondary cancel">Annuler</button>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Ajouter le popup au DOM
+      this.popupNode = document.createElement('div');
+      this.popupNode.innerHTML = popupHtml;
+      this.node.appendChild(this.popupNode);
+
+      // Générer les matchs avec le popup
+      const matches = await this.generator.generateAllMatches(this.popupNode);
       alert('Matchs générés avec succès !');
       window.location.hash = '#/tournament-matches';
     } catch (error) {
       console.error('Erreur lors de la génération des matchs:', error);
       alert('Erreur lors de la génération des matchs');
+    } finally {
+      // Nettoyer le popup
+      if (this.popupNode) {
+        this.node.removeChild(this.popupNode);
+        this.popupNode = null;
+      }
     }
   }
 
