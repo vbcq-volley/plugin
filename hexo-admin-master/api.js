@@ -641,7 +641,7 @@ use('tournament/stats/', function(req, res) {
 function generateTournamentMatches(type, startDate, teams) {
   const matches = [];
   const teamCount = teams.length;
-  
+  console.log(type)
   if (type === 'poule') {
     // Générer tous les matchs possibles
     for (let i = 0; i < teamCount; i++) {
