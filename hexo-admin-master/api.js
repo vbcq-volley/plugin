@@ -599,6 +599,7 @@ use('tournament_matches/generate/', function(req, res) {
     
     // Créer les matchs dans la base de données
     matches.forEach(match => {
+      console.log(match)
       db.create('tournament_matches', match);
     });
 
