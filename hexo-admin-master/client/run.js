@@ -2247,7 +2247,7 @@ class TournamentGenerator {
 
 
       // Créer les matchs via l'API
-      await this.api.generateMatches({type,startDate,teams});
+      await this.api.generateMatches({type:type,startDate:startDate   ,teams:teams});
 
       return matches;
     } catch (error) {
