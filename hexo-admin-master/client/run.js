@@ -2597,74 +2597,13 @@ class TournamentMatches {
     }
   }
 }
-constructor(node) {
-  this.node = node;
-  this.data = null;
-}
 
-  async fetchMatches() {
-  this.data = await api.getTournamentMatches();
-}
 
-render() {
-  this.node.innerHTML = this.template();
-  this.fetchMatches().then(() => {
-    this.updateView();
-  })
 
-}
 
-updateView() {
-  console.log(this.data)
-  if (!this.data) return;
 
-  const tbody = this.node.querySelector('tbody');
-  tbody.innerHTML = this.data.map(match => `
-      <tr> 
-        <td>${match.team1Name}</td>
-        <td>${match.team2Name}</td>
-        <td>${this.formatDate(match.matchDate)}</td>
-        <td>${match.round}</td>
-        <td>
-          <a href="#/tournament-match/${match._id}" class="btn btn-primary">Modifier</a>
-          
-        </td>
-      </tr>
-    `).join('');
-}
 
-template() {
-  return `
-      <div class="tournament-matches">
-        <h2>Matchs de Tournoi</h2>
-        <div class="actions">
-          <a href="#/tournament-match" class="btn btn-success">Nouveau Match</a>
 
-        </div>
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Équipe 1</th>
-              <th>Équipe 2</th>
-              <th>Date</th>
-              <th>Tour</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    `;
-}
-
-destroy() {
-  this.node.innerHTML = '';
-}
-
-formatDate(date) {
-  return new Date(date).toLocaleString('fr-FR');
-}
-}
 
 class TournamentResults {
   constructor(node) {
