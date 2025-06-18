@@ -2279,7 +2279,7 @@ class TournamentGenerator {
         // Pour la phase de poule, prendre toutes les équipes disponibles
         teams = await this.api.getAvailableTeams();
       }
-
+      const matches=[]
       // Générer les matchs selon le type de tournoi
       if(type=="poule"){
         const groups = this.divideTeamsIntoGroups(teams);
