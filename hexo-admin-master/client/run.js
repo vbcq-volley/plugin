@@ -2150,7 +2150,7 @@ class TournamentGenerator {
     
     return allMatches;
   }
-  }
+  
 
   async generateEliminationMatches(teams, startDate) {
     const matches = [];
