@@ -2286,6 +2286,8 @@ class TournamentGenerator {
         groups.forEach(async(team)=>{
           matches.push(await this.api.generateMatches({type:type,startDate:startDate   ,teams:team}));
         })
+      }else{
+        m
       }
 
       // Créer les matchs via l'API
