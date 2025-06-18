@@ -2284,7 +2284,7 @@ class TournamentGenerator {
       if(type=="poule"){
         const groups = this.divideTeamsIntoGroups(teams);
         groups.forEach(async(team)=>{
-          await this.api.generateMatches({type:type,startDate:startDate   ,teams:team});
+          matches.push(await this.api.generateMatches({type:type,startDate:startDate   ,teams:team}));
         })
       }
 
