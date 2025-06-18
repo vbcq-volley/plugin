@@ -2230,7 +2230,7 @@ class TournamentGenerator {
     });
   }
 
-  generateAllMatches(node) {
+  async generateAllMatches(node) {
     try {
       // Récupérer les équipes disponibles
       const teams = await this.api.getAvailableTeams();
