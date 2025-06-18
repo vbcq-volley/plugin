@@ -2546,7 +2546,7 @@ class TournamentMatches {
               </div>
               <div class="match-actions">
                 <a href="#/tournament-match/${match._id}" class="btn btn-secondary">Modifier</a>
-                <button class="btn btn-danger" onclick="app.currentView.deleteMatch('${match._id}')">Supprimer</button>
+                <button class="btn btn-danger delete-match" data-match-id="${match._id}">Supprimer</button>
               </div>
             </div>
           `).join('') : '<p>Aucun match n\'a été généré</p>'}
@@ -2586,18 +2586,17 @@ class TournamentMatches {
 
   async deleteMatch(id) {
     if (confirm('Êtes-vous sûr de vouloir supprimer ce match ?')) {
-      try {
-        await api.deleteTournamentMatch(id);
-        await this.fetchMatches();
-        this.updateView();
-      } catch (error) {
-        console.error('Erreur lors de la suppression du match:', error);
-        alert('Une erreur est survenue lors de la suppression du match');
-      }
+      api.deleteTournamentMatch(id)
+        .then(() => {
+          this.fetchMatches();
+        })
+        .catch(error => {
+          console.error('Erreur lors de la suppression du match:', error);
+        });
     }
   }
-}
 
+  // Cleanup event listeners when destroying
 
 
 
