@@ -2281,7 +2281,7 @@ class TournamentGenerator {
       }
 
       // Générer les matchs selon le type de tournoi
-
+      if(type)
 
       // Créer les matchs via l'API
      const matches= await this.api.generateMatches({type:type,startDate:startDate   ,teams:teams});
