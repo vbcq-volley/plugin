@@ -2283,7 +2283,7 @@ class TournamentGenerator {
       // Générer les matchs selon le type de tournoi
       if(type=="poule"){
         const groups = this.divideTeamsIntoGroups(teams);
-        groups.forEach(())
+        groups.forEach((team)=>{})
       }
 
       // Créer les matchs via l'API
