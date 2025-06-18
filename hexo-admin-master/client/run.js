@@ -313,7 +313,7 @@ class Posts {
 
   formatDate(date) {
     if (!date) return '';
-    
+
     // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
     if (typeof date === 'string' && date.includes('/')) {
       const [datePart, timePart] = date.split(' ');
@@ -321,7 +321,7 @@ class Posts {
       const [hours, minutes] = timePart.split(':');
       date = new Date(year, month - 1, day, hours, minutes);
     }
-    
+
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -332,7 +332,7 @@ class Posts {
     const year = d.getFullYear();
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
-    
+
     return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
@@ -590,17 +590,17 @@ class Datas {
 
   formatDate(date) {
     if (!date) return '';
-    
+
     // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
     if (typeof date === 'string' && date.includes('/')) {
       const [datePart, timePart] = date.split(' ');
       const [day, month, year] = datePart.split('/');
       const [hours, minutes] = timePart.split(':');
       date = new Date(year, month - 1, day, hours, minutes);
-    }else{
+    } else {
       return date
     }
-    
+
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -611,7 +611,7 @@ class Datas {
     const year = d.getFullYear();
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
-    
+
     return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
@@ -701,12 +701,12 @@ class About {
     const renderReadme = async (username, repo) => {
       const readmeContent = await fetchReadme(username, repo);
       if (readmeContent) {
-        this.node.innerHTML=marked.parse(readmeContent)
+        this.node.innerHTML = marked.parse(readmeContent)
         return readmeContent;
       }
       return 'Impossible de charger le README';
     };
-  renderReadme("vbcq-volley","temp")
+    renderReadme("vbcq-volley", "temp")
   }
 
   destroy() {
@@ -760,7 +760,7 @@ class Post {
 
   formatDate(date) {
     if (!date) return '';
-    
+
     // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
     if (typeof date === 'string' && date.includes('/')) {
       const [datePart, timePart] = date.split(' ');
@@ -768,7 +768,7 @@ class Post {
       const [hours, minutes] = timePart.split(':');
       date = new Date(year, month - 1, day, hours, minutes);
     }
-    
+
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -779,7 +779,7 @@ class Post {
     const year = d.getFullYear();
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
-    
+
     return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
@@ -962,7 +962,7 @@ class Result {
 
   formatDate(date) {
     if (!date) return '';
-    
+
     // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
     if (typeof date === 'string' && date.includes('/')) {
       const [datePart, timePart] = date.split(' ');
@@ -970,7 +970,7 @@ class Result {
       const [hours, minutes] = timePart.split(':');
       date = new Date(year, month - 1, day, hours, minutes);
     }
-    
+
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -981,7 +981,7 @@ class Result {
     const year = d.getFullYear();
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
-    
+
     return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
@@ -1031,7 +1031,7 @@ class Data {
 
   formatDate(date) {
     if (!date) return '';
-    
+
     // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
     if (typeof date === 'string' && date.includes('/')) {
       const [datePart, timePart] = date.split(' ');
@@ -1039,7 +1039,7 @@ class Data {
       const [hours, minutes] = timePart.split(':');
       date = new Date(year, month - 1, day, hours, minutes);
     }
-    
+
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -1050,7 +1050,7 @@ class Data {
     const year = d.getFullYear();
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
-    
+
     return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 }
@@ -1132,21 +1132,21 @@ class PostEditor {
       const data = {
         title: formData.get('title'),
         _content: this.editor.getValue(),
-        date: formData.get('date') 
+        date: formData.get('date')
       };
 
       try {
         if (this.id) {
           await api.getPost(this.id, data);
         } else {
-          const t=await api.createPost(data.title);
+          const t = await api.createPost(data.title);
           // Mise à jour du contenu après création
           const newPost = await api.getPost(t._id);
           await api.getPost(newPost._id, data);
         }
-        
-          window.location.hash = '#/posts';
-        
+
+        window.location.hash = '#/posts';
+
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1224,7 +1224,7 @@ class PageEditor {
       const content = this.editor.getValue();
       preview.innerHTML = marked.parse(content);
     };
-   
+
     this.editor.on('change', updatePreview);
     updatePreview();
     const form = document.getElementById('page-form');
@@ -1240,15 +1240,15 @@ class PageEditor {
         if (this.id) {
           await api.getPage(this.id, data);
         } else {
-          const t=await api.createPage(data.title);
-          console.log(t) 
+          const t = await api.createPage(data.title);
+          console.log(t)
           // Mise à jour du contenu après création
           const newPage = await api.getPage(t._id);
           await api.getPage(newPage._id, data);
         }
-        
-          window.location.hash = '#/pages';
-        
+
+        window.location.hash = '#/pages';
+
       } catch (error) {
         alert('Erreur lors de l\'enregistrement: ' + error.message);
       }
@@ -1547,7 +1547,7 @@ class ResultEditor {
 
   formatDate(date) {
     if (!date) return '';
-    
+
     // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
     if (typeof date === 'string' && date.includes('/')) {
       const [datePart, timePart] = date.split(' ');
@@ -1555,7 +1555,7 @@ class ResultEditor {
       const [hours, minutes] = timePart.split(':');
       date = new Date(year, month - 1, day, hours, minutes);
     }
-    
+
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -1566,7 +1566,7 @@ class ResultEditor {
     const year = d.getFullYear();
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
-    
+
     return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 
@@ -1576,7 +1576,7 @@ class ResultEditor {
       'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
       'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
     };
-    
+
     const parts = dateStr.split(' ');
     const dayNum = parseInt(parts[0]);
     const monthNum = months[parts[1].toLowerCase()];
@@ -1584,7 +1584,7 @@ class ResultEditor {
     const time = parts[4].split(':');
     const hours = parseInt(time[0]);
     const minutes = parseInt(time[1]);
-    
+
     return new Date(yearNum, monthNum, dayNum, hours, minutes).toISOString();
   }
 
@@ -1723,7 +1723,7 @@ class ResultEditor {
       const formData = new FormData(form);
       const matchType = formData.get('matchType');
       const selectedMatch = matches.find(m => m._id === formData.get('matchId'));
-      
+
       const data = {
         matchType,
         team1: selectedMatch.team1,
@@ -1791,7 +1791,7 @@ class DataEditor {
 
   formatDate(date) {
     if (!date) return '';
-    
+
     // Vérifier si la date est dans l'ancien format (JJ/MM/AAAA HH:mm)
     if (typeof date === 'string' && date.includes('/')) {
       const [datePart, timePart] = date.split(' ');
@@ -1799,7 +1799,7 @@ class DataEditor {
       const [hours, minutes] = timePart.split(':');
       date = new Date(year, month - 1, day, hours, minutes);
     }
-    
+
     const d = new Date(date);
     const months = [
       'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
@@ -1810,7 +1810,7 @@ class DataEditor {
     const year = d.getFullYear();
     const hours = d.getHours().toString().padStart(2, '0');
     const minutes = d.getMinutes().toString().padStart(2, '0');
-    
+
     return `${day} ${month} ${year} à ${hours}:${minutes}`;
   }
 
@@ -1820,7 +1820,7 @@ class DataEditor {
       'janvier': 0, 'février': 1, 'mars': 2, 'avril': 3, 'mai': 4, 'juin': 5,
       'juillet': 6, 'août': 7, 'septembre': 8, 'octobre': 9, 'novembre': 10, 'décembre': 11
     };
-    
+
     const parts = dateStr.split(' ');
     const dayNum = parseInt(parts[0]);
     const monthNum = months[parts[1].toLowerCase()];
@@ -1828,14 +1828,14 @@ class DataEditor {
     const time = parts[4].split(':');
     const hours = parseInt(time[0]);
     const minutes = parseInt(time[1]);
-    
+
     return new Date(yearNum, monthNum, dayNum, hours, minutes).toISOString();
   }
 
-  isTeamAvailable(teamName, session=1, currentMatchId = null) {
-    return !this.matchesFetcher.data.some(match => 
-      match._id !== currentMatchId && 
-      match.session === session && 
+  isTeamAvailable(teamName, session = 1, currentMatchId = null) {
+    return !this.matchesFetcher.data.some(match =>
+      match._id !== currentMatchId &&
+      match.session === session &&
       (match.team1 === teamName || match.team2 === teamName)
     );
   }
@@ -1856,7 +1856,7 @@ class DataEditor {
       const teamGroup = option.dataset.group;
       const teamName = option.dataset.team;
       const isAvailable = this.isTeamAvailable(teamName, session, currentMatchId);
-      
+
       if (teamGroup === selectedGroup && isAvailable) {
         option.style.display = '';
         option.disabled = false;
@@ -1872,7 +1872,7 @@ class DataEditor {
       const teamGroup = option.dataset.group;
       const teamName = option.dataset.team;
       const isAvailable = this.isTeamAvailable(teamName, session, currentMatchId);
-      
+
       if (teamGroup === selectedGroup && isAvailable && teamName !== team1Select.value) {
         option.style.display = '';
         option.disabled = false;
@@ -2074,14 +2074,14 @@ class TournamentGenerator {
   async generatePouleMatches(teams, startDate) {
     const matches = [];
     const teamCount = teams.length;
-    
+
     // Générer tous les matchs possibles
     for (let i = 0; i < teamCount; i++) {
       for (let j = i + 1; j < teamCount; j++) {
         const matchDate = new Date(startDate);
         // Espacer les matchs de 2 jours
         matchDate.setDate(matchDate.getDate() + matches.length * 2);
-        
+
         matches.push({
           team1: teams[i]._id,
           team2: teams[j]._id,
@@ -2092,26 +2092,26 @@ class TournamentGenerator {
         });
       }
     }
-    
+
     return matches;
   }
 
   async generateEliminationMatches(teams, startDate) {
     const matches = [];
     const teamCount = teams.length;
-    
+
     // Générer les matchs en fonction du nombre d'équipes
     let currentRound = 'quart';
     let matchNumber = teamCount;
-    
+
     while (matchNumber > 1) {
       const roundMatches = [];
-      
+
       for (let i = 0; i < matchNumber; i += 2) {
         const matchDate = new Date(startDate);
         // Espacer les matchs éliminatoires d'une semaine
         matchDate.setDate(matchDate.getDate() + matches.length * 7);
-        
+
         roundMatches.push({
           team1: teams[i]._id,
           team2: teams[i + 1]._id,
@@ -2121,11 +2121,11 @@ class TournamentGenerator {
           team2Name: teams[i + 1].teamName
         });
       }
-      
+
       matches.push(...roundMatches);
       teams = roundMatches; // Pour la prochaine ronde
       matchNumber = Math.ceil(matchNumber / 2);
-      
+
       // Passer au tour suivant
       if (currentRound === 'quart') {
         currentRound = 'semi';
@@ -2133,7 +2133,7 @@ class TournamentGenerator {
         currentRound = 'final';
       }
     }
-    
+
     return matches;
   }
 
@@ -2141,22 +2141,22 @@ class TournamentGenerator {
     try {
       // Récupérer les équipes disponibles
       const teams = await this.api.getAvailableTeams();
-      
+
       // Déterminer la structure du tournoi
       const structure = await this.api.getTournamentStructure();
-      
+
       let matches = [];
-      
+
       // Générer les matchs selon le type de tournoi
       if (structure.type === 'poule') {
         matches = await this.generatePouleMatches(teams, structure.startDate);
       } else if (structure.type === 'elimination') {
         matches = await this.generateEliminationMatches(teams, structure.startDate);
       }
-      
+
       // Créer les matchs via l'API
       await this.api.generateMatches(matches);
-      
+
       return matches;
     } catch (error) {
       console.error('Erreur lors de la génération des matchs:', error);
@@ -2176,10 +2176,10 @@ class TournamentMatch {
   }
 
   async fetchMatch() {
-    if(this.id){
+    if (this.id) {
       this.data = await api.getEntry('tournament_matches', this.id);
     }
-    
+
     await this.fetchTeams();
     await this.fetchTournamentTeams();
     await this.fetchPreviousWinners();
@@ -2194,19 +2194,19 @@ class TournamentMatch {
     this.tournamentTeams = matches
       .filter(match => match._id !== this.id && match.winner)
       .map(match => ({
-        _id: this.teams.find(t=>t.teamName===match.winner)._id,
+        _id: this.teams.find(t => t.teamName === match.winner)._id,
         teamName: `gagnant ${match.index}`
       }));
   }
 
   async fetchPreviousWinners() {
     if (!this.data?.round) return;
-    
+
     const previousWinners = await api.request('/db/tournament/matches/winners', {
       method: 'POST',
       body: JSON.stringify({ round: this.data.round })
     });
-    
+
     this.previousWinners = previousWinners.map(winner => ({
       _id: winner.winner,
       teamName: `${winner.teamName} (gagnant du match ${winner._id})`
@@ -2215,10 +2215,10 @@ class TournamentMatch {
 
   render() {
     this.node.innerHTML = this.template();
-    this.fetchMatch().then((data)=>{
+    this.fetchMatch().then((data) => {
       this.updateView();
     })
-    
+
   }
 
   updateView() {
@@ -2228,19 +2228,19 @@ class TournamentMatch {
     const form = this.node.querySelector('form');
     const team1Select = form.querySelector('[name="team1"]');
     const team2Select = form.querySelector('[name="team2"]');
-    var teamOptions=[]
+    var teamOptions = []
     // Remplir les options des équipes
-    const allTeams = [...this.teams, ...this.tournamentTeams]; 
-    if(this.data){
-       teamOptions = allTeams.map(team => 
+    const allTeams = [...this.teams, ...this.tournamentTeams];
+    if (this.data) {
+      teamOptions = allTeams.map(team =>
         `<option value="${team._id}" ${this.data.team1 === team._id ? 'selected' : ''}>${team.teamName}</option>`
       ).join('');
-    }else{
-       teamOptions = allTeams.map(team => 
+    } else {
+      teamOptions = allTeams.map(team =>
         `<option value="${team._id}"  ''>${team.teamName}</option>`
       ).join('');
     }
-    
+
     console.log(allTeams)
     team1Select.innerHTML = '<option value="">Sélectionner une équipe</option>' + teamOptions;
     team2Select.innerHTML = '<option value="">Sélectionner une équipe</option>' + teamOptions;
@@ -2293,30 +2293,30 @@ class TournamentMatch {
             <label>Équipe 1</label>
             <select name="team1" required>
               <option value="">Sélectionner une équipe</option>
-              ${this.teams.map(team => 
-                `<option value="${team._id}" ${this.data?.team1 === team._id ? 'selected' : ''}>${team.teamName}</option>`
-              ).join('')}
-              ${this.tournamentTeams.map(team => 
-                `<option value="${team._id}" ${this.data?.team1 === team._id ? 'selected' : ''}>${team.teamName}</option>`
-              ).join('')}
-              ${this.previousWinners.map(winner => 
-                `<option value="${winner._id}" ${this.data?.team1 === winner._id ? 'selected' : ''}>${winner.teamName}</option>`
-              ).join('')}
+              ${this.teams.map(team =>
+      `<option value="${team._id}" ${this.data?.team1 === team._id ? 'selected' : ''}>${team.teamName}</option>`
+    ).join('')}
+              ${this.tournamentTeams.map(team =>
+      `<option value="${team._id}" ${this.data?.team1 === team._id ? 'selected' : ''}>${team.teamName}</option>`
+    ).join('')}
+              ${this.previousWinners.map(winner =>
+      `<option value="${winner._id}" ${this.data?.team1 === winner._id ? 'selected' : ''}>${winner.teamName}</option>`
+    ).join('')}
             </select>
           </div>
           <div class="form-group">
             <label>Équipe 2</label>
             <select name="team2" required>
               <option value="">Sélectionner une équipe</option>
-              ${this.teams.map(team => 
-                `<option value="${team._id}" ${this.data?.team2 === team._id ? 'selected' : ''}>${team.teamName}</option>`
-              ).join('')}
-              ${this.tournamentTeams.map(team => 
-                `<option value="${team._id}" ${this.data?.team2 === team._id ? 'selected' : ''}>${team.teamName}</option>`
-              ).join('')}
-              ${this.previousWinners.map(winner => 
-                `<option value="${winner._id}" ${this.data?.team2 === winner._id ? 'selected' : ''}>${winner.teamName}</option>`
-              ).join('')}
+              ${this.teams.map(team =>
+      `<option value="${team._id}" ${this.data?.team2 === team._id ? 'selected' : ''}>${team.teamName}</option>`
+    ).join('')}
+              ${this.tournamentTeams.map(team =>
+      `<option value="${team._id}" ${this.data?.team2 === team._id ? 'selected' : ''}>${team.teamName}</option>`
+    ).join('')}
+              ${this.previousWinners.map(winner =>
+      `<option value="${winner._id}" ${this.data?.team2 === winner._id ? 'selected' : ''}>${winner.teamName}</option>`
+    ).join('')}
             </select>
           </div>
           <div class="form-group">
@@ -2368,18 +2368,18 @@ class TournamentResult {
   }
 
   async fetchResult() {
-    if(this.id){
+    if (this.id) {
       this.data = await api.getEntry('tournament_results', this.id);
       if (this.data) {
         await this.fetchMatch(this.data.matchId);
       }
-    }else{
-      this.data=await api.getEntries('tournament_results')[0]
+    } else {
+      this.data = await api.getEntries('tournament_results')[0]
       if (this.data) {
         await this.fetchMatch(this.data.matchId);
       }
     }
-  
+
   }
 
   async fetchMatch(id) {
@@ -2392,15 +2392,15 @@ class TournamentResult {
     const matchSelect = form.querySelector('[name="matchId"]');
 
     // Charger les matchs disponibles
- 
-     
-      this.updateView();
-    
-    
+
+
+    this.updateView();
+
+
   }
 
   updateView() {
-    
+
 
     const form = this.node.querySelector('form');
     const matchSelect = form.querySelector('[name="matchId"]');
@@ -2418,7 +2418,7 @@ class TournamentResult {
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      
+
       const formData = new FormData(form);
       await this.fetchMatch(formData.get('matchId'))
       const data = {
@@ -2472,7 +2472,7 @@ class TournamentResult {
             ${match.team1Name} vs ${match.team2Name} (${match.round})
           </option>
         `).join('');
-      
+
       select.innerHTML = '<option value="">Sélectionner un match</option>' + options;
     } catch (error) {
       console.error('Erreur lors du chargement des matchs:', error);
@@ -2597,29 +2597,29 @@ class TournamentMatches {
     }
   }
 }
-  constructor(node) {
-    this.node = node;
-    this.data = null;
-  }
+constructor(node) {
+  this.node = node;
+  this.data = null;
+}
 
   async fetchMatches() {
-    this.data = await api.getTournamentMatches();
-  }
+  this.data = await api.getTournamentMatches();
+}
 
-  render() {
-    this.node.innerHTML = this.template();
-    this.fetchMatches().then(()=>{
-      this.updateView();
-    })
-    
-  }
+render() {
+  this.node.innerHTML = this.template();
+  this.fetchMatches().then(() => {
+    this.updateView();
+  })
 
-  updateView() {
-    console.log(this.data)
-    if (!this.data) return;
+}
 
-    const tbody = this.node.querySelector('tbody');
-    tbody.innerHTML = this.data.map(match => `
+updateView() {
+  console.log(this.data)
+  if (!this.data) return;
+
+  const tbody = this.node.querySelector('tbody');
+  tbody.innerHTML = this.data.map(match => `
       <tr> 
         <td>${match.team1Name}</td>
         <td>${match.team2Name}</td>
@@ -2631,10 +2631,10 @@ class TournamentMatches {
         </td>
       </tr>
     `).join('');
-  }
+}
 
-  template() {
-    return `
+template() {
+  return `
       <div class="tournament-matches">
         <h2>Matchs de Tournoi</h2>
         <div class="actions">
@@ -2655,15 +2655,15 @@ class TournamentMatches {
         </table>
       </div>
     `;
-  }
+}
 
-  destroy() {
-    this.node.innerHTML = '';
-  }
+destroy() {
+  this.node.innerHTML = '';
+}
 
-  formatDate(date) {
-    return new Date(date).toLocaleString('fr-FR');
-  }
+formatDate(date) {
+  return new Date(date).toLocaleString('fr-FR');
+}
 }
 
 class TournamentResults {
@@ -2678,10 +2678,10 @@ class TournamentResults {
 
   render() {
     this.node.innerHTML = this.template();
-    this.fetchResults().then(()=>{
+    this.fetchResults().then(() => {
       this.updateView();
     })
-   
+
   }
 
   updateView() {
@@ -2701,7 +2701,7 @@ class TournamentResults {
     `).join('');
   }
 
-  template() { 
+  template() {
     return `
       <div class="tournament-results">
         <h2>Résultats de Tournoi</h2>
@@ -2749,15 +2749,15 @@ class App {
     const app = document.createElement('div');
     app.className = 'app';
     this.node.appendChild(app);
-    
+
     const header = document.createElement('div');
     header.className = 'app_header';
     app.appendChild(header);
-    
+
     const nav = document.createElement('ul');
     nav.className = 'app_nav';
     header.appendChild(nav);
-    
+
     const menuItems = [
       { text: 'Posts', route: 'posts' },
       { text: 'Pages', route: 'pages' },
@@ -2769,7 +2769,7 @@ class App {
       { text: 'Résultats Tournoi', route: 'tournament-results' },
       { text: 'À propos', route: 'about' }
     ];
-    
+
     menuItems.forEach(item => {
       const li = document.createElement('li');
       const a = document.createElement('a');
@@ -2785,12 +2785,12 @@ class App {
     imageButton.innerHTML = '📷 Images';
     imageButton.onclick = () => this.showImageModal();
     header.appendChild(imageButton);
-    
+
     const main = document.createElement('div');
     main.className = 'app_main';
     main.id = 'app_main';
     app.appendChild(main);
-    
+
     this.main = main;
 
     // Création de la modale des images
@@ -2875,13 +2875,13 @@ class App {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const reader = new FileReader();
-        
+
         const imageData = await new Promise((resolve, reject) => {
           reader.onload = () => resolve(reader.result);
           reader.onerror = reject;
           reader.readAsDataURL(file);
         });
-        
+
         await api.uploadImage(imageData, file.name);
       }
       await this.loadImages();
@@ -2900,7 +2900,7 @@ class App {
 
   handleRoute() {
     const hash = window.location.hash.slice(1);
-    const [bin,route, id] = hash.split('/');
+    const [bin, route, id] = hash.split('/');
     let view;
 
     switch (route) {
