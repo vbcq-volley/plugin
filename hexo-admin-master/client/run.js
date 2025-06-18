@@ -2084,6 +2084,12 @@ class TournamentGenerator {
     this.api = api;
   }
 
+  // Fonction utilitaire pour fermer la popup
+  static closePopup(popup) {
+    popup.style.display = 'none';
+    document.body.style.overflow = 'auto';
+  }
+
   async generatePouleMatches(teams, startDate) {
     const matches = [];
     const teamCount = teams.length;
@@ -2150,13 +2156,13 @@ class TournamentGenerator {
     return matches;
   }
 
-  async generateAllMatches() {
+  async generateAllMatches(node) {
     try {
       // Récupérer les équipes disponibles
       const teams = await this.api.getAvailableTeams();
 
       // Ouvrir la popup de sélection du type de tournoi
-      const { type, startDate } = await this.showTournamentTypePopup();
+      const { type, startDate } = await this.showTournamentTypePopup(node);
       if (!type) return; // Si l'utilisateur a annulé
 
       let matches = [];
@@ -2178,13 +2184,13 @@ class TournamentGenerator {
     }
   }
 
-  async showTournamentTypePopup() {
+  async showTournamentTypePopup(node) {
     return new Promise((resolve) => {
-      const popup = this.node.querySelector('.tournament-type-popup');
-      const typeButtons = this.node.querySelectorAll('.tournament-type');
-      const confirmButton = this.node.querySelector('.confirm');
-      const cancelButton = this.node.querySelector('.cancel');
-      const dateInput = this.node.querySelector('#startDate');
+      const popup = node.querySelector('.tournament-type-popup');
+      const typeButtons = node.querySelectorAll('.tournament-type');
+      const confirmButton = node.querySelector('.confirm');
+      const cancelButton = node.querySelector('.cancel');
+      const dateInput = node.querySelector('#startDate');
 
       // Initialiser la date à aujourd'hui
       dateInput.value = new Date().toISOString().split('T')[0];
@@ -2204,29 +2210,52 @@ class TournamentGenerator {
         const selectedType = Array.from(typeButtons).find(btn => btn.classList.contains('selected'))?.dataset.type;
         if (selectedType && dateInput.value) {
           resolve({ type: selectedType, startDate: dateInput.value });
-          this.closePopup(popup);
+          closePopup(popup);
         }
       });
 
       // Gérer l'annulation
       cancelButton.addEventListener('click', () => {
         resolve(null);
-        this.closePopup(popup);
+        closePopup(popup);
       });
 
       // Fermer la popup en cliquant en dehors
       popup.addEventListener('click', (e) => {
         if (e.target === popup) {
           resolve(null);
-          this.closePopup(popup);
+          closePopup(popup);
         }
       });
     });
   }
 
-  closePopup(popup) {
-    popup.style.display = 'none';
-    document.body.style.overflow = 'auto';
+  generateAllMatches(node) {
+    try {
+      // Récupérer les équipes disponibles
+      const teams = await this.api.getAvailableTeams();
+
+      // Ouvrir la popup de sélection du type de tournoi
+      const { type, startDate } = await this.showTournamentTypePopup(node);
+      if (!type) return; // Si l'utilisateur a annulé
+
+      let matches = [];
+
+      // Générer les matchs selon le type de tournoi
+      if (type === 'poule') {
+        matches = await this.generatePouleMatches(teams, startDate);
+      } else if (type === 'elimination') {
+        matches = await this.generateEliminationMatches(teams, startDate);
+      }
+
+      // Créer les matchs via l'API
+      await this.api.generateMatches(matches);
+
+      return matches;
+    } catch (error) {
+      console.error('Erreur lors de la génération des matchs:', error);
+      throw error;
+    }
   }
 
   template() {
@@ -2234,25 +2263,6 @@ class TournamentGenerator {
       <div class="tournament-generator">
         <h2>Générateur de Tournoi</h2>
         <button class="btn btn-primary generate-matches">Générer les matchs</button>
-        
-        <!-- Popup de sélection du type de tournoi -->
-        <div class="tournament-type-popup" style="display: none;">
-          <div class="popup-content">
-            <h3>Sélectionnez le type de tournoi</h3>
-            <div class="tournament-types">
-              <button class="btn btn-secondary tournament-type" data-type="poule">Phase de Poules</button>
-              <button class="btn btn-secondary tournament-type" data-type="elimination">Élimination Directe</button>
-            </div>
-            <div class="tournament-date">
-              <label for="startDate">Date de début du tournoi:</label>
-              <input type="date" id="startDate" class="form-control" min="${new Date().toISOString().split('T')[0]}" required>
-            </div>
-            <div class="popup-buttons">
-              <button class="btn btn-secondary confirm">Confirmer</button>
-              <button class="btn btn-secondary cancel">Annuler</button>
-            </div>
-          </div>
-        </div>
       </div>
     `;
   }
