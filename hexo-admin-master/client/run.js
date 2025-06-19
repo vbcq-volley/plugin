@@ -2268,7 +2268,7 @@ class TournamentGenerator {
       });
       
       // Récupérer les 16 meilleures équipes
-      const topTeams = sortedTeams.slice(0, 16);
+      const topTeams = sortedTeams.slice(0, 8);
       
       // Récupérer les détails complets des équipes
       const teams = await this.api.getEntries('team');
