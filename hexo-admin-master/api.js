@@ -687,7 +687,8 @@ function generateTournamentMatches(type, startDate, teams) {
           const matchIndex = Math.floor(i / 2);
           const match1 = previousRounds[matchIndex * 2];
           const match2 = previousRounds[matchIndex * 2 + 1];
-          
+          console.log(match1)
+          console.log(match2)
           team1Ref = match1._id;
           team2Ref = match2._id;
         }
@@ -701,7 +702,7 @@ function generateTournamentMatches(type, startDate, teams) {
           team2Name: currentRound === 'quart' ? teams[i + 1].teamName : `Gagnant du match ${team2Ref}`,
           team1Ref: currentRound === 'quart' ? null : team1Ref,
           team2Ref: currentRound === 'quart' ? null : team2Ref,
-          winner: null,
+          winner: null,_id:uuid.v4(),
         });
       }
       
