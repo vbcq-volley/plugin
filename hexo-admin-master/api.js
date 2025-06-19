@@ -694,8 +694,8 @@ function generateTournamentMatches(type, startDate, teams) {
         }
         
         roundMatches.push({
-          team1: team1Ref,
-          team2: team2Ref,
+          team1: teams[i]._id,
+          team2: teams[i+1]._id,
           matchDate: matchDate.toISOString(),
           round: currentRound,
           team1Name: currentRound === 'quart' ? teams[i].teamName : `Gagnant du match ${team1Ref}`,
@@ -888,7 +888,7 @@ function updateNextMatches() {
       
       nextRoundMatches.forEach(nextMatch => {
         // Récupérer le nom de l'équipe gagnante
-        const teams = db.read('teams');
+        const teams = db.read('team');
         const winnerTeam = teams.find(t => t._id === result.winner);
         const winnerTeamName = winnerTeam ? winnerTeam.teamName : '';
 
