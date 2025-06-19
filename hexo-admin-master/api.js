@@ -937,6 +937,7 @@ function updateTournamentRanking() {
   console.log(db.data.tournament_ranking)
   // Sauvegarder la mise à jour complète avec le classement global
   db.data.tournament_ranking.entries = currentRanking;
+  db.saveToFile(db.filename)
 }
 
 // Fonction pour mettre à jour les matchs suivants
