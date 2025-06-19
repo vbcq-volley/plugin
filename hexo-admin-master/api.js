@@ -934,9 +934,9 @@ function updateTournamentRanking() {
       teams: globalRanking
     });
   }
-  console.log(db.tournament_ranking)
+  console.log(db.data.tournament_ranking)
   // Sauvegarder la mise à jour complète avec le classement global
-  db.tournament_ranking.entries = currentRanking;
+  db.data.tournament_ranking.entries = currentRanking;
 }
 
 // Fonction pour mettre à jour les matchs suivants
