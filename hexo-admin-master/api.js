@@ -858,7 +858,14 @@ function updateNextMatches() {
     // Trouver le match correspondant
     const match = matches.find(m => m._id === result.matchId);
     if (!match) return;
-    
+    console.log(result)
+    if(!result.winner){
+      if(result.score1<result.score2){
+        result.winner=match.team2
+      }else{
+        result.winner=match.team1
+      }
+    }
     // Mettre à jour le gagnant du match
     const updatedMatch = {
       ...match,
