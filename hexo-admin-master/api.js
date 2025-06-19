@@ -615,11 +615,28 @@ use('tournament/ranking/', function(req, res) {
   try {
     const teams = db.read('team');
     const results = db.read('tournament_results');
-    
     const ranking = calculateTournamentRanking(teams, results);
     res.done(ranking);
   } catch (error) {
     hexo.log.e(`Error getting tournament ranking: ${error.message}`);
+    res.send(400, `Bad Request: ${error.message}`);
+  }
+});
+
+// Endpoint pour obtenir le classement d'une poule spécifique
+use('tournament/ranking/group/:groupId', function(req, res) {
+  try {
+    const { groupId } = req.params;
+    const ranking = db.read('tournament_ranking');
+    const groupRanking = ranking.entries?.find(r => r.group === groupId);
+    
+    if (!groupRanking) {
+      return res.send(404, `Group ranking not found for group ${groupId}`);
+    }
+    
+    res.done(groupRanking);
+  } catch (error) {
+    hexo.log.e(`Error getting group ranking: ${error.message}`);
     res.send(400, `Bad Request: ${error.message}`);
   }
 });
@@ -655,6 +672,7 @@ function generateTournamentMatches(type, startDate, teams) {
           team2: teams[j]._id,
           matchDate: matchDate.toISOString(),
           round: 'poule',
+          poule: Math.max(db.read(tournament_matches).filter((m)=> m.poule).map((item)=>{return item.poule}),0)+1,
           team1Name: teams[i].teamName,
           team2Name: teams[j].teamName
         });
@@ -698,6 +716,7 @@ function generateTournamentMatches(type, startDate, teams) {
           team2: teams[i+1]._id,
           matchDate: matchDate.toISOString(),
           round: currentRound,
+          poule:0,
           team1Name: currentRound === 'quart' ? teams[i].teamName : `Gagnant du match ${team1Ref}`,
           team2Name: currentRound === 'quart' ? teams[i + 1].teamName : `Gagnant du match ${team2Ref}`,
           team1Ref: currentRound === 'quart' ? null : team1Ref,
@@ -723,69 +742,88 @@ function generateTournamentMatches(type, startDate, teams) {
 
 // Fonction utilitaire pour calculer le classement
 function calculateTournamentRanking(teams, results) {
-  const ranking = teams.map(team => ({
-    _id: team._id,
-    teamName: team.teamName,
-    points: 0,
-    wins: 0,
-    draws: 0,
-    losses: 0,
-    goalsFor: 0,
-    goalsAgainst: 0,
-    goalDifference: 0
+  // Récupérer les groupes des matchs de tournoi
+  const tournamentMatches = db.read('tournament_matches');
+  const groups = [...new Set(tournamentMatches.map(match => match.poule))];
+
+  // Initialiser le classement par groupe
+  const rankingByGroup = groups.map(group => ({
+    group: group,
+    teams: teams.map(team => ({
+      _id: team._id,
+      teamName: team.teamName,
+      points: 0,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      goalDifference: 0,
+      rank: 0
+    }))
   }));
 
-  results.forEach(result => {
-    const team1 = ranking.find(t => t._id === result.team1);
-    const team2 = ranking.find(t => t._id === result.team2);
-    
-    if (!team1 || !team2) return;
+  // Calculer les statistiques pour chaque groupe
+  rankingByGroup.forEach(groupRanking => {
+    const groupResults = results.filter(result => {
+      const match = tournamentMatches.find(m => m._id === result.matchId);
+      return match && match.poule === groupRanking.group;
+    });
 
-    const score1 = parseInt(result.score1) || 0;
-    const score2 = parseInt(result.score2) || 0;
+    groupResults.forEach(result => {
+      const match = matches.find(m => m._id === result.matchId);
+      if (!match) return;
 
-    // Mise à jour des statistiques
-    team1.goalsFor += score1;
-    team1.goalsAgainst += score2;
-    team2.goalsFor += score2;
-    team2.goalsAgainst += score1;
+      const team1 = groupRanking.teams.find(t => t._id === result.team1);
+      const team2 = groupRanking.teams.find(t => t._id === result.team2);
+      
+      if (!team1 || !team2) return;
 
-    if (score1 > score2) {
-      team1.points += 3;
-      team1.wins++;
-      team2.losses++;
-    } else if (score2 > score1) {
-      team2.points += 3;
-      team2.wins++;
-      team1.losses++;
-    } else {
-      team1.points += 1;
-      team2.points += 1;
-      team1.draws++;
-      team2.draws++;
-    }
+      const score1 = parseInt(result.score1) || 0;
+      const score2 = parseInt(result.score2) || 0;
 
-    team1.goalDifference = team1.goalsFor - team1.goalsAgainst;
-    team2.goalDifference = team2.goalsFor - team2.goalsAgainst;
+      // Mise à jour des statistiques
+      team1.goalsFor += score1;
+      team1.goalsAgainst += score2;
+      team2.goalsFor += score2;
+      team2.goalsAgainst += score1;
+
+      if (score1 > score2) {
+        team1.points += 3;
+        team1.wins++;
+        team2.losses++;
+      } else if (score2 > score1) {
+        team2.points += 3;
+        team2.wins++;
+        team1.losses++;
+      } else {
+        team1.points += 1;
+        team2.points += 1;
+        team1.draws++;
+        team2.draws++;
+      }
+      team1.goalDifference = team1.goalsFor - team1.goalsAgainst;
+      team2.goalDifference = team2.goalsFor - team2.goalsAgainst;
+    });
+
+    // Trier le classement du groupe
+    groupRanking.teams.sort((a, b) => {
+      if (a.points !== b.points) {
+        return b.points - a.points;
+      }
+      if (a.goalDifference !== b.goalDifference) {
+        return b.goalDifference - a.goalDifference;
+      }
+      return b.goalsFor - a.goalsFor;
+    });
+
+    // Ajouter le classement pour ce groupe
+    groupRanking.teams.forEach((team, index) => {
+      team.rank = index + 1;
+    });
   });
 
-  // Trier le classement
-  ranking.sort((a, b) => {
-    if (a.points !== b.points) {
-      return b.points - a.points;
-    }
-    if (a.goalDifference !== b.goalDifference) {
-      return b.goalDifference - a.goalDifference;
-    }
-    return b.goalsFor - a.goalsFor;
-  });
-
-  // Ajouter le classement
-  ranking.forEach((team, index) => {
-    team.rank = index + 1;
-  });
-
-  return ranking;
+  return rankingByGroup;
 }
 
 // Fonction utilitaire pour calculer les statistiques
@@ -838,14 +876,62 @@ function calculateTournamentStats(matches, results) {
 // Fonction pour mettre à jour le classement après un résultat
 function updateTournamentRanking() {
   const teams = db.read('team');
-  const results = db.read('tournament_results');
+  const results = db.read('tournament_results').filter();
   const ranking = calculateTournamentRanking(teams, results);
+  const oldRanking = db.read('tournament_ranking');
 
   // Sauvegarder le classement mis à jour
-  db.create('tournament_ranking', ranking);
+  const currentRanking = oldRanking || [];
+  
+  // Mettre à jour chaque classement par poule
+  ranking.forEach(groupRanking => {
+    const groupIndex = db.findIndex(oldRanking,groupRanking);
+    
+    if (groupIndex !== -1) {
+      // Mettre à jour le classement existant pour cette poule
+      currentRanking[groupIndex] = groupRanking;
+    } else {
+      // Ajouter un nouveau classement pour cette poule
+      currentRanking.push(groupRanking);
+    }
+  });
+
+  // Sauvegarder la mise à jour complète
+  db.update('tournament_ranking', db.findIndex(oldRanking), currentRanking);
 
   // Mettre à jour les matchs suivants basés sur les résultats
   updateNextMatches();
+
+  // Mettre à jour le classement global
+  const globalRanking = currentRanking.flatMap(group => group.teams);
+  globalRanking.sort((a, b) => {
+    if (a.points !== b.points) {
+      return b.points - a.points;
+    }
+    if (a.goalDifference !== b.goalDifference) {
+      return b.goalDifference - a.goalDifference;
+    }
+    return b.goalsFor - a.goalsFor;
+  });
+  
+  // Ajouter les rangs globaux
+  globalRanking.forEach((team, index) => {
+    team.globalRank = index + 1;
+  });
+
+  // Mettre à jour l'entrée de classement global
+  const globalRankingEntry = currentRanking.find(r => r.group === 'global');
+  if (globalRankingEntry) {
+    globalRankingEntry.teams = globalRanking;
+  } else {
+    currentRanking.push({
+      group: 'global',
+      teams: globalRanking
+    });
+  }
+
+  // Sauvegarder la mise à jour complète avec le classement global
+  db.tournament_ranking.entries = currentRanking;
 }
 
 // Fonction pour mettre à jour les matchs suivants

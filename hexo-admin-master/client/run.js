@@ -2269,7 +2269,7 @@ class TournamentGenerator {
       
       // Récupérer les 16 meilleures équipes
       const topTeams = sortedTeams.slice(0, 8);
-      
+      console.log(topTeams.length)
       // Récupérer les détails complets des équipes
       const teams = await this.api.getEntries('team');
       return teams.filter(team => topTeams.some(t => t.teamName === team.teamName));
