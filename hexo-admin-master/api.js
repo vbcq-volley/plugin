@@ -877,7 +877,10 @@ function calculateTournamentStats(matches, results) {
 // Fonction pour mettre à jour le classement après un résultat
 function updateTournamentRanking() {
   const teams = db.read('team');
-  const results = db.read('tournament_results').filter();
+  const results = db.read('tournament_results');
+  if(db.read("tournament_matches").length==0){
+    return;
+  }
   const ranking = calculateTournamentRanking(teams, results);
   const oldRanking = db.read('tournament_ranking');
 
