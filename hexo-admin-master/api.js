@@ -772,6 +772,7 @@ function calculateTournamentRanking(teams, results) {
     });
 
     groupResults.forEach(result => {
+      const matches=db.read("tournament_matches")
       const match = matches.find(m => m._id === result.matchId);
       if (!match) return;
 
