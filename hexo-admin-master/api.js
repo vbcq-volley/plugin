@@ -666,13 +666,15 @@ function generateTournamentMatches(type, startDate, teams) {
       for (let j = i + 1; j < teamCount; j++) {
         const matchDate = new Date(startDate);
         matchDate.setDate(matchDate.getDate() + matches.length * 2);
-        
+        const getpoule=()=>{
+          if()
+        }
         matches.push({
           team1: teams[i]._id,
           team2: teams[j]._id,
           matchDate: matchDate.toISOString(),
           round: 'poule',
-          poule: Math.max(db.read(tournament_matches).filter((m)=> m.poule).map((item)=>{return item.poule}),0)+1,
+          poule: Math.max(db.read("tournament_matches").filter((m)=> m.poule).map((item)=>{return item.poule}),0)+1,
           team1Name: teams[i].teamName,
           team2Name: teams[j].teamName
         });
