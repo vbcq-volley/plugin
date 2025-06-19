@@ -666,9 +666,7 @@ function generateTournamentMatches(type, startDate, teams) {
       for (let j = i + 1; j < teamCount; j++) {
         const matchDate = new Date(startDate);
         matchDate.setDate(matchDate.getDate() + matches.length * 2);
-        const getpoule=()=>{
-          if()
-        }
+       
         matches.push({
           team1: teams[i]._id,
           team2: teams[j]._id,
