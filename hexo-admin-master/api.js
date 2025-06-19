@@ -744,6 +744,7 @@ function generateTournamentMatches(type, startDate, teams) {
 function calculateTournamentRanking(teams, results) {
   // Récupérer les groupes des matchs de tournoi
   const tournamentMatches = db.read('tournament_matches');
+  console.log(tournamentMatches)
   const groups = [...new Set(tournamentMatches.map(match => match.poule))];
 
   // Initialiser le classement par groupe
