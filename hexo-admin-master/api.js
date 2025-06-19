@@ -765,7 +765,7 @@ function calculateTournamentRanking(teams, results) {
   }));
 
   // Calculer les statistiques pour chaque groupe
-  rankingByGroup.forEach(groupRanking => {
+  rankingByGroup.map(groupRanking => {
     const groupResults = results.filter(result => {
       const match = tournamentMatches.find(m => m._id === result.matchId);
       return match && match.poule === groupRanking.group;
