@@ -681,8 +681,8 @@ function generateTournamentMatches(type, startDate, teams) {
         }else{
           const previousRMatch=matches.filter(m=>m.round===roundTab[roundTab.indexOf(currentRound)-1])
           console.log(previousRMatch)
-          team1Ref = previousRMatch.find(m => m.round === roundTab[roundTab.indexOf(currentRound) - 1] && !roundMatches.some((match) => match.team1 === m._id||match.team2 === m._id)).index;
-          team2Ref = previousRMatch.find(m => m.round === roundTab[roundTab.indexOf(currentRound) - 1] && !roundMatches.some((match) => match.team2 === m._id||match.team1 === m.id)).index;
+          team1Ref = previousRMatch.indexOf(previousRMatch.find(m => m.round === roundTab[roundTab.indexOf(currentRound) - 1] && !roundMatches.some((match) => match.team1 === m._id||match.team2 === m._id)));
+          team2Ref = previousRMatch.indexOf(previousRMatch.find(m => m.round === roundTab[roundTab.indexOf(currentRound) - 1] && !roundMatches.some((match) => match.team2 === m._id||match.team1 === m.id)));
         }
         
         roundMatches.push({
