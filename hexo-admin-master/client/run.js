@@ -2290,7 +2290,7 @@ class TournamentGenerator {
       // Sélectionner les équipes selon le type de tournoi
       if (type === 'elimination') {
         teams = await this.getTopTeamsFromPoule();
-        if (teams.length < 16) {
+        if (teams.length < 8) {
           throw new Error('Il n\'y a pas assez d\'équipes qualifiées pour la phase d\'élimination');
         }
       } else {
