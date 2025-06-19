@@ -890,7 +890,7 @@ function updateTournamentRanking() {
   
   // Mettre à jour chaque classement par poule
   ranking.forEach(groupRanking => {
-    const groupIndex = db.findIndex(oldRanking,groupRanking);
+    const groupIndex = [... new Set(currentRanking.map(r => r.group))].indexOf(groupRanking.group);
     
     if (groupIndex !== -1) {
       // Mettre à jour le classement existant pour cette poule
@@ -902,7 +902,7 @@ function updateTournamentRanking() {
   });
 
   // Sauvegarder la mise à jour complète
-  db.update('tournament_ranking', db.findIndex(oldRanking), currentRanking);
+  //db.update('tournament_ranking', db.findIndex(oldRanking), currentRanking);
 
   // Mettre à jour les matchs suivants basés sur les résultats
   updateNextMatches();
