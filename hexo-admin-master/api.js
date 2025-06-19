@@ -692,7 +692,8 @@ function generateTournamentMatches(type, startDate, teams) {
           team1Name: currentRound === 'quart' ? teams[i].teamName : `Gagnant du match ${team1Ref}`,
           team2Name: currentRound === 'quart' ? teams[i + 1].teamName : `Gagnant du match ${team2Ref}`,
           team1Ref: currentRound === 'quart' ? null : team1Ref,
-          team2Ref: currentRound === 'quart' ? null : team2Ref
+          team2Ref: currentRound === 'quart' ? null : team2Ref,
+          winner: null,
         });
       }
       
