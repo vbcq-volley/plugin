@@ -2168,18 +2168,36 @@ class TournamentGenerator {
         // Espacer les matchs éliminatoires d'une semaine
         matchDate.setDate(matchDate.getDate() + matches.length * 7);
 
-        roundMatches.push({
+        // Pour les quarts, on ne met pas de gagnant
+        const match = {
           team1: teams[i]._id,
           team2: teams[i + 1]._id,
           matchDate: matchDate.toISOString(),
           round: currentRound,
           team1Name: teams[i].teamName,
           team2Name: teams[i + 1].teamName
-        });
+        };
+
+        // Pour les matchs après les quarts, on ajoute le champ winner
+        if (currentRound !== 'quart') {
+          match.winner = null; // À mettre à jour quand le résultat est connu
+        }
+
+        roundMatches.push(match);
       }
 
       matches.push(...roundMatches);
-      teams = roundMatches; // Pour la prochaine ronde
+      
+      // Pour les matchs après les quarts, mettre à jour les équipes pour la prochaine ronde
+      if (currentRound !== 'quart') {
+        teams = roundMatches.map(match => ({
+          _id: match._id,
+          teamName: `Gagnant du match ${match._id}`
+        }));
+      } else {
+        teams = roundMatches; // Pour les quarts, on garde les équipes existantes
+      }
+
       matchNumber = Math.ceil(matchNumber / 2);
 
       // Passer au tour suivant
@@ -2287,7 +2305,7 @@ class TournamentGenerator {
           matches.push(await this.api.generateMatches({type:type,startDate:startDate   ,teams:team}));
         })
       }else{
-        matches.push(      await this.api.generateMatches({type:type,startDate:startDate   ,teams:teams}))
+        matches.push(await this.api.generateMatches({type:type,startDate:startDate   ,teams:teams}))
       }
 
       // Créer les matchs via l'API
@@ -2458,7 +2476,8 @@ class TournamentMatch {
         matchDate: formData.get('matchDate'),
         round: formData.get('round'),
         team1Name: allTeams.find(t => t._id === formData.get('team1'))?.teamName,
-        team2Name: allTeams.find(t => t._id === formData.get('team2'))?.teamName
+        team2Name: allTeams.find(t => t._id === formData.get('team2'))?.teamName,
+        winner: formData.get('winner') // Ajouter le champ winner pour les matchs éliminatoires
       };
 
       try {

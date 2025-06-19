@@ -664,21 +664,34 @@ function generateTournamentMatches(type, startDate, teams) {
     // Générer les matchs éliminatoires
     let currentRound = 'quart';
     let matchNumber = teamCount;
-    
+    const roundTab = ['quart', 'semi', 'final'];
     while (matchNumber > 1) {
       const roundMatches = [];
       
       for (let i = 0; i < matchNumber; i += 2) {
         const matchDate = new Date(startDate);
         matchDate.setDate(matchDate.getDate() + matches.length * 7);
+        let team1Ref;
+        let team2Ref;
+        // Pour les quarts, utiliser les IDs des équipes directement
+        // Pour les autres tours, utiliser les IDs des matchs précédents
+        if(currentRound === 'quart'){
+          team1Ref = teams[i]._id;
+          team2Ref = teams[i + 1]._id;
+        }else{
+          team1Ref = matches.find(m => m.round === roundTab[roundTab.indexOf(currentRound) - 1] && !roundMatches.some((match) => match.team1 === m._id||match.team2 === m._id)).winner;
+          team2Ref = matches.find(m => m.round === roundTab[roundTab.indexOf(currentRound) - 1] && !roundMatches.some((match) => match.team2 === m._id||match.team1 === m._id)).winner;
+        }
         
         roundMatches.push({
-          team1: teams[i]._id,
-          team2: teams[i + 1]._id,
+          team1: team1Ref,
+          team2: team2Ref,
           matchDate: matchDate.toISOString(),
           round: currentRound,
-          team1Name: teams[i].teamName,
-          team2Name: teams[i + 1].teamName
+          team1Name: currentRound === 'quart' ? teams[i].teamName : `Gagnant du match ${team1Ref}`,
+          team2Name: currentRound === 'quart' ? teams[i + 1].teamName : `Gagnant du match ${team2Ref}`,
+          team1Ref: currentRound === 'quart' ? null : team1Ref,
+          team2Ref: currentRound === 'quart' ? null : team2Ref
         });
       }
       
