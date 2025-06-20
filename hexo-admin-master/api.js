@@ -803,7 +803,7 @@ function calculateTournamentRanking(teams, results) {
 
     groupResults.forEach(result => {
       const matches=db.read("tournament_results")
-      const match = matches.find(m => m.matchId === result._id);
+      const match = matches.find(m => m._id === result.matchId);
       //console.log(match)
       console.log("match non trouvée "+JSON.stringify(result,null,2))
       if (!match) return;
@@ -814,8 +814,8 @@ function calculateTournamentRanking(teams, results) {
       console.log(team2)
       if (!team1 || !team2) return;
 
-      const score1 = parseInt(match.score1) || 0;
-      const score2 = parseInt(match.score2) || 0;
+      const score1 = parseInt(result.score1) || 0;
+      const score2 = parseInt(result.score2) || 0;
 
       // Mise à jour des statistiques
       team1.goalsFor += score1;
