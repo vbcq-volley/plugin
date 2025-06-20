@@ -11,7 +11,19 @@ var updateAny = require('./update')
 const uuid=require("uuid")
 
 // Classe DB améliorée avec validation et gestion d'erreurs
+/**
+ * A class to manage a simple file-based database system.
+ * 
+ * This class provides methods to perform CRUD operations on models stored in a JSON file.
+ * Each model consists of entries and metadata. The database supports automatic saving
+ * and loading of data from a specified file.
+ */
 class DB {
+    /**
+     * Constructor for the DB class
+     * @param {object} options - Options for the class
+     * @param {string} [filename] - The filename to load the data from
+     */
     constructor(options, filename) {
         if (!options || typeof options !== 'object') {
             throw new Error('Options must be an object');
@@ -167,7 +179,12 @@ class DB {
      * Load the data from a file
      * @param {string} filename - The name of the file to load the data from
      */
-    loadFromFile(filename) {
+      /**
+   * Load the database from a file
+   * @param {string} filename - The file to load from
+   * @throws {Error} If file load operation fails
+   */
+  loadFromFile(filename) {
         try {
             if (fs.existsSync(filename)) {
                 const fileData = fs.readFileSync(filename, 'utf8');
@@ -358,6 +375,17 @@ module.exports = function (app, hexo) {
     }, hexo)
   }
 
+  /**
+   * Create a new API route with error handling
+   * @param {string} path - The API route path
+   * @param {Function} fn - The route handler function
+   * @throws {Error} If route handler fails
+   * @example
+   * // Create a new API endpoint
+   * use('my-endpoint', function(req, res) {
+   *   // Handle request
+   * });
+   */
   var use = function (path, fn) {
     app.use(hexo.config.root + 'admin/api/' + path, function (req, res) {
       hexo.log.d(`API Request: ${req.method} ${path}`);
@@ -744,7 +772,7 @@ function generateTournamentMatches(type, startDate, teams) {
 function calculateTournamentRanking(teams, results) {
   // Récupérer les groupes des matchs de tournoi
   const tournamentMatches = db.read('tournament_matches');
-  console.log(tournamentMatches)
+  //console.log(tournamentMatches)
   const groups = [...new Set(tournamentMatches.map(match => match.poule))];
 
   // Initialiser le classement par groupe
@@ -774,11 +802,13 @@ function calculateTournamentRanking(teams, results) {
     groupResults.forEach(result => {
       const matches=db.read("tournament_matches")
       const match = matches.find(m => m._id === result.matchId);
+      console.log(match)
       if (!match) return;
 
       const team1 = groupRanking.teams.find(t => t._id === result.team1);
       const team2 = groupRanking.teams.find(t => t._id === result.team2);
-      
+      console.log(team1)
+      console.log(team2)
       if (!team1 || !team2) return;
 
       const score1 = parseInt(result.score1) || 0;
@@ -941,7 +971,7 @@ function updateTournamentRanking() {
   db.data.tournament_ranking.entries = currentRanking;
   db.saveToFile(db.filename)
 }
-
+updateTournamentRanking();
 // Fonction pour mettre à jour les matchs suivants
 function updateNextMatches() {
   const matches = db.read('tournament_matches');
@@ -1037,6 +1067,11 @@ use('tournament/matches/winners/', function(req, res) {
 });
 
 // Fonction utilitaire pour obtenir le round précédent
+/**
+ * Get the previous round in tournament sequence
+ * @param {string} round - Current round name
+ * @returns {string|null} Previous round name or null if first round
+ */
 function getPreviousRound(round) {
   const rounds = ['poule', 'quart', 'semi', 'final'];
   const index = rounds.indexOf(round);
@@ -1309,7 +1344,22 @@ return res.done(db.read(req.body.data.type))  }
    res.done(post.map(addIsDraft));
   });
 
-  use('posts/new', function (req, res, next) {
+  /**
+ * Create new post endpoint
+ * Creates a new post in the Hexo site
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ * @example
+ * // Create a new post via API
+ * const postData = {
+ *   title: 'Hello World',
+ *   layout: 'post',
+ *   date: '2025-06-20T10:00:00Z'
+ * };
+ * // POST to /admin/api/posts/new with postData
+ */
+use('posts/new', function (req, res, next) {
     if (req.method !== 'POST') return next()
     if (!req.body) {
       return res.send(400, 'No post body given');
