@@ -835,7 +835,7 @@ function calculateTournamentRanking(teams, results) {
       //console.log(match)
       console.log("match non trouvée "+JSON.stringify(result,null,2))
       if (!match) return;
-      console.log("les résultat sont "+JSON.stringify(result,null,2))
+     // console.log("les résultat sont "+JSON.stringify(result,null,2))
       const team1 = groupRanking.teams.find(t => t._id === match.team1);
       const team2 = groupRanking.teams.find(t => t._id === match.team2);
      // console.log(team1)
@@ -885,7 +885,7 @@ function calculateTournamentRanking(teams, results) {
     groupRanking.teams.forEach((team, index) => {
       team.rank = index + 1;
     });
-    console.log("les équipe valide sont "+JSON.stringify(groupRanking.teams.filter((team)=>{return team.points!=0}),null,2))
+  //  console.log("les équipe valide sont "+JSON.stringify(groupRanking.teams.filter((team)=>{return team.points!=0}),null,2))
     return groupRanking
   });
 }
@@ -1001,7 +1001,7 @@ function updateTournamentRanking() {
       teams: globalRanking
     });
   }
-  console.log(db.data.tournament_ranking)
+ // console.log(db.data.tournament_ranking)
   // Sauvegarder la mise à jour complète avec le classement global
   db.data.tournament_ranking.entries = currentRanking;
   db.saveToFile(db.filename)
