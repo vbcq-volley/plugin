@@ -970,7 +970,12 @@ function updateTournamentRanking() {
   updateNextMatches();
 
   // Mettre à jour le classement global
-  const globalRanking = currentRanking.flatMap(group => group.teams);
+  const globalRanking = currentRanking.flatMap(group => group.teams).filter((item,index,self)=>{
+    if(self.findIndex((item)=>item.teamName===item.teamName)===index){
+      return true;
+    }
+    return false;
+  });
   globalRanking.sort((a, b) => {
     if (a.points !== b.points) {
       return b.points - a.points;
