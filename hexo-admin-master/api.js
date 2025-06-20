@@ -803,11 +803,11 @@ function calculateTournamentRanking(teams, results) {
       const matches=db.read("tournament_results")
       const match = matches.find(m => m.matchId === result._id);
       //console.log(match)
-      console.log("match non trouvée ")
+      console.log("match non trouvée "+result)
       if (!match) return;
       console.log("les résultat sont "+result)
-      const team1 = db.read("team").find(t => t._id === result.team1);
-      const team2 = db.read("team").find(t => t._id === result.team2);
+      const team1 = groupRanking.teams.find(t => t._id === result.team1);
+      const team2 = groupRanking.teams.find(t => t._id === result.team2);
       console.log(team1)
       console.log(team2)
       if (!team1 || !team2) return;
@@ -841,6 +841,7 @@ function calculateTournamentRanking(teams, results) {
 
     // Trier le classement du groupe
     groupRanking.teams.sort((a, b) => {
+      console.log(a.points)
       if (a.points !== b.points) {
         return b.points - a.points;
       }
