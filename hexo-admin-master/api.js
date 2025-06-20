@@ -793,7 +793,9 @@ function calculateTournamentRanking(teams, results) {
   }));
 
   // Calculer les statistiques pour chaque groupe
-  rankingByGroup.map(groupRanking => {
+
+
+  return rankingByGroup.map(groupRanking => {
     const groupResults = results.filter(result => {
       const match = tournamentMatches.find(m => m._id === result.matchId);
       return match && match.poule === groupRanking.group;
@@ -803,11 +805,11 @@ function calculateTournamentRanking(teams, results) {
       const matches=db.read("tournament_results")
       const match = matches.find(m => m.matchId === result._id);
       //console.log(match)
-      console.log("match non trouvée "+result)
+      console.log("match non trouvée "+JSON.stringify(result,null,2))
       if (!match) return;
-      console.log("les résultat sont "+result)
-      const team1 = groupRanking.teams.find(t => t._id === result.team1);
-      const team2 = groupRanking.teams.find(t => t._id === result.team2);
+      console.log("les résultat sont "+JSON.stringify(result,null,2))
+      const team1 = groupRanking.teams.find(t => t._id === match.team1);
+      const team2 = groupRanking.teams.find(t => t._id === match.team2);
       console.log(team1)
       console.log(team2)
       if (!team1 || !team2) return;
@@ -858,8 +860,6 @@ function calculateTournamentRanking(teams, results) {
     console.log("les équipe valide sont "+groupRanking.teams.filter((team)=>{return team.points!=0}))
     return groupRanking
   });
-
-  return rankingByGroup;
 }
 
 // Fonction utilitaire pour calculer les statistiques
@@ -984,7 +984,7 @@ function updateNextMatches() {
     // Trouver le match correspondant
     const match = matches.find(m => m._id === result.matchId);
     if (!match) return;
-    console.log(result)
+    //console.log(result)
     if(!result.winner){
       if(result.score1<result.score2){
         result.winner=match.team2
