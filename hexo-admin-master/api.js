@@ -971,6 +971,7 @@ function updateTournamentRanking() {
 
   // Mettre à jour le classement global
   const globalRanking = currentRanking.flatMap(group => group.teams).filter((item,index,self)=>{
+    console.log(item)
     if(self.findIndex((item)=>item.teamName===item.teamName)===index){
       return true;
     }
