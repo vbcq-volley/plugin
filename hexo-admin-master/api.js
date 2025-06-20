@@ -166,7 +166,7 @@ class DB {
      * Save the data to a file
      * @param {string} filename - The name of the file to save the data
      */
-    saveToFile(filename, maxRetries = 50, retryDelay = 1000) {
+    saveToFile(filename, maxRetries = 50, retryDelay = 100) {
         const checkWriteAccess = () => {
             try {
                 fs.accessSync(filename, fs.constants.W_OK);
@@ -181,6 +181,7 @@ class DB {
             if (checkWriteAccess()) {
                 try {
                     fs.writeFileSync(filename, JSON.stringify(this.data, null, 2));
+                    console.log("fichier sauvegardée ")
                     return;
                 } catch (error) {
                     console.error(`Error saving to file: ${error.message}`);
