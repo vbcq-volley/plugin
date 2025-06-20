@@ -853,7 +853,7 @@ function calculateTournamentRanking(teams, results) {
     groupRanking.teams.forEach((team, index) => {
       team.rank = index + 1;
     });
-    console.log(groupRanking.teams.filter((team)=>{return team.points!=0}))
+    console.log("les équipe valide sont "+groupRanking.teams.filter((team)=>{return team.points!=0}))
     return groupRanking
   });
 
