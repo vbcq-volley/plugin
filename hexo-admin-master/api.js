@@ -810,8 +810,8 @@ function calculateTournamentRanking(teams, results) {
       console.log("les résultat sont "+JSON.stringify(result,null,2))
       const team1 = groupRanking.teams.find(t => t._id === match.team1);
       const team2 = groupRanking.teams.find(t => t._id === match.team2);
-      console.log(team1)
-      console.log(team2)
+     // console.log(team1)
+      //console.log(team2)
       if (!team1 || !team2) return;
 
       const score1 = parseInt(result.score1) || 0;
@@ -843,7 +843,7 @@ function calculateTournamentRanking(teams, results) {
 
     // Trier le classement du groupe
     groupRanking.teams.sort((a, b) => {
-      console.log(a.points)
+      //console.log(a.points)
       if (a.points !== b.points) {
         return b.points - a.points;
       }
@@ -857,7 +857,7 @@ function calculateTournamentRanking(teams, results) {
     groupRanking.teams.forEach((team, index) => {
       team.rank = index + 1;
     });
-    console.log("les équipe valide sont "+groupRanking.teams.filter((team)=>{return team.points!=0}))
+    console.log("les équipe valide sont "+JSON.stringify(groupRanking.teams.filter((team)=>{return team.points!=0}),null,2))
     return groupRanking
   });
 }
