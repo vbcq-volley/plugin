@@ -803,6 +803,7 @@ function calculateTournamentRanking(teams, results) {
       const matches=db.read("tournament_results")
       const match = matches.find(m => m.matchId === result._id);
       //console.log(match)
+      console.log("match non trouvée ")
       if (!match) return;
       console.log("les résultat sont "+result)
       const team1 = db.read("team").find(t => t._id === result.team1);
