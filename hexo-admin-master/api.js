@@ -823,6 +823,7 @@ function calculateTournamentRanking(teams, results) {
     groupRanking.teams.forEach((team, index) => {
       team.rank = index + 1;
     });
+    console.log(groupRanking)
     return groupRanking
   });
 
