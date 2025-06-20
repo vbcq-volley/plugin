@@ -804,9 +804,9 @@ function calculateTournamentRanking(teams, results) {
       const match = matches.find(m => m.matchId === result._id);
       //console.log(match)
       if (!match) return;
-
-      const team1 = groupRanking.teams.find(t => t._id === result.team1);
-      const team2 = groupRanking.teams.find(t => t._id === result.team2);
+      console.log(result)
+      const team1 = db.read("team").find(t => t._id === result.team1);
+      const team2 = db.read("team").find(t => t._id === result.team2);
       console.log(team1)
       console.log(team2)
       if (!team1 || !team2) return;
