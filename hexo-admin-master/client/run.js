@@ -701,7 +701,7 @@ class About {
   render() {
     const fetchReadme = async (username, repo) => {
       try {
-        const response = await fetch(`https://raw.githubusercontent.com/${username}/${repo}/master/README.md`);
+        const response = await fetch(`https://raw.githubusercontent.com/${username}/${repo}/dev/README.md`);
         if (!response.ok) {
           throw new Error('Erreur lors de la récupération du README');
         }
