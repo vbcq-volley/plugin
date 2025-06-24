@@ -181,7 +181,7 @@ class DB {
             if (checkWriteAccess()) {
                 try {
                     fs.writeFileSync(filename, JSON.stringify(this.data, null, 2));
-                    console.log("fichier sauvegardée ")
+                   // console.log("fichier sauvegardée ")
                     return;
                 } catch (error) {
                     console.error(`Error saving to file: ${error.message}`);
@@ -431,6 +431,7 @@ module.exports = function (app, hexo) {
             if(v===null){
               return 
             }
+            console.log(v)
             return (v||[]).toArray() ? (v||[]).toArray().map(function(obj) {
               return obj.name;
             }) : v;
@@ -655,7 +656,7 @@ use('tournament_matches/generate/', function(req, res) {
     
     // Créer les matchs dans la base de données
     matches.forEach(match => {
-      console.log(match)
+      //console.log(match)
       db.create('tournament_matches', match);
     });
 
@@ -715,7 +716,7 @@ use('tournament/stats/', function(req, res) {
 function generateTournamentMatches(type, startDate, teams) {
   const matches = [];
   const teamCount = teams.length;
-  console.log(type)
+ // console.log(type)
   if (type === 'poule') {
     // Générer tous les matchs possibles
     for (let i = 0; i < teamCount; i++) {
@@ -761,8 +762,8 @@ function generateTournamentMatches(type, startDate, teams) {
           const matchIndex = Math.floor(i / 2);
           const match1 = previousRounds[matchIndex * 2];
           const match2 = previousRounds[matchIndex * 2 + 1];
-          console.log(match1)
-          console.log(match2)
+         // console.log(match1)
+         // console.log(match2)
           team1Ref = match1._id;
           team2Ref = match2._id;
         }
@@ -833,7 +834,7 @@ function calculateTournamentRanking(teams, results) {
       const matches=db.read("tournament_matches")
       const match = matches.find(m => m._id === result.matchId);
       //console.log(match)
-      console.log("match non trouvée "+JSON.stringify(result,null,2))
+      //console.log("match non trouvée "+JSON.stringify(result,null,2))
       if (!match) return;
      // console.log("les résultat sont "+JSON.stringify(result,null,2))
       const team1 = groupRanking.teams.find(t => t._id === match.team1);
@@ -971,9 +972,9 @@ function updateTournamentRanking() {
 
   // Mettre à jour le classement global
   const globalRanking = currentRanking.flatMap(group => group.teams).filter((item,index,self)=>{
-    console.log(item)
-    console.log(self.findIndex((it)=>item.teamName===it.teamName))
-    console.log(index)
+  //  console.log(item)
+ //   console.log(self.findIndex((it)=>item.teamName===it.teamName))
+ //   console.log(index)
     if(self.findIndex((it)=>item.teamName===it.teamName)===index){
       return true;
     }
