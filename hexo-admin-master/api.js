@@ -432,7 +432,7 @@ module.exports = function (app, hexo) {
               return 
             }
             console.log(v)
-            return (v||[]).toArray() ? (v||[]).toArray().map(function(obj) {
+            return v.toArray() ? v.toArray().map(function(obj) {
               return obj.name;
             }) : v;
           }
