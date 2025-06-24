@@ -432,7 +432,10 @@ module.exports = function (app, hexo) {
               return 
             }
             console.log(v)
-            return v.toArray() ? v.toArray().map(function(obj) {
+            if(typeof v!=="array"){
+              v=v.toArray()
+            }
+            return v? v.map(function(obj) {
               return obj.name;
             }) : v;
           }
