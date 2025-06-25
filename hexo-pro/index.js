@@ -48,7 +48,7 @@ function buildIndex() {
             this.permalink = permalink
         }
     }
-
+    console.log(hexo.config)
     const posts = hexo.model('Post').toArray()
     const pages = hexo.model('Page').toArray()
 
