@@ -46,7 +46,7 @@ module.exports = function (model, unimark, update, callback, hexo) {
         frontMatter = split.data
         console.log(hfm.parse([frontMatter, '---', split.content].join('\n')))
     compiled = hfm.parse([frontMatter, '---', split.content].join('\n'));
-
+console.log(compiled)
     var preservedKeys = ['title', 'date', 'tags', 'categories', '_content', 'author'];
     Object.keys(hexo.config.metadata || {}).forEach(function (key) {
         preservedKeys.push(key);
