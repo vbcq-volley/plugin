@@ -17,7 +17,7 @@ module.exports = {
     // Messages de paramètres
     '检查系统状态失败': 'Échec de la vérification de l\'état du système',
     '系统已初始化，不能再次注册': 'Le système est déjà initialisé, impossible de s\'enregistrer à nouveau',
-    '未配置登录信息，无需登录': 'Pas de configuration de connexion requise',
+ 
 
     // Messages de succès
     '获取图片成功': 'Récupération des images réussie',
