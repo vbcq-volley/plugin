@@ -40,6 +40,7 @@ module.exports = function (model, unimark, update, callback, hexo) {
     // console.log("post.raw:", post.raw)
     var split = hfm.split(post.raw),
         frontMatter = split.data
+        console.log(hfm.parse([frontMatter, '---', split.content].join('\n')))
     compiled = hfm.parse([frontMatter, '---', split.content].join('\n'));
 
     var preservedKeys = ['title', 'date', 'tags', 'categories', '_content', 'author'];

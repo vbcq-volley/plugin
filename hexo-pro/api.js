@@ -47,7 +47,7 @@ module.exports = async function (app, hexo) { // 将导出函数改为 async
             const pathRegex = new RegExp('^' + apiBasePath + regexPath + '$');
             
             app.use(function (req, res, next) {
-                console.log(req)
+                //console.log(req)
                 // 检查请求路径是否匹配正则表达式
                 const match = req.url.split('?')[0].match(pathRegex);
                 if (match) {
