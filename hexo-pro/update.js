@@ -1,8 +1,12 @@
 var path = require('path'),
     moment = require('moment'),
     hfm = require('hexo-front-matter'),
-    fs = require('hexo-fs'),
-    extend = require('extend');
+    fs = require('hexo-fs'), extend =(original, other)=>{
+        for(let key in other){
+          original[key]=other[key]
+        }
+        return original
+    }
 const utils = require('./utils');
 //  yfm = util.yfm,
 //  escape = util.escape;
@@ -56,6 +60,7 @@ module.exports = function (model, unimark, update, callback, hexo) {
 
     preservedKeys.forEach(function (attr) {
         if (attr in update) {
+            console.log(compiled)
             compiled[attr] = update[attr]
         }
     });
@@ -78,6 +83,7 @@ module.exports = function (model, unimark, update, callback, hexo) {
     }
 
     delete update._content
+    console.log(compiled)
     var raw = hfm.stringify(compiled, { prefixSeparator: true });
     update.raw = raw
     update.updated = moment()
