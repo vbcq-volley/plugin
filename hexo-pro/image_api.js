@@ -3,6 +3,12 @@ const fs = require('fs-extra');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
 const utils = require('./utils');
+const locales = require('./locales/fr');
+
+// Fonction pour traduire les messages
+function translate(key) {
+    return locales[key] || key;
+}
 
 module.exports = function (app, hexo, use) {
      // 配置multer存储

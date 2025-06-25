@@ -1,5 +1,11 @@
 
 const jwt = require('jsonwebtoken');
+const locales = require('./locales/fr');
+
+// Fonction pour traduire les messages
+function translate(key) {
+    return locales[key] || key;
+}
 
 // 移除 _needLogin 和 _jwtSecret 参数
 module.exports = function (app, hexo, use, db) {

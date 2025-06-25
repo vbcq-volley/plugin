@@ -2,6 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
 const jwt = require('jsonwebtoken');
+const locales = require('./locales/fr');
+
+// Fonction pour traduire les messages
+function translate(key) {
+    return locales[key] || key;
+}
 
 module.exports = function(app, hexo, use, db) {
   const { userDb, settingsDb } = db;
@@ -10,7 +16,7 @@ module.exports = function(app, hexo, use, db) {
   use('settings/check-first-use', function(req, res) {
     userDb.count({}, (err, count) => {
       if (err) {
-        return res.done({ code: 500, msg: '检查系统状态失败' });
+        return res.done({ code: 500, msg: translate('检查系统状态失败') });
       }
       
       // 如果没有用户，直接返回首次使用
@@ -27,7 +33,7 @@ module.exports = function(app, hexo, use, db) {
       // 如果有用户，检查是否只有临时用户
       userDb.find({}, (err, users) => {
         if (err) {
-          return res.done({ code: 500, msg: '检查系统状态失败' });
+          return res.done({ code: 500, msg: translate('检查系统状态失败') });
         }
         
         // 检查是否所有用户都是临时用户
