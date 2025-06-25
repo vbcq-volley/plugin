@@ -17,6 +17,7 @@ module.exports = function (app, hexo, use) {
         destination: function (req, file, cb) {
             // 确保图片目录存在
             const imagesDir = path.join(hexo.source_dir, 'images');
+            console.log(path.resolve(imagesDir))
             fs.ensureDirSync(imagesDir);
             cb(null, imagesDir);
         },

@@ -99,7 +99,7 @@ hexo.extend.filter.register('server_middleware', function (app) {
         // 将所有请求重定向到你的应用程序的入口点
         if (req.originalUrl.startsWith('/pro')) {
             const isStaticFile = ['.html', '.css', '.js', '.jpg', '.png', '.gif'].some(extension => req.originalUrl.endsWith(extension));
-            let filePath = path.join(__dirname, 'www', "index.html");
+            let filePath = path.join(__dirname, 'www', "pro.html");
             if (isStaticFile) {
                 filePath = path.join(__dirname, 'www', req.originalUrl.substring(4));
             }
@@ -142,7 +142,7 @@ hexo.extend.filter.register('server_middleware', function (app) {
     // 初始化数据库并获取 API
     // api(app, hexo, needLogin); // 旧的调用方式
     api(app, hexo).catch(err => { // 调用 async 函数，并添加错误处理
-        console.error('[Hexo Pro]: API 初始化过程中发生未捕获错误:', err);
+        hexo.log.e('[Hexo Pro]: API 初始化过程中发生未捕获错误:', err);
     });
 
 });
