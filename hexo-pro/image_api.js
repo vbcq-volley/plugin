@@ -53,7 +53,7 @@ module.exports = function (app, hexo, use) {
                 }
             });
         } catch (err) {
-            console.error('读取文件夹失败:', err);
+            console.error(translate('读取文件夹失败:'), err);
         }
         
         // 获取当前文件夹下的所有图片
@@ -75,7 +75,7 @@ module.exports = function (app, hexo, use) {
                 }
             });
         } catch (err) {
-            console.error('读取图片失败:', err);
+            console.error(translate('读取图片失败:'), err);
         }
         
         // 排序和分页
@@ -98,26 +98,26 @@ module.exports = function (app, hexo, use) {
     use('images/createFolder', function (req, res) {
         const folderName = req.body.folderName;
         if (!folderName) {
-            return res.send(400, '文件夹名称不能为空');
+            return res.send(400, translate('文件夹名称不能为空'));
         }
         
         // 验证文件夹名称 - 修改正则表达式以支持中文
         if (!/^[\w\u4e00-\u9fa5\-]+$/.test(folderName)) {
-            return res.send(400, '文件夹名称只能包含字母、数字、下划线、短横线和中文');
+            return res.send(400, translate('文件夹名称只能包含字母、数字、下划线、短横线和中文'));
         }
         
         const folderPath = path.join(hexo.source_dir, 'images', folderName);
         
         try {
             if (fs.existsSync(folderPath)) {
-                return res.send(400, '文件夹已存在');
+                return res.send(400, translate('文件夹已存在'));
             }
             
             fs.ensureDirSync(folderPath);
             res.done({ success: true, folderName: folderName });
         } catch (err) {
-            console.error('创建文件夹失败:', err);
-            res.send(500, '创建文件夹失败: ' + err.message);
+            console.error(translate('创建文件夹失败:'), err);
+            res.send(500, translate('创建文件夹失败: ' + err.message));
         }
     });
     
@@ -125,14 +125,14 @@ module.exports = function (app, hexo, use) {
     use('images/delete', function (req, res) {
         const imagePath = req.body.path;
         if (!imagePath) {
-            return res.send(400, '图片路径不能为空');
+            return res.send(400, translate('图片路径不能为空'));
         }
         
         const fullPath = path.join(hexo.source_dir, imagePath);
         
         try {
             if (!fs.existsSync(fullPath)) {
-                return res.send(404, '图片不存在');
+                return res.send(404, translate('图片不存在'));
             }
             
             fs.removeSync(fullPath);

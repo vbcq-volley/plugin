@@ -77,7 +77,7 @@ module.exports = function(app, hexo, use, db) {
     // 检查是否已有用户
     userDb.count({}, (err, count) => {
       if (err) {
-        return res.done({ code: 500, msg: '检查系统状态失败' });
+        return res.done({ code: 500, msg: translate('检查系统状态失败') });
       }
       
       // 如果没有用户，直接允许注册
@@ -87,7 +87,7 @@ module.exports = function(app, hexo, use, db) {
         // 如果有用户，检查是否只有临时用户
         userDb.find({}, (err, users) => {
           if (err) {
-            return res.done({ code: 500, msg: '检查系统状态失败' });
+            return res.done({ code: 500, msg: translate('检查系统状态失败') });
           }
           
           const hasRealUser = users.some(user => !user.isTemporary);
@@ -95,7 +95,7 @@ module.exports = function(app, hexo, use, db) {
           
           if (hasRealUser) {
             // 已有正式用户，不允许注册
-            return res.done({ code: 403, msg: '系统已初始化，不能再次注册' });
+            return res.done({ code: 403, msg: translate('系统已初始化，不能再次注册') });
           } else if (tempUsers.length > 0) {
             // 只有临时用户，可以注册正式用户，但需要先清理临时用户
             cleanupTemporaryUsersAndProceed(tempUsers);
@@ -117,7 +117,7 @@ module.exports = function(app, hexo, use, db) {
         userDb.remove({ isTemporary: true }, { multi: true }, (err) => {
           if (err) {
             console.error('[Hexo Pro]: 删除临时用户失败:', err);
-            return res.done({ code: 500, msg: '清理临时用户失败' });
+            return res.done({ code: 500, msg: translate('清理临时用户失败') });
           }
           
           // 删除临时用户的设置
@@ -139,11 +139,11 @@ module.exports = function(app, hexo, use, db) {
         
         // 验证输入
         if (!username || !password) {
-          return res.done({ code: 400, msg: '用户名和密码不能为空' });
+          return res.done({ code: 400, msg: translate('用户名和密码不能为空') });
         }
         
         if (password !== confirmPassword) {
-          return res.done({ code: 400, msg: '两次输入的密码不一致' });
+          return res.done({ code: 400, msg: translate('两次输入的密码不一致') });
         }
         
         // 创建新用户（正式用户，不是临时用户）
@@ -158,7 +158,7 @@ module.exports = function(app, hexo, use, db) {
         
         userDb.insert(newUser, (err) => {
           if (err) {
-            return res.done({ code: 500, msg: '创建用户失败' });
+            return res.done({ code: 500, msg: translate('创建用户失败') });
           }
           
           // 创建默认设置

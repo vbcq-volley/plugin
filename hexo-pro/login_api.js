@@ -16,7 +16,7 @@ module.exports = function (app, hexo, use, db) {
         if (!global.actualNeedLogin) {
             return res.done({
                 code: -2,
-                msg: '未配置登录信息，无需登录'
+msg: translate('未配置登录信息，无需登录')
             });
         }
 
@@ -27,14 +27,14 @@ module.exports = function (app, hexo, use, db) {
             if (err) {
                 return res.done({
                     code: 500,
-                    msg: '服务器错误'
+    msg: translate('服务器错误')
                 });
             }
 
             if (!user || user.password.toString() !== password) {
                 return res.done({
                     code: -1,
-                    msg: '用户名或密码错误'
+    msg: translate('用户名或密码错误')
                 });
             }
 
@@ -50,7 +50,7 @@ module.exports = function (app, hexo, use, db) {
                          console.error('[Hexo Pro Login]: JWT Secret 在登录时仍未配置!');
                          return res.done({
                              code: 500,
-                             msg: '系统错误：JWT 密钥未配置'
+             msg: translate('系统错误：JWT 密钥未配置')
                          });
                      }
                  });
@@ -71,7 +71,7 @@ module.exports = function (app, hexo, use, db) {
 
         res.done({
             code: 0,
-            msg: '登录成功',
+            msg: translate('登录成功'),
             token
         });
     }
