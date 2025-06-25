@@ -6,6 +6,7 @@ const utils = require('./utils');
 
 module.exports = function (app, hexo, use) {
      // 配置multer存储
+     console.log(hexo.source_dir)
      const storage = multer.diskStorage({
         destination: function (req, file, cb) {
             // 确保图片目录存在
