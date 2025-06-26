@@ -185,7 +185,10 @@ module.exports = function (app, hexo, use) {
 
     function loadBlogInfoList() {
         const blogInfoList = fs.readFileSync(path.join(hexo.base_dir, 'blogInfoList.json'));
-        return JSON.parse(blogInfoList);
+        return JSON.parse(blogInfoList).map((item)=>{
+            item.permalink=item.permalink.replace("http://example.com/","https://vbcq-volley.github.io/")
+            return item
+        });
     }
     function getHighlightedTextFromHtml(content, searchPattern, contextLength = 40) {
         if (!content || content.trim() === '') {
@@ -299,7 +302,7 @@ module.exports = function (app, hexo, use) {
             const { item } = result;
             const highlightedText = getHighlightedTextFromHtml(item.content, req.body.searchPattern);
             return {
-                permalink: item.permalink,
+                permalink: item.permalink.replace("http://example.com/","https://vbcq-volley.github.io/"),
                 isPage: item.isPage,
                 isDraft: item.isDraft,
                 title: item.title,
