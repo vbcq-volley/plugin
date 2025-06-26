@@ -48,7 +48,7 @@ function buildIndex() {
             this.permalink = permalink
         }
     }
-    console.log(hexo.config)
+    //console.log(hexo.config)
     const posts = hexo.model('Post').toArray()
     const pages = hexo.model('Page').toArray()
 
@@ -103,6 +103,7 @@ hexo.extend.filter.register('server_middleware', function (app) {
             if (isStaticFile) {
                 filePath = path.join(__dirname, 'www', req.originalUrl.substring(4));
             }
+            console .log(filePath)
             // 使用 fs 模块读取文件并将其发送给客户端
             fs.readFile(filePath, (err, data) => {
                 if (err) {
